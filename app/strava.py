@@ -1,0 +1,236 @@
+"""Strava OAuth + activity sync.
+
+Every function that talks to Strava takes an httpx.Client so tests can inject a mock transport.
+"""
+import os
+import time
+from datetime import datetime, timezone
+from urllib.parse import urlencode
+
+import httpx
+
+from . import sports
+from .db import get_meta, set_meta
+
+AUTHORIZE_URL = "https://www.strava.com/oauth/authorize"
+TOKEN_URL = "https://www.strava.com/oauth/token"
+API = "https://www.strava.com/api/v3"
+
+PAGE_SIZE = 200
+RESYNC_OVERLAP_S = 14 * 86400   # re-fetch the last 2 weeks each sync to pick up edits/deletes
+ENRICH_PER_SYNC = 40            # detail lookups per sync (Strava allows ~100 requests / 15 min)
+
+
+class StravaError(Exception):
+    pass
+
+
+def make_client():
+    return httpx.Client(timeout=30)
+
+
+def client_id():
+    return os.environ.get("STRAVA_CLIENT_ID", "").strip()
+
+
+def client_secret():
+    return os.environ.get("STRAVA_CLIENT_SECRET", "").strip()
+
+
+def is_configured():
+    return bool(client_id() and client_secret())
+
+
+def redirect_uri():
+    """STRAVA_REDIRECT_URI if set; else the public Railway domain (https); else localhost for local use."""
+    explicit = os.environ.get("STRAVA_REDIRECT_URI", "").strip()
+    if explicit:
+        return explicit
+    domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "").strip()
+    if domain:
+        return "https://%s/auth/callback" % domain
+    return "http://localhost:8000/auth/callback"
+
+
+def authorize_url(state):
+    return AUTHORIZE_URL + "?" + urlencode({
+        "client_id": client_id(),
+        "redirect_uri": redirect_uri(),
+        "response_type": "code",
+        "approval_prompt": "auto",
+        "scope": "read,activity:read_all",
+        "state": state,
+    })
+
+
+# ---- tokens ---------------------------------------------------------------------------------
+
+def _token_request(http, payload):
+    r = http.post(TOKEN_URL, data={"client_id": client_id(), "client_secret": client_secret(), **payload})
+    if r.status_code != 200:
+        raise StravaError("Strava rejected the token request (%s). If you revoked access, "
+                          "reconnect with Strava." % r.status_code)
+    return r.json()
+
+
+def _save_tokens(conn, tok, scope=None):
+    athlete = tok.get("athlete") or {}
+    name = " ".join(x for x in (athlete.get("firstname"), athlete.get("lastname")) if x) or None
+    old = conn.execute("SELECT * FROM auth WHERE id = 1").fetchone()
+    conn.execute(
+        """INSERT INTO auth (id, athlete_id, athlete_name, access_token, refresh_token, expires_at, scope)
+           VALUES (1, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(id) DO UPDATE SET
+             athlete_id = COALESCE(excluded.athlete_id, athlete_id),
+             athlete_name = COALESCE(excluded.athlete_name, athlete_name),
+             access_token = excluded.access_token,
+             refresh_token = excluded.refresh_token,   -- Strava may rotate this on every refresh
+             expires_at = excluded.expires_at,
+             scope = COALESCE(excluded.scope, scope)""",
+        (athlete.get("id"), name, tok["access_token"], tok["refresh_token"], tok["expires_at"],
+         scope if scope is not None else (old["scope"] if old else None)),
+    )
+    conn.commit()
+
+
+def exchange_code(conn, http, code, scope):
+    tok = _token_request(http, {"code": code, "grant_type": "authorization_code"})
+    _save_tokens(conn, tok, scope=scope)
+
+
+def access_token(conn, http, force_refresh=False):
+    row = conn.execute("SELECT * FROM auth WHERE id = 1").fetchone()
+    if not row:
+        raise StravaError("Not connected to Strava yet.")
+    if force_refresh or row["expires_at"] - 60 <= time.time():
+        tok = _token_request(http, {"grant_type": "refresh_token", "refresh_token": row["refresh_token"]})
+        _save_tokens(conn, tok)
+        return tok["access_token"]
+    return row["access_token"]
+
+
+def _get(conn, http, path, params=None):
+    """GET against the Strava API; refreshes once on 401."""
+    for attempt in (0, 1):
+        token = access_token(conn, http, force_refresh=bool(attempt))
+        r = http.get(API + path, params=params, headers={"Authorization": "Bearer " + token})
+        if r.status_code == 401 and attempt == 0:
+            continue
+        break
+    if r.status_code == 429:
+        raise StravaError("Strava rate limit hit (100 requests / 15 min, 1000 / day). Try again later.")
+    if r.status_code == 401:
+        raise StravaError("Strava refused the stored credentials. Reconnect with Strava.")
+    if r.status_code != 200:
+        raise StravaError("Strava API error %s on %s" % (r.status_code, path))
+    return r.json()
+
+
+# ---- activities -----------------------------------------------------------------------------
+
+def _epoch(iso_utc):
+    return int(datetime.fromisoformat(iso_utc.replace("Z", "+00:00")).astimezone(timezone.utc).timestamp())
+
+
+def activity_row(a):
+    sport_type = a.get("sport_type") or a.get("type") or ""
+    local = a.get("start_date_local") or a["start_date"]
+    return {
+        "id": a["id"],
+        # start_date_local is wall-clock time at the activity, labelled 'Z' - take the date as-is
+        "date": local[:10],
+        "start_epoch": _epoch(a["start_date"]),
+        "name": a.get("name"),
+        "sport_type": sport_type,
+        "sport_group": sports.group_from_strava(sport_type),
+        "distance": a.get("distance"),
+        "moving_time": a.get("moving_time"),
+        "average_heartrate": a.get("average_heartrate"),
+        "max_heartrate": a.get("max_heartrate"),
+        "average_speed": a.get("average_speed"),
+        "max_speed": a.get("max_speed"),
+        "total_elevation_gain": a.get("total_elevation_gain"),
+        "suffer_score": a.get("suffer_score"),
+        "workout_type": a.get("workout_type"),
+    }
+
+
+UPSERT = """
+INSERT INTO activities (id, date, start_epoch, name, sport_type, sport_group, distance, moving_time,
+    average_heartrate, max_heartrate, average_speed, max_speed, total_elevation_gain, suffer_score, workout_type)
+VALUES (:id, :date, :start_epoch, :name, :sport_type, :sport_group, :distance, :moving_time,
+    :average_heartrate, :max_heartrate, :average_speed, :max_speed, :total_elevation_gain, :suffer_score, :workout_type)
+ON CONFLICT(id) DO UPDATE SET
+    date = excluded.date, start_epoch = excluded.start_epoch, name = excluded.name,
+    sport_type = excluded.sport_type, sport_group = excluded.sport_group,
+    distance = excluded.distance, moving_time = excluded.moving_time,
+    average_heartrate = excluded.average_heartrate, max_heartrate = excluded.max_heartrate,
+    average_speed = excluded.average_speed, max_speed = excluded.max_speed,
+    total_elevation_gain = excluded.total_elevation_gain,
+    -- the list endpoint may omit suffer_score; don't wipe one fetched from the detail endpoint
+    suffer_score = COALESCE(excluded.suffer_score, activities.suffer_score),
+    workout_type = excluded.workout_type
+"""
+
+
+def _fetch_all(conn, http, after):
+    out, page = [], 1
+    while True:
+        batch = _get(conn, http, "/athlete/activities",
+                     {"after": after, "per_page": PAGE_SIZE, "page": page})
+        out.extend(batch)
+        if len(batch) < PAGE_SIZE:
+            return out
+        page += 1
+
+
+def _enrich_suffer_scores(conn, http):
+    """Best-effort: ask the detail endpoint for suffer_score where the list didn't supply one.
+
+    Newest first, capped per sync so we stay inside Strava's rate limit; each activity is only
+    ever looked up once (detail_checked), so athletes without Relative Effort don't burn requests.
+    Returns (looked_up, remaining)."""
+    todo = conn.execute(
+        "SELECT id FROM activities WHERE suffer_score IS NULL AND average_heartrate IS NOT NULL "
+        "AND detail_checked = 0 ORDER BY start_epoch DESC").fetchall()
+    done = 0
+    for row in todo[:ENRICH_PER_SYNC]:
+        try:
+            detail = _get(conn, http, "/activities/%d" % row["id"])
+        except StravaError:
+            break  # rate limited or transient - the rest waits for the next sync
+        conn.execute("UPDATE activities SET suffer_score = COALESCE(?, suffer_score), detail_checked = 1 "
+                     "WHERE id = ?", (detail.get("suffer_score"), row["id"]))
+        conn.commit()
+        done += 1
+    return done, len(todo) - done
+
+
+def sync(conn, http):
+    latest = conn.execute("SELECT MAX(start_epoch) AS m FROM activities").fetchone()["m"]
+    after = max(0, latest - RESYNC_OVERLAP_S) if latest else 0
+
+    fetched = _fetch_all(conn, http, after)   # raises before we touch the DB if anything fails
+
+    existing = {r["id"] for r in conn.execute("SELECT id FROM activities WHERE start_epoch > ?", (after,))}
+    ids = set()
+    for a in fetched:
+        conn.execute(UPSERT, activity_row(a))
+        ids.add(a["id"])
+    # anything in the re-fetched window that Strava no longer returns was deleted (or made private)
+    gone = existing - ids
+    for aid in gone:
+        conn.execute("DELETE FROM activities WHERE id = ?", (aid,))
+    conn.commit()
+
+    looked_up, remaining = _enrich_suffer_scores(conn, http)
+    set_meta(conn, "last_sync", datetime.now().isoformat(timespec="seconds"))
+    conn.commit()
+    return {
+        "fetched": len(fetched),
+        "new": len(ids - existing),
+        "removed": len(gone),
+        "suffer_lookups": looked_up,
+        "suffer_lookups_remaining": remaining,
+        "full_history": after == 0,
+    }

@@ -1,0 +1,8 @@
+# Everything above, plus what's needed to run the tests locally. Not installed in the Docker image.
+-r requirements.txt
+pytest==8.4.2
+iniconfig==2.1.0
+packaging==26.3
+pluggy==1.6.0
+Pygments==2.21.0
+tomli==2.4.1; python_version < "3.11"

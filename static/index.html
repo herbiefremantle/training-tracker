@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Training Tracker</title>
+<link rel="stylesheet" href="/static/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <h1>Training Tracker</h1>
+    <nav>
+      <a href="#/" data-route="dashboard">Dashboard</a>
+      <a href="#/plan" data-route="plan">Plan</a>
+    </nav>
+    <div class="topbar-right">
+      <div class="seg" id="units-seg" role="group" aria-label="Distance units">
+        <button type="button" data-act="units" data-units="km" aria-pressed="true">km</button>
+        <button type="button" data-act="units" data-units="mi" aria-pressed="false">mi</button>
+      </div>
+      <span id="sync-meta" class="muted small"></span>
+      <button id="sync-btn" class="btn primary" type="button">Sync Strava</button>
+      <form id="logout-form" method="post" action="/logout" hidden><button class="btn" type="submit">Log out</button></form>
+    </div>
+  </div>
+</header>
+
+<main id="app" class="page">
+  <div id="banner"></div>
+  <section id="view-dashboard" hidden></section>
+  <section id="view-plan" hidden></section>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

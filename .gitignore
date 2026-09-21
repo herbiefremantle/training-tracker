@@ -1,0 +1,15 @@
+# secrets and local data - never commit these
+.env
+*.db
+*.db-*
+plan_export.csv
+demo_plan.csv
+
+# environments and caches
+.venv/
+__pycache__/
+.pytest_cache/
+
+# editor / OS / tooling
+.DS_Store
+.claude/

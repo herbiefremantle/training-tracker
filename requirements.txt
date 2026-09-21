@@ -1,0 +1,22 @@
+# Runtime dependencies, pinned to the versions this app was tested with (top-level ones first, then what they pull in).
+# Upgrade deliberately: change a version, run `pip install -r requirements-dev.txt && pytest`, then redeploy.
+fastapi==0.128.8
+uvicorn==0.39.0
+httpx==0.28.1
+python-dotenv==1.2.1
+
+# pulled in by the above - pinned too, so a rebuild next month gets identical code
+annotated-doc==0.0.5
+annotated-types==0.7.0
+anyio==4.12.1
+certifi==2026.7.22
+click==8.1.8
+exceptiongroup==1.3.1; python_version < "3.11"
+h11==0.16.0
+httpcore==1.0.9
+idna==3.20
+pydantic==2.13.5
+pydantic_core==2.46.5
+starlette==0.49.3
+typing_extensions==4.16.0
+typing-inspection==0.4.2

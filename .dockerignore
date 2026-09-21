@@ -1,0 +1,23 @@
+# keep secrets, local data and dev-only files out of the image (and out of Railway's build context)
+.env
+.env.*
+!.env.example
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+.gitignore
+.claude/
+tests/
+seed_demo.py
+demo_plan.csv
+run_lan.sh
+requirements-dev.txt
+README.md
+.DS_Store
