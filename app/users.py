@@ -9,7 +9,7 @@ import re
 import secrets
 import time
 
-from .db import LOCAL_USER_ID
+from .db import ACTIVITIES_TABLE_SQL, LOCAL_USER_ID
 
 MIN_PASSWORD_LENGTH = 8
 INVITE_TTL_SECONDS = 7 * 24 * 3600
@@ -127,22 +127,28 @@ def redeem_invite(conn, token, username, password):
 def bootstrap_and_migrate(conn):
     """Runs on every startup (inside init_db, same transaction as the schema creation).
 
-    Two independent steps:
-    1. If this is a pre-multi-user database (it still has the old 'auth' table), give activities/plan/meta the
-       user_id column every query now expects - regardless of whether an account is created this run. Without
-       this the app can't run at all against old data, not even in local/no-login mode. Existing rows are
-       tagged LOCAL_USER_ID (the same id local/no-login use already writes under), so they're immediately
-       usable, invite APP_PASSWORD or not.
-    2. If APP_PASSWORD is set and there are no accounts yet, create the first (admin) account from it, and - if
+    Three independent steps:
+    1. Always: make sure `activities` actually has the composite (user_id, id) primary key sync's upsert needs.
+       Unconditional, not gated on anything else, because a database can be *fully account-migrated* and still
+       have the wrong key here - that was a real shipped bug (see _fix_activities_table's docstring) that an
+       ordinary "is this a legacy database?" check can't detect once the old 'auth' table is already gone.
+    2. If this is a pre-multi-user database (it still has the old 'auth' table), give plan/meta the user_id
+       column every query now expects - regardless of whether an account is created this run. Without this the
+       app can't run at all against old data, not even in local/no-login mode. Existing rows are tagged
+       LOCAL_USER_ID (the same id local/no-login use already writes under), so they're immediately usable,
+       whether or not APP_PASSWORD is set.
+    3. If APP_PASSWORD is set and there are no accounts yet, create the first (admin) account from it, and - if
        this was a legacy database - move that LOCAL_USER_ID data (Strava tokens included) onto the new account.
 
     Safe to interrupt and retry: every step here is guarded (an "already done?" check, or a WHERE clause that
     only matches what's left to do), so a crash partway through - however far it got - always converges to the
     fully correct state on the next startup, never a duplicate account or lost/miscounted data. This is not
-    strict transactional atomicity: SQLite's ALTER TABLE (via Python's sqlite3 module) commits itself
-    immediately regardless of the surrounding transaction, so the schema change can survive even when a later
-    step in the same run fails and its own INSERT/UPDATE statements roll back - which is exactly why every step
-    is written to be idempotent rather than relying on all-or-nothing rollback."""
+    strict transactional atomicity: SQLite's ALTER/CREATE/DROP TABLE (via Python's sqlite3 module) don't reliably
+    commit or roll back together with the surrounding transaction in this sqlite3/Python combination - verified
+    inconsistent enough between statement types that relying on exactly where a retry resumes isn't safe. That's
+    why every step here is instead independently idempotent, rather than relying on all-or-nothing rollback."""
+    _fix_activities_table(conn, LOCAL_USER_ID)
+
     is_legacy = bool(_table_columns(conn, "auth"))
     if is_legacy:
         _add_user_id_columns(conn, LOCAL_USER_ID)
@@ -166,13 +172,56 @@ def _table_columns(conn, table):
     return {r["name"] for r in conn.execute("PRAGMA table_info(%s)" % table)}
 
 
+def _fix_activities_table(conn, default_user_id):
+    """Make sure `activities` has the composite (user_id, id) PRIMARY KEY sync's upsert relies on
+    (`ON CONFLICT(user_id, id)`) - unconditionally, every startup, regardless of migration state elsewhere.
+
+    This covers three states found in the wild, all through the same idempotent rebuild (rename, recreate from
+    ACTIVITIES_TABLE_SQL, copy, drop - tolerant of being interrupted and resumed, using INSERT OR IGNORE so a
+    retry can never duplicate a row already copied):
+      1. Already correct: left alone (bar backfilling any stray NULL user_id, normally a no-op).
+      2. A genuinely un-migrated legacy table: no user_id column at all yet - added and backfilled to
+         `default_user_id` as part of the rebuild.
+      3. **Already account-migrated, but still with the broken key** - this is the bug that actually shipped:
+         an earlier version added the user_id column with a plain ALTER TABLE (which SQLite allows) instead of
+         rebuilding the table, so it kept its old single-column `id` primary key. Every row already has the
+         correct real user_id from that migration, so this rebuild preserves those values as-is - it never
+         overwrites a user_id that's already set, only supplies `default_user_id` for rows that never had one.
+    Because the database can be in state 3 with no other trace of "used to be legacy" left (the old 'auth' table
+    is long gone, accounts already exist), this function cannot be gated behind an is-this-legacy check the way
+    the rest of the migration is - it has to run and check for itself, every time."""
+    pk_cols = {r["name"] for r in conn.execute("PRAGMA table_info(activities)") if r["pk"]}
+    if pk_cols != {"user_id", "id"} and not _table_columns(conn, "activities_old"):
+        # not yet rebuilt, and no in-progress rebuild left over to resume - start one
+        conn.execute("ALTER TABLE activities RENAME TO activities_old")
+        conn.execute(ACTIVITIES_TABLE_SQL)
+
+    if _table_columns(conn, "activities_old"):
+        # either just started above, or a leftover from an earlier interrupted attempt (crucially: even when
+        # `activities` itself ALREADY has the correct new (but then possibly still-empty) schema - CREATE TABLE
+        # can survive a crash/rollback independently of the INSERT+DROP that were meant to follow it, so "the
+        # PK already looks right" alone is not proof the copy actually finished; only an absent activities_old
+        # is proof of that, which is what the branch above and this `if` are both really checking for)
+        old_cols = [r["name"] for r in conn.execute("PRAGMA table_info(activities_old)")]
+        collist = ", ".join(old_cols)
+        if "user_id" in old_cols:   # state 3: keep each row's already-correct user_id, don't overwrite it
+            conn.execute("INSERT OR IGNORE INTO activities (%s) SELECT %s FROM activities_old" % (collist, collist))
+        else:                        # state 2: no user_id existed - every row gets the same default
+            conn.execute("INSERT OR IGNORE INTO activities (%s, user_id) SELECT %s, ? FROM activities_old"
+                         % (collist, collist), (default_user_id,))
+        conn.execute("DROP TABLE activities_old")
+    else:
+        conn.execute("UPDATE activities SET user_id = ? WHERE user_id IS NULL", (default_user_id,))
+
+
 def _add_user_id_columns(conn, default_user_id):
-    """Give every pre-multi-user table its user_id column, tagging existing rows with `default_user_id`.
-    Idempotent, and safe whether or not an account ends up being bootstrapped this run."""
-    for table in ("activities", "plan"):
-        if "user_id" not in _table_columns(conn, table):
-            conn.execute("ALTER TABLE %s ADD COLUMN user_id INTEGER" % table)
-        conn.execute("UPDATE %s SET user_id = ? WHERE user_id IS NULL" % table, (default_user_id,))
+    """Give plan/meta their user_id column, tagging existing rows with `default_user_id`. Idempotent, and safe
+    whether or not an account ends up being bootstrapped this run. (`activities` is handled separately and
+    unconditionally by _fix_activities_table - see bootstrap_and_migrate.)"""
+    if "user_id" not in _table_columns(conn, "plan"):
+        conn.execute("ALTER TABLE plan ADD COLUMN user_id INTEGER")
+    conn.execute("UPDATE plan SET user_id = ? WHERE user_id IS NULL", (default_user_id,))
+
     if "user_id" not in _table_columns(conn, "meta"):   # old meta had PRIMARY KEY(key) only; needs a new shape
         conn.execute("ALTER TABLE meta RENAME TO meta_old")
         conn.execute("CREATE TABLE meta (user_id INTEGER NOT NULL, key TEXT NOT NULL, value TEXT, "

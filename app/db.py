@@ -28,6 +28,33 @@ def volume_warning():
 
 # Tables are per-account (user_id) so one person's Strava connection, activities and plan never mix with another's.
 # LOCAL_USER_ID is used throughout when there's no login (see app/auth.py).
+
+# Its own constant because the legacy-database migration (app/users.py) has to rebuild this exact table (SQLite
+# can't ALTER a PRIMARY KEY, and sync's upsert relies on the composite one) - sharing this string is what keeps
+# the rebuilt table byte-for-byte identical to a fresh one, so they can never quietly drift apart.
+ACTIVITIES_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS activities (
+    id                   INTEGER NOT NULL,   -- Strava activity id (globally unique on Strava)
+    user_id              INTEGER NOT NULL REFERENCES users(id),
+    date                 TEXT NOT NULL,      -- local calendar date (from start_date_local)
+    start_epoch          INTEGER NOT NULL,   -- UTC start, for incremental sync
+    name                 TEXT,
+    sport_type           TEXT,
+    sport_group          TEXT,
+    distance             REAL,               -- metres
+    moving_time          INTEGER,            -- seconds
+    average_heartrate    REAL,
+    max_heartrate        REAL,
+    average_speed        REAL,               -- m/s
+    max_speed            REAL,               -- m/s
+    total_elevation_gain REAL,               -- metres
+    suffer_score         REAL,
+    workout_type         INTEGER,
+    detail_checked       INTEGER NOT NULL DEFAULT 0,  -- 1 once we've asked /activities/{id} for suffer_score
+    PRIMARY KEY (user_id, id)
+);
+"""
+
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,28 +82,7 @@ CREATE TABLE IF NOT EXISTS strava_auth (
     expires_at    INTEGER NOT NULL,
     scope         TEXT
 );
-
-CREATE TABLE IF NOT EXISTS activities (
-    id                   INTEGER NOT NULL,   -- Strava activity id (globally unique on Strava)
-    user_id              INTEGER NOT NULL REFERENCES users(id),
-    date                 TEXT NOT NULL,      -- local calendar date (from start_date_local)
-    start_epoch          INTEGER NOT NULL,   -- UTC start, for incremental sync
-    name                 TEXT,
-    sport_type           TEXT,
-    sport_group          TEXT,
-    distance             REAL,               -- metres
-    moving_time          INTEGER,            -- seconds
-    average_heartrate    REAL,
-    max_heartrate        REAL,
-    average_speed        REAL,               -- m/s
-    max_speed            REAL,               -- m/s
-    total_elevation_gain REAL,               -- metres
-    suffer_score         REAL,
-    workout_type         INTEGER,
-    detail_checked       INTEGER NOT NULL DEFAULT 0,  -- 1 once we've asked /activities/{id} for suffer_score
-    PRIMARY KEY (user_id, id)
-);
-
+""" + ACTIVITIES_TABLE_SQL + """
 CREATE TABLE IF NOT EXISTS plan (
     id                   INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id              INTEGER NOT NULL REFERENCES users(id),
