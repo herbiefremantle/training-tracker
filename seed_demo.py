@@ -71,10 +71,10 @@ for w in range(-16, 2):                       # 16 weeks back, this week, next w
 
 with db.connect() as conn:
     for a in activities:
-        conn.execute(strava.UPSERT, strava.activity_row(a))
-    conn.execute("INSERT INTO auth VALUES (1, 1, 'Demo Athlete', 'x', 'x', 0, 'read,activity:read_all') "
-                 "ON CONFLICT(id) DO NOTHING")
-    db.set_meta(conn, "last_sync", today.isoformat() + "T07:00:00")
+        conn.execute(strava.UPSERT, strava.activity_row(a, db.LOCAL_USER_ID))
+    conn.execute("INSERT INTO strava_auth VALUES (?, 1, 'Demo Athlete', 'x', 'x', 0, 'read,activity:read_all') "
+                 "ON CONFLICT(user_id) DO NOTHING", (db.LOCAL_USER_ID,))
+    db.set_meta(conn, db.LOCAL_USER_ID, "last_sync", today.isoformat() + "T07:00:00")
 
 print("Seeded %d activities into %s" % (len(activities), db.db_path()))
 open("demo_plan.csv", "w").write("\n".join(plan_lines) + "\n")

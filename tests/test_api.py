@@ -47,7 +47,7 @@ def test_oauth_callback_happy_path_stores_tokens(client, monkeypatch):
     s = client.get("/api/status").json()
     assert s["connected"] and s["athlete"] == "Pete W"
     with db.connect() as conn:
-        row = conn.execute("SELECT * FROM auth").fetchone()
+        row = conn.execute("SELECT * FROM strava_auth WHERE user_id = ?", (db.LOCAL_USER_ID,)).fetchone()
     assert (row["access_token"], row["refresh_token"]) == ("AT", "RT")
     assert "AT" not in client.get("/api/status").text and "RT" not in client.get("/api/status").text
 
@@ -122,7 +122,7 @@ def add_activity(aid, day, sport="Run", km=10.0, mins=60, elev=100.0, hr=150.0):
         conn.execute(strava.UPSERT, strava.activity_row({
             "id": aid, "name": "%s %s" % (sport, day), "sport_type": sport, "distance": km * 1000, "moving_time": mins * 60,
             "start_date": day + "T07:00:00Z", "start_date_local": day + "T07:00:00Z", "average_speed": km * 1000 / (mins * 60),
-            "max_speed": 4.0, "total_elevation_gain": elev, "average_heartrate": hr}))
+            "max_speed": 4.0, "total_elevation_gain": elev, "average_heartrate": hr}, db.LOCAL_USER_ID))
 
 
 def test_dashboard_end_to_end_with_same_day_double_session(client):

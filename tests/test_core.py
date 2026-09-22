@@ -279,10 +279,13 @@ class FakeStrava:
         return httpx.Response(200, json=self.details.get(aid, {"id": aid}))
 
 
-def connect_with(conn, fake):
+UID = db.LOCAL_USER_ID   # these tests run for a single account; which id doesn't matter
+
+
+def connect_with(conn, fake, uid=UID):
     http = httpx.Client(transport=httpx.MockTransport(fake))
-    conn.execute("INSERT INTO auth VALUES (1, 42, 'Pete', 'access-1', 'refresh-0', ?, 'read,activity:read_all')",
-                 (int(time.time()) + 3600,))
+    conn.execute("INSERT INTO strava_auth VALUES (?, 42, 'Pete', 'access-1', 'refresh-0', ?, 'read,activity:read_all')",
+                 (uid, int(time.time()) + 3600))
     return http
 
 
@@ -290,11 +293,22 @@ def test_sync_stores_fields_and_local_date(conn):
     fake = FakeStrava([strava_activity(1, "2026-09-14T06:30:00Z", start_date_local="2026-09-14T22:30:00Z",
                                        suffer_score=77.0, workout_type=2)])
     http = connect_with(conn, fake)
-    res = strava.sync(conn, http)
+    res = strava.sync(conn, http, UID)
     assert res["new"] == 1 and res["full_history"]
-    r = conn.execute("SELECT * FROM activities WHERE id = 1").fetchone()
+    r = conn.execute("SELECT * FROM activities WHERE id = 1 AND user_id = ?", (UID,)).fetchone()
     assert r["date"] == "2026-09-14" and r["sport_group"] == "run" and r["suffer_score"] == 77
     assert (r["max_speed"], r["total_elevation_gain"], r["max_heartrate"], r["workout_type"]) == (4.5, 120, 175, 2)
+
+
+def test_sync_is_scoped_to_its_own_account(conn):
+    other = UID + 1
+    fake = FakeStrava([strava_activity(1, "2026-09-14T06:30:00Z")])
+    http = connect_with(conn, fake, uid=other)
+    with pytest.raises(strava.StravaError, match="Not connected"):
+        strava.sync(conn, http, UID)          # UID has no strava_auth row, `other` does
+    strava.sync(conn, http, other)
+    assert conn.execute("SELECT COUNT(*) FROM activities WHERE user_id = ?", (UID,)).fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM activities WHERE user_id = ?", (other,)).fetchone()[0] == 1
 
 
 def test_sync_incremental_upsert_and_delete_reconcile(conn):
@@ -302,12 +316,12 @@ def test_sync_incremental_upsert_and_delete_reconcile(conn):
     iso = lambda days: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now - days * 86400))
     fake = FakeStrava([strava_activity(1, iso(40)), strava_activity(2, iso(5)), strava_activity(3, iso(2))])
     http = connect_with(conn, fake)
-    strava.sync(conn, http)
+    strava.sync(conn, http, UID)
     assert conn.execute("SELECT COUNT(*) FROM activities").fetchone()[0] == 3
 
     fake.activities = [strava_activity(1, iso(40)), strava_activity(3, iso(2), name="Renamed"),
                        strava_activity(4, iso(1))]      # #2 deleted on Strava, #4 new
-    res = strava.sync(conn, http)
+    res = strava.sync(conn, http, UID)
     assert res["new"] == 1 and res["removed"] == 1 and not res["full_history"]
     ids = {r["id"]: r["name"] for r in conn.execute("SELECT id, name FROM activities")}
     assert set(ids) == {1, 3, 4} and ids[3] == "Renamed"   # old (#1, outside window) untouched
@@ -317,16 +331,16 @@ def test_sync_paginates(conn):
     base = int(time.time()) - 400 * 86400
     acts = [strava_activity(i, time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(base + i * 3600)),
                             average_heartrate=None) for i in range(1, 451)]
-    strava.sync(conn, connect_with(conn, FakeStrava(acts)))
+    strava.sync(conn, connect_with(conn, FakeStrava(acts)), UID)
     assert conn.execute("SELECT COUNT(*) FROM activities").fetchone()[0] == 450
 
 
 def test_expired_token_is_refreshed_and_rotated_refresh_token_saved(conn):
     fake = FakeStrava([strava_activity(1, "2026-09-14T06:30:00Z", average_heartrate=None)])
     http = connect_with(conn, fake)
-    conn.execute("UPDATE auth SET expires_at = ?", (int(time.time()) - 10,))
-    strava.sync(conn, http)
-    row = conn.execute("SELECT * FROM auth").fetchone()
+    conn.execute("UPDATE strava_auth SET expires_at = ?", (int(time.time()) - 10,))
+    strava.sync(conn, http, UID)
+    row = conn.execute("SELECT * FROM strava_auth WHERE user_id = ?", (UID,)).fetchone()
     assert fake.refreshes == 1 and row["refresh_token"] == "refresh-2" and row["access_token"] == "access-2"
     assert row["athlete_name"] == "Pete" and row["athlete_id"] == 42 and row["scope"] == "read,activity:read_all"  # not wiped by refresh
 
@@ -336,10 +350,10 @@ def test_suffer_score_backfilled_from_detail_and_not_wiped_by_resync(conn):
     start = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now - 2 * 86400))
     fake = FakeStrava([strava_activity(1, start)], details={1: {"id": 1, "suffer_score": 91}})
     http = connect_with(conn, fake)
-    res = strava.sync(conn, http)
+    res = strava.sync(conn, http, UID)
     assert res["suffer_lookups"] == 1
     assert conn.execute("SELECT suffer_score FROM activities").fetchone()[0] == 91
-    strava.sync(conn, http)   # list has no suffer_score; must keep 91 and not re-query
+    strava.sync(conn, http, UID)   # list has no suffer_score; must keep 91 and not re-query
     assert conn.execute("SELECT suffer_score FROM activities").fetchone()[0] == 91
     assert sum(1 for c in fake.calls if c.endswith("/activities/1")) == 1
 
@@ -348,9 +362,9 @@ def test_rate_limit_and_revoked_errors(conn):
     def handler(request):
         return httpx.Response(429)
     http = httpx.Client(transport=httpx.MockTransport(handler))
-    conn.execute("INSERT INTO auth VALUES (1, 42, 'P', 'a', 'r', ?, 's')", (int(time.time()) + 3600,))
+    conn.execute("INSERT INTO strava_auth VALUES (?, 42, 'P', 'a', 'r', ?, 's')", (UID, int(time.time()) + 3600))
     with pytest.raises(strava.StravaError, match="rate limit"):
-        strava.sync(conn, http)
+        strava.sync(conn, http, UID)
 
 
 def test_unquoted_comma_in_trailing_notes_is_kept():

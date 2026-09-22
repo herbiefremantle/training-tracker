@@ -1,7 +1,8 @@
 # Training Tracker
 
 Personal training tracker: Strava activities + your training plan, matched session by session.
-FastAPI + SQLite + a plain HTML/JS frontend (Chart.js from a CDN). Single user, localhost only.
+FastAPI + SQLite + a plain HTML/JS frontend (Chart.js from a CDN). Multi-account (invite-only) and deployable,
+but started as a single-user localhost app - see "Login" below for how accounts work.
 
 ## Setup
 
@@ -52,13 +53,28 @@ The plain `uvicorn ... --host 127.0.0.1` command above still listens on this com
 
 ## Login
 
-Set `APP_PASSWORD` (12+ characters) and every page and API call needs a login, including the Strava connect flow. Only
-`/health` and the login page's stylesheet are public. It's a single password, no accounts:
+Each person gets their own account: their own username/password, their own Strava connection, their own plan and
+dashboard - completely separate from everyone else's. Set `APP_PASSWORD` and the app creates the **first** account
+(an admin) from it the next time it starts; every account after that comes from an **invite link** the admin creates.
+There's no public sign-up page and no "forgot password" - both by design, for a small, invite-only app.
 
-- A signed cookie keeps you logged in for **30 days** (HttpOnly, SameSite=Lax, and Secure over HTTPS). **Log out** is in the top bar.
-- Changing `APP_PASSWORD` signs every device out.
-- After 10 wrong guesses in 10 minutes, logins are refused until the window passes; existing sessions aren't affected.
-- Unset locally, there's **no login** (the default). To protect Wi-Fi mode too, add `APP_PASSWORD=...` to `.env` and restart.
+- **Unset locally, there's no login at all** (the default) - the app behaves exactly as before, one shared local
+  dataset. Set `APP_PASSWORD` in `.env` (and restart) to turn login on locally too, e.g. to protect Wi-Fi mode.
+- **The admin account:** `APP_PASSWORD` (8+ characters; 12+ recommended) becomes that account's password, and
+  `ADMIN_USERNAME` (default `pete`) its username. This only matters the *first* time the app starts with no
+  accounts yet - after that, `APP_PASSWORD` is inert, so it can be removed from `.env`/Railway if you want.
+- **Inviting someone:** log in as the admin and click **Invite a friend** in the top bar (only admins see this
+  button). It creates a one-time link, valid for 7 days, shown in a banner with a **Copy link** button - send it
+  however you like (text, WhatsApp, email). They open it, pick a username and password, and they're in.
+- **Accounts fill up:** capped at `MAX_USERS` (default 10, matching Strava's self-serve "10 athletes" API app
+  capacity - see "Deploy to Railway"). Past the cap, **Invite a friend** and redeeming an existing link both refuse.
+- **Sessions:** a signed cookie keeps you logged in for **30 days** (HttpOnly, SameSite=Lax, Secure over HTTPS).
+  **Log out** is in the top bar. Set a new `SESSION_SECRET` to sign every device out at once (e.g. if you suspect
+  a cookie leaked); changing your own password does not affect anyone else's session.
+- **Guessing:** after 10 wrong login attempts (any account) in 10 minutes, logins are refused until the window
+  passes; sessions that already exist aren't affected.
+- **Checking who's registered:** `GET /api/invites` (as the admin, in a browser tab while logged in) lists every
+  account and any pending invite links - there's no page for it, just the endpoint, kept deliberately minimal.
 
 ## Deploy to Railway
 
@@ -66,25 +82,46 @@ Files: `Dockerfile`, `railway.json`, `.dockerignore`, pinned `requirements.txt`.
 variables, so nothing secret is in the repo or the image.
 
 **Before the first deploy**
-1. **Choose a password** (12+ characters; a long random one is best) and keep it in a password manager:
-   `python3 -c "import secrets; print(secrets.token_urlsafe(24))"`. You'll set it as `APP_PASSWORD` below. The Docker image
-   sets `REQUIRE_AUTH=1`, so **it refuses to start without one**: a forgotten variable fails the deploy instead of publishing an open app.
+1. **Choose a password** (8+ characters; 12+ recommended) for your own (admin) account, and generate a session
+   secret - keep both in a password manager:
+   ```bash
+   python3 -c "import secrets; print(secrets.token_urlsafe(24))"    # -> APP_PASSWORD
+   python3 -c "import secrets; print(secrets.token_urlsafe(32))"    # -> SESSION_SECRET
+   ```
+   The Docker image sets `REQUIRE_AUTH=1`, so **it refuses to start without both**: a forgotten variable fails the deploy
+   instead of publishing an app nobody can lock, or one that can't tell one session from another.
 2. Put the code in a GitHub repo (or use `railway up`). `.env` and `*.db` are git-ignored; check `git status` before pushing.
 
 **In Railway**
 1. New project, deploy from the repo. It builds the `Dockerfile`.
-2. **Add a volume** to the service with mount path **`/data`**. The database (`/data/app.db`, including your Strava tokens) lives
-   there; without it everything is wiped on each deploy. The startup log says `no volume is mounted at /data` if it's missing.
-3. **Variables:** `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `APP_PASSWORD`. Don't set `PORT` (Railway does), `HOST`, `FITNESS_DB`, `REQUIRE_AUTH` or `FITNESS_TODAY`.
+2. **Add a volume** to the service with mount path **`/data`**. The database (`/data/app.db`, including everyone's Strava
+   tokens) lives there; without it everything is wiped on each deploy. The startup log says `no volume is mounted at /data`
+   if it's missing.
+3. **Variables:** `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `APP_PASSWORD`, `SESSION_SECRET`. Optionally
+   `ADMIN_USERNAME` (your login name; default `pete`) and `MAX_USERS` (default 10 - see "Login"). Don't set `PORT`
+   (Railway does), `HOST`, `FITNESS_DB`, `REQUIRE_AUTH` or `FITNESS_TODAY`.
 4. **Settings > Networking > Generate Domain.** Railway then provides `RAILWAY_PUBLIC_DOMAIN`, which the app uses to accept that
    host and to build the Strava redirect URI (`https://<domain>/auth/callback`). If it isn't picked up, redeploy once, or set
    `STRAVA_REDIRECT_URI` yourself. For a custom domain add it to `ALLOWED_HOSTS` (comma-separated) too.
 5. **Strava:** at strava.com/settings/api set *Authorization Callback Domain* to the Railway domain (no `https://`, no path).
-   Strava allows one domain per app, so this replaces `localhost`.
+   Strava allows one domain per app, so this replaces `localhost`. If you plan to invite others, also use the **self-serve
+   upgrade** in that same dashboard to raise your app's athlete capacity from 1 to 10 - see "Inviting people" below.
 6. Open the domain, log in with your password, **Connect with Strava**, then **Sync Strava** and re-import your plan. Your local `training.db` isn't uploaded.
 
 **After it's up:** trigger a redeploy and confirm you're still connected with the same activity count. That proves the volume works.
-Keep it to **one replica and one worker** (`railway.json` sets `numReplicas: 1`): SQLite, the sync lock and the OAuth state assume it.
+Keep it to **one replica and one worker** (`railway.json` sets `numReplicas: 1`): SQLite, the sync locks, the OAuth state and
+the login lockout are all in-process and assume it.
+
+**Migrating existing data:** if you're redeploying over an already-running single-user version of this app (i.e. this exact
+change), the very next startup automatically creates your admin account from `APP_PASSWORD` and moves your existing Strava
+connection, activities and plan onto it - nothing to do by hand. It's covered by `tests/test_migration.py` against a copy of
+the old schema, including a startup crashing partway through and being retried. Still, it's a real migration of real data on
+its first run: check the deploy log for `Login: required` (not an error) and confirm your activity/plan counts match on `/api/status`
+straight after.
+
+**Inviting people:** each invite lets one person create their own account with their own Strava connection - see "Login"
+above for how, and note that everyone connects through *your* Strava API app (one `STRAVA_CLIENT_ID`), so Strava's
+per-app rate limit and athlete-capacity cap are shared across every account, not per person.
 
 ## Plan format
 
@@ -143,9 +180,11 @@ average and max speed with a distance-weighted weekly (year view) or daily (mont
 - **Suffer score may not come from the list endpoint.** Strava documents `/athlete/activities` as returning
   summary activities, and I believe `suffer_score` is only reliably in the per-activity detail response (and only
   for Strava subscribers). So after listing, each sync looks up the detail for up to 40 activities that have heart
-  rate but no score, newest first, once each (Strava allows ~100 requests / 15 min). Backfilling a long history
-  takes several syncs; the sync message tells you how many remain. If you have no Relative Effort, everything
-  simply uses the HR formula.
+  rate but no score, newest first, once each. Backfilling a long history takes several syncs; the sync message
+  tells you how many remain. If you have no Relative Effort, everything simply uses the HR formula.
+- **Strava's rate limit is per app, shared by every account.** With just your own account it's generously within
+  the default limit; once several people are syncing through the same Strava API app (see "Inviting people"),
+  a burst of first-time full-history syncs could occasionally hit it - the sync banner explains and says to retry.
 - **The two load sources aren't on the same scale** (suffer score is Strava's Relative Effort; the fallback is
   minutes × HR/100). If the last 28 days mix them, the dashboard says so — treat the ratio as approximate.
 - **Max speed is noisy** (single GPS samples). It's plotted as a rough ceiling, on its own axis so it can't
@@ -167,5 +206,8 @@ without `FITNESS_DB`, so it can't touch your real data.
 .venv/bin/pip install -r requirements-dev.txt
 .venv/bin/python -m pytest -q tests
 ```
-Covers the login (forged/expired cookies, open redirects, lockout, fail-closed startup), deployment config, plan parsing, matching (incl. same-day multi-sport and the ±10 min rule), load/ratio/flags, the week /
-calendar / drill-down endpoints, token refresh and rotation, pagination, incremental sync/deletion, and the OAuth callback.
+Covers accounts and invites (registration, admin-only invites, the max-accounts cap, per-account data isolation),
+login (forged/expired cookies, open redirects, lockout, fail-closed startup), the one-time migration from the old
+single-user database (against a frozen copy of that schema, including a crash-and-retry case), deployment config,
+plan parsing, matching (incl. same-day multi-sport and the ±10 min rule), load/ratio/flags, the week / calendar /
+drill-down endpoints, token refresh and rotation, pagination, incremental sync/deletion, and the OAuth callback.

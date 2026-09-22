@@ -79,7 +79,8 @@ def test_database_is_created_at_the_configured_path_including_missing_folders(tm
     db.init_db()
     assert target.exists()
     with sqlite3.connect(target) as c:
-        assert {"auth", "activities", "plan", "meta"} <= {r[0] for r in c.execute("SELECT name FROM sqlite_master")}
+        assert {"users", "invites", "strava_auth", "activities", "plan", "meta"} <= \
+            {r[0] for r in c.execute("SELECT name FROM sqlite_master")}
 
 
 def test_default_database_path_is_local_when_unset(monkeypatch):

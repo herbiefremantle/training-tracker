@@ -94,6 +94,9 @@ async function refreshStatus() {
     ? (s.last_sync ? "Last sync " + new Date(s.last_sync).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "Never synced")
     : "";
   $("#logout-form").hidden = !s.auth_enabled;
+  $("#whoami").hidden = !s.username;
+  $("#whoami").textContent = s.username ? `Logged in as ${s.username}` : "";
+  $("#invite-btn").hidden = !s.is_admin;
   $("#sync-btn").disabled = !(s.configured && s.connected);
   $("#sync-btn").title = !s.configured ? "Add your Strava credentials to .env first" : !s.connected ? "Connect Strava first" : "";
 }
@@ -775,6 +778,21 @@ document.addEventListener("change", (e) => {
 });
 
 $("#sync-btn").addEventListener("click", doSync);
+$("#invite-btn").addEventListener("click", async () => {
+  try {
+    const r = await api("/api/invites", { method: "POST" });
+    const url = location.origin + r.url;
+    setFlash("ok", `<b>Invite link created</b> (expires in ${r.expires_in_days} days) - send this to a friend:<br>
+      <code style="user-select:all;display:inline-block;margin-top:4px">${esc(url)}</code><br>
+      <button class="btn small" type="button" id="copy-invite" style="margin-top:8px">Copy link</button>`);
+    document.getElementById("copy-invite")?.addEventListener("click", (e) => {
+      navigator.clipboard?.writeText(url);
+      e.target.textContent = "Copied";
+    });
+  } catch (e) {
+    setFlash("error", "Couldn't create an invite: " + esc(e.message));
+  }
+});
 window.addEventListener("hashchange", () => { state.flash = null; renderBanner(); route(); });
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
   if (state.dashboard && state.exploreData && !$("#view-dashboard").hidden) renderAll();
