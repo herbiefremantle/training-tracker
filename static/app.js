@@ -15,6 +15,7 @@ const state = {
   calData: null, calMonth: null,            // calMonth null = the current month
   exploreData: null, explore: { scope: "year", anchor: null, sport: null },
   planSessions: null, admin: null,
+  planImportOpen: null,                     // null = decide from whether a plan already exists; else explicit user choice
   units: readUnits(),                       // "km" | "mi" - distances are stored in km, converted for display
   paceMode: null,                           // "pace" | "speed"; null = default for the selected sport
   charts: {}, flash: null,
@@ -640,13 +641,30 @@ function planUnitNote() {
   return `Distances written without a unit are read as <b>${state.units === "mi" ? "miles" : "kilometres"}</b> (change with the km / mi switch at the top). A unit in the cell (<code>10km</code>, <code>6 mi</code>) or the column header always wins.`;
 }
 
+function setPlanImportOpen(open) {
+  state.planImportOpen = open;
+  const body = $("#plan-import-body"), btn = $("#plan-import-toggle");
+  if (!body || !btn) return;
+  body.hidden = !open;
+  btn.textContent = open ? "Hide" : "Add / update plan";
+  btn.setAttribute("aria-expanded", String(open));
+}
+
 async function loadPlan() {
   const el = $("#view-plan");
   if (!$("#plan-text")) {
+    // First time on this page: start collapsed if a plan already exists (nothing to configure, just look at
+    // it below), open if the plan is empty (nothing to look at yet, so show the importer). Once the user has
+    // toggled it by hand this session, respect that instead of re-deciding on every visit.
+    if (state.planImportOpen === null) state.planImportOpen = !(state.status && state.status.plan_count > 0);
+    const open = state.planImportOpen;
     el.innerHTML = `<div class="stack">
       <div class="card">
-        <div class="card-head"><h2>Import a training plan</h2></div>
-        <div class="form-grid">
+        <div class="card-head">
+          <h2>Import a training plan</h2>
+          <button class="btn small" id="plan-import-toggle" type="button" aria-expanded="${open}" aria-controls="plan-import-body">${open ? "Hide" : "Add / update plan"}</button>
+        </div>
+        <div class="form-grid" id="plan-import-body"${open ? "" : " hidden"}>
           <p class="muted small" style="margin:0">Paste from a spreadsheet (tab-separated) or CSV, or choose a file. Columns:
             <b>date, session type, sport, planned distance, planned duration, notes</b>. A header row is optional, and columns can be in any order if you include one.
             <span id="plan-unit-note"></span>
@@ -669,6 +687,7 @@ async function loadPlan() {
       </div>
       <div class="card"><div class="card-head"><h2>Current plan</h2><span class="sub" id="plan-sub"></span></div><div id="plan-table"></div></div>
     </div>`;
+    $("#plan-import-toggle").addEventListener("click", () => setPlanImportOpen(!state.planImportOpen));
     $("#plan-file").addEventListener("change", async (e) => {
       const f = e.target.files[0];
       if (f) $("#plan-text").value = await f.text();
@@ -702,7 +721,15 @@ async function submitPlan(dry) {
     if (r.errors.length) html += `<div class="banner error"><b>Problems</b>${list(r.errors)}</div>`;
     if (r.warnings.length) html += `<div class="banner warn"><b>Check</b>${list(r.warnings)}</div>`;
     out.innerHTML = html;
-    if (!dry && r.saved) { await refreshStatus(); await loadPlanTable(); }
+    if (!dry && r.saved) {
+      await refreshStatus(); await loadPlanTable();
+      if (!r.errors.length && !r.warnings.length) {
+        // A clean import: collapse the importer so the plan it just saved is easy to see below, and repeat
+        // the confirmation as a page-level flash (setPlanImportOpen hides #plan-result along with the rest).
+        setFlash("ok", `<b>Imported ${r.saved} session${r.saved === 1 ? "" : "s"}.</b>`);
+        setPlanImportOpen(false);
+      }
+    }
   } catch (e) {
     out.innerHTML = `<div class="banner error">${esc(e.message)}</div>`;
   }
