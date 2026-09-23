@@ -10,6 +10,7 @@
   --ink-3: #7d7b75;
   --series-1: #2a78d6;   /* blue   */
   --series-2: #eb6834;   /* orange */
+  --series-3: #1baf7a;   /* aqua   */
   --good: #0ca30c;
   --warning: #fab219;
   --critical: #d03b3b;
@@ -29,12 +30,13 @@
     --ink-3: #97968c;
     --series-1: #3987e5;
     --series-2: #d95926;
+    --series-3: #199e70;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --surface: #1a1a19; --surface-2: #262624; --card: #21211f; --border: #383835; --grid: #2f2f2c;
-  --ink: #ffffff; --ink-2: #c3c2b7; --ink-3: #97968c; --series-1: #3987e5; --series-2: #d95926;
+  --ink: #ffffff; --ink-2: #c3c2b7; --ink-3: #97968c; --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
 }
 
 * { box-sizing: border-box; }
@@ -98,9 +100,11 @@ select, textarea, input[type=file] {
 .card-head .sub { color: var(--ink-2); font-size: 13px; }
 .stack { display: grid; gap: 16px; }
 .grid-2 { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-3 { display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .kpis { display: grid; gap: 16px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-@media (max-width: 1000px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 1000px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 900px) { .kpis { grid-template-columns: 1fr 1fr; } .grid-2 { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .grid-3 { grid-template-columns: 1fr; } }
 
 .kpi .label { color: var(--ink-2); font-size: 13px; }
 .kpi .value { font-size: 52px; font-weight: 600; line-height: 1.15; margin-top: 2px; white-space: nowrap; }
@@ -117,6 +121,10 @@ details.data summary { cursor: pointer; color: var(--ink-2); font-size: 13px; }
 .table-wrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 14px; }
 th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+/* Next 7 days' Date column: "Fri 26 Sep" on one line normally; the month drops to its own line only when
+   narrow (.month-break becomes a block), so "Fri 26" never wraps mid-phrase - see fmtDayWrap in app.js */
+.date-cell { white-space: nowrap; }
+@media (max-width: 480px) { .date-cell .month-break { display: block; } }
 th { color: var(--ink-2); font-weight: 500; font-size: 13px; white-space: nowrap; }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 tr:last-child td { border-bottom: 0; }

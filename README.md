@@ -175,8 +175,8 @@ Data is stored in km either way. Elevation stays in metres.
 `duration_min × avg_hr / 100`; no score and no HR = 0. Charts show the 7-day and 28-day *average daily* load
 (rest days count as 0). **Load ratio** = 7-day average ÷ 28-day average, flagged **high > 1.5**, **low < 0.8**.
 
-**Trends**: distance and elevation gain are separate aligned charts (not dual-axis). Pace/speed shows per-activity
-average and max speed with a distance-weighted weekly (year view) or daily (month/week view) average; toggle pace ↔ speed.
+**Trends**: distance, elevation gain and time are three separate aligned charts (not dual-axis). Pace/speed shows
+per-activity average with a distance-weighted weekly (year view) or daily (month/week view) average; toggle pace ↔ speed.
 
 ## Things to know
 
@@ -190,8 +190,6 @@ average and max speed with a distance-weighted weekly (year view) or daily (mont
   a burst of first-time full-history syncs could occasionally hit it - the sync banner explains and says to retry.
 - **The two load sources aren't on the same scale** (suffer score is Strava's Relative Effort; the fallback is
   minutes × HR/100). If the last 28 days mix them, the dashboard says so — treat the ratio as approximate.
-- **Max speed is noisy** (single GPS samples). It's plotted as a rough ceiling, on its own axis so it can't
-  squash the average-pace chart.
 - Chart.js is loaded from jsDelivr, so the dashboard needs internet (Strava sync does anyway).
 
 ## Try it without Strava

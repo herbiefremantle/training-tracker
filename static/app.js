@@ -39,6 +39,14 @@ async function api(path, opts = {}) {
 
 const utc = (iso) => Date.parse(iso + "T00:00:00Z");
 const fmtDay = (iso) => new Date(utc(iso)).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+// same text as fmtDay, but the month sits in a span that only breaks onto its own line on narrow screens
+// (see .month-break in style.css) - "Fri 26 Sep" on desktop, "Fri 26" / "Sep" on mobile, without detecting the device
+function fmtDayWrap(iso) {
+  const d = new Date(utc(iso));
+  const wd = d.toLocaleDateString("en-GB", { weekday: "short", timeZone: "UTC" });
+  const mon = d.toLocaleDateString("en-GB", { month: "short", timeZone: "UTC" });
+  return `${esc(wd)} ${d.getUTCDate()}<span class="month-break"> ${esc(mon)}</span>`;
+}
 const fmtShort = (iso) => new Date(utc(iso)).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
 const fmtWeekdayNum = (iso) => new Date(utc(iso)).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", timeZone: "UTC" });
 const dayNum = (iso) => Math.floor(utc(iso) / 864e5);
@@ -337,7 +345,7 @@ function renderUpcoming() {
   $("#upcoming-card").innerHTML = `<div class="card-head"><h2>Next 7 days</h2><span class="sub">Planned sessions from today</span></div>` + (up.length
     ? `<div class="table-wrap"><table>
     <thead><tr><th>Date</th><th>Sport</th><th>Session</th><th class="num">Distance</th><th class="num">Duration</th><th>Notes</th><th>Status</th></tr></thead>
-    <tbody>${up.map((s) => `<tr><td>${fmtDay(s.date)}</td><td>${esc(s.sport_label)}</td><td>${esc(s.session_type)}</td>
+    <tbody>${up.map((s) => `<tr><td class="date-cell">${fmtDayWrap(s.date)}</td><td>${esc(s.sport_label)}</td><td>${esc(s.session_type)}</td>
       <td class="num">${fmtDist(s.planned_distance_km)}</td><td class="num">${fmtMins(s.planned_duration_min)}</td>
       <td>${esc(s.notes)}</td><td>${pill(s.status, s.duration_diff_min)}</td></tr>`).join("")}</tbody></table></div>`
     : '<div class="empty">No planned sessions in the next 7 days. <a href="#/plan">Upload or paste a plan</a>.</div>');
@@ -365,7 +373,8 @@ function renderLoad() {
 // ---------- charts: shared ---------------------------------------------------------------------
 
 function theme() {
-  return { ink: cssVar("--ink"), ink2: cssVar("--ink-2"), ink3: cssVar("--ink-3"), grid: cssVar("--grid"), card: cssVar("--card"), s1: cssVar("--series-1"), s2: cssVar("--series-2") };
+  return { ink: cssVar("--ink"), ink2: cssVar("--ink-2"), ink3: cssVar("--ink-3"), grid: cssVar("--grid"), card: cssVar("--card"),
+          s1: cssVar("--series-1"), s2: cssVar("--series-2"), s3: cssVar("--series-3") };
 }
 
 function mkChart(id, cfg) {
@@ -473,11 +482,13 @@ function renderExplore() {
       ${hint ? `<div class="hint">${hint}</div>` : ""}
     </div>
     ${none ? `<div class="card"><div class="empty">No ${esc((state.dashboard.sport_options.find((o) => o.value === x.sport) || { label: "" }).label.toLowerCase())} activities in this ${e.scope}.</div></div>` : `
-    <div class="grid-2">
+    <div class="grid-3">
       <div class="card"><div class="card-head"><h2>Distance</h2><span class="sub">${state.units}, ${e.scope === "year" ? "per week" : "per day"}</span></div>
         <div class="chart-box short"><canvas id="c-dist" role="img" aria-label="Bar chart of distance"></canvas></div></div>
       <div class="card"><div class="card-head"><h2>Elevation gain</h2><span class="sub">metres climbed, ${e.scope === "year" ? "per week" : "per day"}</span></div>
         <div class="chart-box short"><canvas id="c-elev" role="img" aria-label="Bar chart of elevation gain"></canvas></div></div>
+      <div class="card"><div class="card-head"><h2>Time</h2><span class="sub">${e.scope === "year" ? "per week" : "per day"}</span></div>
+        <div class="chart-box short"><canvas id="c-time" role="img" aria-label="Bar chart of training time"></canvas></div></div>
     </div>
     <div class="card" id="pace-card"></div>`}
     <div class="card" id="detail-card"></div>`;
@@ -488,6 +499,8 @@ function renderExplore() {
       (v) => `${v} ${state.units}`, (b) => `${b.count} session${b.count === 1 ? "" : "s"} · ${fmtHours(b.hours)}`, t);
     barChart("c-elev", e, e.buckets.map((b) => b.elevation_m), t.s2, "m",
       (v) => `${v.toLocaleString("en-GB")} m`, (b) => (b.climb_per_km ? `${Math.round(b.elevation_m / dist(b.distance_km))} m climbed per ${state.units}` : ""), t);
+    barChart("c-time", e, e.buckets.map((b) => +b.hours.toFixed(2)), t.s3, "hours",
+      (v) => fmtHours(v), (b) => `${b.count} session${b.count === 1 ? "" : "s"} · ${fmtDist(b.distance_km)}`, t);
     renderPace(e, t);
   }
   renderDetail(e);
@@ -533,12 +546,9 @@ function renderPace(e, t) {
   }
   const word = mode === "pace" ? "pace" : "speed";
   card.innerHTML = `
-    <div class="card-head"><h2>Pace / speed trend</h2>${toggle}</div>
-    <div class="grid-2">
-      <div><h3>Average ${word}</h3><div class="chart-box short"><canvas id="c-avg" role="img" aria-label="Average ${word} per activity"></canvas></div></div>
-      <div><h3>Max ${word}</h3><div class="chart-box short"><canvas id="c-max" role="img" aria-label="Maximum ${word} per activity"></canvas></div></div>
-    </div>
-    <div class="risk-note">${mode === "pace" ? "Faster is higher on the axis. " : ""}Max speed comes from GPS samples and spikes easily - read it as a rough ceiling, not a target. Each dot is one activity; the line is the ${e.scope === "year" ? "weekly" : "daily"} average (total distance ÷ total time).</div>`;
+    <div class="card-head"><h2>Average ${word} trend</h2>${toggle}</div>
+    <div class="chart-box"><canvas id="c-avg" role="img" aria-label="Average ${word} per activity"></canvas></div>
+    <div class="risk-note">${mode === "pace" ? "Faster is higher on the axis. " : ""}Each dot is one activity; the line is the ${e.scope === "year" ? "weekly" : "daily"} average (total distance ÷ total time).</div>`;
 
   const x0 = dayNum(e.start), lastBucket = e.buckets[e.buckets.length - 1];
   const x1 = dayNum(e.scope === "year" && lastBucket ? lastBucket.end : e.end);
@@ -571,12 +581,6 @@ function renderPace(e, t) {
   mkChart("c-avg", { type: "scatter", options: avgOpts, data: { datasets: [
     { label: "Activity", data: pts.map((a) => xy(a, "average_speed")), showLine: false, ...dotStyle(t.s1 + "aa") },
     { label: e.scope === "year" ? "Weekly average" : "Daily average", data: line, showLine: true, borderColor: t.s1, borderWidth: 2, pointRadius: 0, pointHoverRadius: 5, backgroundColor: t.s1, tension: 0 },
-  ] } });
-
-  const maxOpts = scatterOpts(false);
-  maxOpts.plugins.tooltip.callbacks = { title: tipTitle, label: tipLabel };
-  mkChart("c-max", { type: "scatter", options: maxOpts, data: { datasets: [
-    { label: "Max", data: pts.filter((a) => a.max_speed).map((a) => xy(a, "max_speed")), showLine: false, ...dotStyle(t.s2) },
   ] } });
 }
 
