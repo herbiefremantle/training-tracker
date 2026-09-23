@@ -88,7 +88,7 @@ def test_everything_is_protected_until_logged_in(secured):
     assert secured.post("/api/plan/import", json={"text": "date,sport\n2026-09-28,Run\n"}).status_code == 401
     assert secured.delete("/api/plan").status_code == 401
     assert secured.get("/api/status").json() == {"detail": "Login required"}
-    for page in ("/", "/static/app.js", "/docs", "/openapi.json"):
+    for page in ("/", "/docs", "/openapi.json"):   # /static/* is public by design - see the next test
         r = secured.get(page)
         assert r.status_code == 303 and r.headers["location"].startswith("/login"), page
 
@@ -99,15 +99,20 @@ def test_strava_connect_flow_requires_login_too(secured):
     assert r.status_code == 303 and r.headers["location"].startswith("/login")
 
 
-def test_only_health_login_register_and_stylesheet_are_public(secured):
+def test_health_login_register_and_all_static_assets_are_public(secured):
+    """/static/* is public by design (see require_login in main.py): none of it is secret, and the manifest,
+    icons and service worker for "Add to Home Screen" have to load before anyone has logged in."""
     assert secured.get("/health").status_code == 200
     assert secured.get("/health", headers={"host": "healthcheck.railway.app"}).status_code == 200
-    assert secured.get("/static/style.css").status_code == 200
     assert secured.get("/register").status_code == 200
     page = secured.get("/login")
     assert page.status_code == 200 and 'name="username"' in page.text and 'type="password"' in page.text
     assert page.headers["cache-control"] == "no-store"
-    assert secured.get("/static/index.html").status_code == 303                                     # not the whole /static
+    for asset in ("/static/style.css", "/static/app.js", "/static/install.js", "/static/sw.js",
+                 "/static/manifest.json", "/static/index.html", "/static/icons/icon-512.png"):
+        assert secured.get(asset).status_code == 200, asset
+    # but nothing under /static/ can be used to reach an API route or bypass login for the app itself
+    assert secured.get("/static/../api/status").status_code in (401, 404, 307)
 
 
 # ---- logging in and out -----------------------------------------------------------------------
@@ -218,8 +223,10 @@ def test_next_parameter_is_same_site_only(secured, nxt, expected):
 
 
 def test_login_html_escapes_whatever_it_is_given():
+    # the page legitimately has its own <script src="/static/install.js"> tag now, so check the *injected*
+    # payload specifically is neutralised, not that the substring "<script" is absent from the whole page
     page = auth._login_html('/"><script>alert(1)</script>', error="<b>x</b>")
-    assert "<script" not in page and "<b>x</b>" not in page
+    assert "<script>alert(1)</script>" not in page and "<b>x</b>" not in page
     assert "&lt;script&gt;" in page and "&lt;b&gt;x&lt;/b&gt;" in page
 
 

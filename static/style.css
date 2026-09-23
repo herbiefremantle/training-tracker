@@ -264,3 +264,10 @@ input[type=password]:focus-visible { outline: 2px solid var(--series-1); outline
 
 /* ---- admin: accounts table ---- */
 .badge-admin { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--series-1); color: #fff; margin-left: 6px; }
+
+/* ---- add to home screen ---- */
+#install-slot:empty { display: none; }
+.install-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+.install-modal { width: 100%; max-width: 360px; }
+.install-modal ol { margin: 0; padding-left: 20px; }
+.install-modal li { margin: 8px 0; }

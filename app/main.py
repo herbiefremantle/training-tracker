@@ -77,7 +77,7 @@ async def require_login(request, call_next):
     account (or None, when login is off) is stashed on request.state.user for routes to read via current_user()."""
     request.state.user = None
     path = request.url.path
-    if not auth.enabled() or path in auth.PUBLIC_PATHS:
+    if not auth.enabled() or path in auth.PUBLIC_PATHS or path.startswith("/static/"):
         return await call_next(request)
     user = auth.resolve_user(request)
     if user is None:

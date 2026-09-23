@@ -53,7 +53,9 @@ def test_strava_credentials_are_read_from_the_environment(monkeypatch):
 def test_no_secret_like_values_in_the_source():
     """Guards against a credential being pasted into code: no 40-hex-char strings, no assigned client secrets."""
     offenders = []
-    for path in list((ROOT / "app").glob("*.py")) + list((ROOT / "static").glob("*")) + [ROOT / "Dockerfile", ROOT / "railway.json"]:
+    text_files = [p for p in (ROOT / "static").rglob("*") if p.is_file() and p.suffix in
+                 (".js", ".css", ".html", ".json")]   # skip icons/binaries - not where a pasted secret would land
+    for path in list((ROOT / "app").glob("*.py")) + text_files + [ROOT / "Dockerfile", ROOT / "railway.json"]:
         text = path.read_text()
         if re.search(r"\b[0-9a-f]{40}\b", text) or re.search(r"CLIENT_SECRET\s*=\s*['\"]?[A-Za-z0-9]{8,}", text):
             offenders.append(path.name)
@@ -183,3 +185,55 @@ def test_requirements_are_fully_pinned():
                 for l in (ROOT / "requirements.txt").read_text().splitlines() if "==" in l.split("#")[0]}
     assert "pytest" not in packages                                            # test tools stay out of the image
     assert {"fastapi", "uvicorn", "httpx", "python-dotenv"} <= packages
+
+
+# ---- "Add to Home Screen": manifest, icons, service worker -------------------------------------
+
+def test_manifest_is_valid_and_matches_what_the_pages_reference():
+    manifest = json.loads((ROOT / "static" / "manifest.json").read_text())
+    assert manifest["display"] == "standalone"
+    assert manifest["start_url"] == "/" and manifest["scope"] == "/"
+    assert len(manifest["icons"]) >= 2
+    sizes = {icon["sizes"] for icon in manifest["icons"]}
+    assert {"192x192", "512x512"} <= sizes
+    for icon in manifest["icons"]:
+        assert (ROOT / icon["src"].lstrip("/")).is_file(), icon["src"]
+        assert "maskable" in icon.get("purpose", "")   # survives being cropped to a circle/squircle by the OS
+
+    for page_path in ("static/index.html",):
+        html = (ROOT / page_path).read_text()
+        assert '<link rel="manifest" href="/static/manifest.json">' in html
+        assert 'rel="apple-touch-icon"' in html and "apple-mobile-web-app-capable" in html
+
+
+def test_login_and_register_pages_also_offer_the_manifest_and_install_button():
+    """Not just the main app - a brand new invited friend hits /register or /login first."""
+    from app import auth
+    for html in (auth._login_html("/"), auth._register_html("token")):
+        assert '<link rel="manifest" href="/static/manifest.json">' in html
+        assert 'rel="apple-touch-icon"' in html
+        assert 'id="install-slot"' in html and '/static/install.js' in html
+
+
+def test_icons_are_real_square_images_at_the_declared_sizes():
+    from PIL import Image
+    for name, size in [("icon-192.png", 192), ("icon-512.png", 512), ("apple-touch-icon.png", 180)]:
+        with Image.open(ROOT / "static" / "icons" / name) as img:
+            assert img.size == (size, size), name
+            assert img.mode in ("RGB", "RGBA"), name   # not a broken/empty file
+
+
+def test_service_worker_does_not_cache_aggressively():
+    """A service worker that caches stale JS/HTML across a deploy would be a nasty, hard-to-diagnose bug for
+    everyone using the installed app - confirm this one is deliberately a pass-through with no cache API use."""
+    sw = (ROOT / "static" / "sw.js").read_text()
+    assert "addEventListener(\"fetch\"" in sw
+    assert "caches.open" not in sw and "cache.put" not in sw and ".put(event.request" not in sw
+    assert "skipWaiting" in sw and "clients.claim" in sw   # a fixed sw.js takes over immediately, not next visit
+
+
+def test_static_assets_referenced_by_the_pwa_all_exist():
+    for rel in ("static/sw.js", "static/install.js", "static/manifest.json",
+               "static/icons/icon-192.png", "static/icons/icon-512.png",
+               "static/icons/apple-touch-icon.png", "static/icons/favicon-32.png"):
+        assert (ROOT / rel).is_file(), rel

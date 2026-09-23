@@ -51,6 +51,23 @@ In Safari, *Share > Add to Home Screen* makes it a one-tap icon.
 
 The plain `uvicorn ... --host 127.0.0.1` command above still listens on this computer only.
 
+## Add to Home Screen
+
+Every page (login, register, the app itself) offers a home-screen install button, so it opens and feels like a
+real app rather than a browser tab - full screen, its own icon, no address bar.
+
+- **Android/Chrome, over HTTPS (i.e. the Railway deployment):** a real **Install app** button appears, driven by
+  Chrome's own `beforeinstallprompt` event - one tap, one confirm, done. `static/manifest.json` (icons, name,
+  `display: standalone`) and `static/sw.js` (a minimal service worker registered from `static/install.js` - it's
+  required for installability, but deliberately does no caching, so a deploy is never served stale) make this work.
+- **iPhone/Safari:** Apple doesn't let any site trigger its own install prompt (true as of this writing, and not
+  something this app can work around), so the button instead opens a short **Add to Home Screen** modal that
+  walks through Safari's Share sheet - still one button, three taps.
+- **Android without a native prompt** (e.g. still on home Wi-Fi, plain HTTP - `beforeinstallprompt` needs HTTPS):
+  the button falls back to the same kind of instructions modal, for Chrome's menu instead of Safari's.
+- Already installed, or on desktop? The button doesn't appear (it checks `display-mode: standalone` /
+  `navigator.standalone` first).
+
 ## Login
 
 Each person gets their own account: their own username/password, their own Strava connection, their own plan and

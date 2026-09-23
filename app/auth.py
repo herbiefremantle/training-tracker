@@ -29,8 +29,10 @@ SESSION_SECONDS = 30 * 24 * 3600
 MIN_SESSION_SECRET_LENGTH = 20
 
 # Public paths: the health probe can't log in, /login and /register need to be reachable to log in or sign up at
-# all, and the login/register pages need their stylesheet. Everything else requires a session.
-PUBLIC_PATHS = {"/health", "/login", "/register", "/static/style.css"}
+# all. Everything under /static/ is public too (see main.py's require_login) - style.css and app.js aren't
+# secret, and the PWA manifest/icons/service worker need to load before anyone has logged in (the "Add to Home
+# Screen" prompt can appear right on the login page). Everything else requires a session.
+PUBLIC_PATHS = {"/health", "/login", "/register"}
 
 # Brute-force brake: after MAX_FAILURES wrong guesses (any account) in FAILURE_WINDOW seconds, logins are refused
 # until they age out. In-memory and shared across accounts - this is a handful of invited people, not a public
@@ -137,6 +139,17 @@ def _set_cookie(response, request, user_id):
 
 # ---- pages ----------------------------------------------------------------------------------------
 
+# Shared with static/index.html, so the manifest/icons/theme-colour are consistent whichever page a browser (or
+# an "Add to Home Screen" install) first sees, and #install-slot + install.js offer that on these pages too.
+_HEAD_EXTRA = """<link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#2a78d6">
+<link rel="icon" href="/static/icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Training">"""
+_INSTALL_SLOT = '<div id="install-slot" style="margin-top:14px;text-align:center"></div>\n<script src="/static/install.js"></script>'
+
+
 def _login_html(next_path, error=""):
     err = '<div class="banner error" role="alert">%s</div>' % html.escape(error) if error else ""
     body = """%s
@@ -149,11 +162,15 @@ def _login_html(next_path, error=""):
     err, html.escape(next_path, quote=True))
     return """<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Log in - Training Tracker</title><link rel="stylesheet" href="/static/style.css"></head>
+<title>Log in - Training Tracker</title>
+%s
+<link rel="stylesheet" href="/static/style.css"></head>
 <body><main class="login-wrap"><form class="card login-card" method="post" action="/login">
   <h1 style="font-size:20px;margin-bottom:14px">Training Tracker</h1>
   %s
-</form></main></body></html>""" % body
+</form>
+%s
+</main></body></html>""" % (_HEAD_EXTRA, body, _INSTALL_SLOT)
 
 
 def _register_html(invite, error="", first_name="", last_name="", username="", email=""):
@@ -161,7 +178,9 @@ def _register_html(invite, error="", first_name="", last_name="", username="", e
     esc = lambda s: html.escape(s, quote=True)
     return """<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Create your account - Training Tracker</title><link rel="stylesheet" href="/static/style.css"></head>
+<title>Create your account - Training Tracker</title>
+%s
+<link rel="stylesheet" href="/static/style.css"></head>
 <body><main class="login-wrap"><form class="card login-card" method="post" action="/register">
   <h1 style="font-size:20px;margin-bottom:14px">Create your account</h1>
   %s
@@ -182,8 +201,10 @@ def _register_html(invite, error="", first_name="", last_name="", username="", e
   <label class="muted small" for="pw2">Confirm password</label>
   <input id="pw2" type="password" name="password2" autocomplete="new-password" required minlength="%d">
   <button class="btn primary" type="submit" style="width:100%%;margin-top:14px">Create account</button>
-</form></main></body></html>""" % (err, esc(invite), esc(first_name), esc(last_name), esc(email), esc(username),
-                                   users.MIN_PASSWORD_LENGTH, users.MIN_PASSWORD_LENGTH)
+</form>
+%s
+</main></body></html>""" % (_HEAD_EXTRA, err, esc(invite), esc(first_name), esc(last_name), esc(email), esc(username),
+                            users.MIN_PASSWORD_LENGTH, users.MIN_PASSWORD_LENGTH, _INSTALL_SLOT)
 
 
 def _page(html_text, status=200):

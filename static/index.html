@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Training Tracker</title>
+<link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#2a78d6">
+<link rel="icon" href="/static/icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Training">
 <link rel="stylesheet" href="/static/style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 </head>
@@ -23,6 +30,7 @@
       </div>
       <span id="sync-meta" class="muted small"></span>
       <span id="whoami" class="muted small" hidden></span>
+      <span id="install-slot"></span>
       <button id="sync-btn" class="btn primary" type="button">Sync Strava</button>
       <form id="logout-form" method="post" action="/logout" hidden><button class="btn" type="submit">Log out</button></form>
     </div>
@@ -37,5 +45,6 @@
 </main>
 
 <script src="/static/app.js"></script>
+<script src="/static/install.js"></script>
 </body>
 </html>
