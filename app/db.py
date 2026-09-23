@@ -60,9 +60,16 @@ CREATE TABLE IF NOT EXISTS users (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     username      TEXT NOT NULL UNIQUE COLLATE NOCASE,
     password_hash TEXT NOT NULL,
+    first_name    TEXT,
+    last_name     TEXT,
+    email         TEXT,
     is_admin      INTEGER NOT NULL DEFAULT 0,
-    created_at    REAL NOT NULL
+    created_at    REAL NOT NULL,
+    last_login_at REAL
 );
+-- No CREATE INDEX for email here: on a database that predates this column, that index would run before
+-- users.py's migration adds the column (same class of bug _fix_activities_table exists to fix - see there).
+-- app/users.py:_add_profile_columns creates it itself, always after the column is guaranteed to exist.
 
 CREATE TABLE IF NOT EXISTS invites (
     token       TEXT PRIMARY KEY,

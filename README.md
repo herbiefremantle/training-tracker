@@ -63,18 +63,21 @@ There's no public sign-up page and no "forgot password" - both by design, for a 
 - **The admin account:** `APP_PASSWORD` (8+ characters; 12+ recommended) becomes that account's password, and
   `ADMIN_USERNAME` (default `pete`) its username. This only matters the *first* time the app starts with no
   accounts yet - after that, `APP_PASSWORD` is inert, so it can be removed from `.env`/Railway if you want.
-- **Inviting someone:** log in as the admin and click **Invite a friend** in the top bar (only admins see this
-  button). It creates a one-time link, valid for 7 days, shown in a banner with a **Copy link** button - send it
-  however you like (text, WhatsApp, email). They open it, pick a username and password, and they're in.
+- **Inviting someone:** log in as the admin and go to the **Admin** page (only admins see this nav link), then
+  click **Invite a friend**. It creates a one-time link, valid for 7 days, shown with a **Copy link** button -
+  send it however you like (text, WhatsApp, email). They open it, fill in their name, email, a username and a
+  password, and they're in - registering logs them straight in, same as a normal login.
 - **Accounts fill up:** capped at `MAX_USERS` (default 10, matching Strava's self-serve "10 athletes" API app
   capacity - see "Deploy to Railway"). Past the cap, **Invite a friend** and redeeming an existing link both refuse.
+- **Who's signed up:** the **Admin** page lists every account - name, username, email, is-admin, when they signed
+  up, and when they last logged in - plus any invite links still waiting to be used. The bootstrap admin account
+  (created from `APP_PASSWORD`) has no name/email on record, since nothing ever asked for one; that's expected,
+  not a bug.
 - **Sessions:** a signed cookie keeps you logged in for **30 days** (HttpOnly, SameSite=Lax, Secure over HTTPS).
   **Log out** is in the top bar. Set a new `SESSION_SECRET` to sign every device out at once (e.g. if you suspect
   a cookie leaked); changing your own password does not affect anyone else's session.
 - **Guessing:** after 10 wrong login attempts (any account) in 10 minutes, logins are refused until the window
   passes; sessions that already exist aren't affected.
-- **Checking who's registered:** `GET /api/invites` (as the admin, in a browser tab while logged in) lists every
-  account and any pending invite links - there's no page for it, just the endpoint, kept deliberately minimal.
 
 ## Deploy to Railway
 

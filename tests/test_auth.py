@@ -44,6 +44,14 @@ def make_invite(client):
     return token
 
 
+def register(client, token, username="alex", password="friend-password", first_name="Alex", last_name="Friend",
+            email=None, **extra):
+    return client.post("/register", data={
+        "invite": token, "first_name": first_name, "last_name": last_name,
+        "email": email if email is not None else "%s@example.com" % username.lower(),
+        "username": username, "password": password, "password2": extra.pop("password2", password), **extra})
+
+
 # ---- off by default; on once an account exists -------------------------------------------------
 
 def test_no_accounts_means_no_login(tmp_path, monkeypatch):
@@ -180,8 +188,7 @@ def test_deleted_account_cookie_stops_working(secured):
     """A stale cookie referencing an id that no longer exists must not grant access (e.g. after a reseed) -
     with a second account still present, so this isn't just "zero accounts means login is off"."""
     token = make_invite(secured)
-    TestClient(main.app, follow_redirects=False).post(
-        "/register", data={"invite": token, "username": "alex", "password": "friend-password", "password2": "friend-password"})
+    register(TestClient(main.app, follow_redirects=False), token)
     uid = admin_id(secured)
     log_in(secured)
     with db.connect() as conn:
@@ -250,13 +257,15 @@ def test_only_admin_can_create_or_list_invites(secured):
     r = secured.post("/api/invites")
     assert r.status_code == 200 and r.json()["url"].startswith("/register?invite=")
     listing = secured.get("/api/invites").json()
-    assert listing["accounts"] == [{"username": "pete", "is_admin": True}]
-    assert len(listing["pending_invites"]) == 1
+    assert len(listing["accounts"]) == 1 and len(listing["pending_invites"]) == 1
+    pete = listing["accounts"][0]
+    assert (pete["username"], pete["is_admin"], pete["first_name"]) == ("pete", True, None)   # bootstrap has no profile
+    assert pete["created_at"] and pete["last_login_at"]                                        # both set from the start
 
     secured.post("/logout")
     token = make_invite(secured)   # logs in as pete, creates one, logs out again
     friend = TestClient(main.app, follow_redirects=False)
-    friend.post("/register", data={"invite": token, "username": "alex", "password": "friend-password", "password2": "friend-password"})
+    register(friend, token)
     friend.post("/login", data={"username": "alex", "password": "friend-password"})
     assert friend.post("/api/invites").status_code == 403
     assert friend.get("/api/invites").status_code == 403
@@ -268,17 +277,20 @@ def test_full_invite_and_registration_flow(secured):
     page = friend.get("/register", params={"invite": token})
     assert page.status_code == 200 and 'name="username"' in page.text
 
-    r = friend.post("/register", data={"invite": token, "username": "Alex", "password": "friend-password",
-                                       "password2": "friend-password"})
+    r = register(friend, token, username="Alex", first_name="Alex", last_name="Friend", email="alex@example.com")
     assert r.status_code == 303 and r.headers["location"] == "/"
     assert "set-cookie" in r.headers                                    # registering logs them straight in
     me = friend.get("/api/status").json()
-    assert me["username"] == "alex" and me["is_admin"] is False
+    assert me["username"] == "alex" and me["is_admin"] is False and me["display_name"] == "Alex"
+
+    with db.connect() as conn:
+        row = users.get_by_username(conn, "alex")
+        assert (row["first_name"], row["last_name"], row["email"]) == ("Alex", "Friend", "alex@example.com")
+        assert row["created_at"] == row["last_login_at"]      # registering counts as the first login
 
     # the same invite can't be used twice
     again = TestClient(main.app, follow_redirects=False)
-    r2 = again.post("/register", data={"invite": token, "username": "someoneelse", "password": "another-password",
-                                       "password2": "another-password"})
+    r2 = register(again, token, username="someoneelse", password="another-password", email="someone@example.com")
     assert r2.status_code == 400 and "already been used" in r2.text
 
 
@@ -286,10 +298,15 @@ def test_full_invite_and_registration_flow(secured):
     ("username", "ab", "3-20 characters"),                 # too short
     ("username", "Has Spaces", "3-20 characters"),
     ("password", "short", "at least"),                      # too short
+    ("first_name", "", "first and last name"),
+    ("last_name", "", "first and last name"),
+    ("email", "not-an-email", "valid email"),
+    ("email", "", "valid email"),
 ])
 def test_registration_validates_fields(secured, field, value, message):
     token = make_invite(secured)
-    form = {"invite": token, "username": "newuser", "password": "a-fine-password", "password2": "a-fine-password"}
+    form = {"invite": token, "first_name": "New", "last_name": "User", "email": "newuser@example.com",
+            "username": "newuser", "password": "a-fine-password", "password2": "a-fine-password"}
     form[field] = value
     if field == "password":
         form["password2"] = value
@@ -297,31 +314,46 @@ def test_registration_validates_fields(secured, field, value, message):
     assert r.status_code == 400 and message in r.text
 
 
+def test_registration_rejects_a_taken_email(secured):
+    token = make_invite(secured)
+    with db.connect() as conn:   # pete (bootstrap admin) has no email yet, so seed one directly to test against
+        conn.execute("UPDATE users SET email = ? WHERE username = ?", ("pete@example.com", "pete"))
+    r = TestClient(main.app, follow_redirects=False).post("/register", data={
+        "invite": token, "first_name": "New", "last_name": "User", "email": "PETE@EXAMPLE.COM",   # different case
+        "username": "newuser", "password": "a-fine-password", "password2": "a-fine-password"})
+    assert r.status_code == 400 and "already uses that email" in r.text
+
+
+def test_registration_prefills_the_form_on_error_but_never_the_password(secured):
+    token = make_invite(secured)
+    r = TestClient(main.app, follow_redirects=False).post("/register", data={
+        "invite": token, "first_name": "Alex", "last_name": "Friend", "email": "alex@example.com",
+        "username": "pete", "password": "a-fine-password", "password2": "a-fine-password"})   # username taken
+    assert r.status_code == 400 and 'value="Alex"' in r.text and "alex@example.com" in r.text
+    assert "a-fine-password" not in r.text
+
+
 def test_registration_rejects_mismatched_passwords(secured):
     token = make_invite(secured)
-    r = TestClient(main.app, follow_redirects=False).post(
-        "/register", data={"invite": token, "username": "newuser", "password": "one-password", "password2": "different"})
+    r = register(TestClient(main.app, follow_redirects=False), token, password="one-password", password2="different")
     assert r.status_code == 400 and "match" in r.text and "Passwords" in r.text
 
 
 def test_registration_rejects_a_taken_username(secured):
     token = make_invite(secured)
-    r = TestClient(main.app, follow_redirects=False).post(
-        "/register", data={"invite": token, "username": "pete", "password": "a-fine-password", "password2": "a-fine-password"})
+    r = register(TestClient(main.app, follow_redirects=False), token, username="pete")
     assert r.status_code == 400 and "taken" in r.text
 
 
 def test_bad_or_expired_invite_is_refused(secured):
     client = TestClient(main.app, follow_redirects=False)
-    r = client.post("/register", data={"invite": "not-a-real-token", "username": "x", "password": "a-fine-password",
-                                       "password2": "a-fine-password"})
+    r = register(client, "not-a-real-token", username="x")
     assert r.status_code == 400 and "invite link" in r.text and "valid" in r.text
 
     token = make_invite(secured)
     with db.connect() as conn:
         conn.execute("UPDATE invites SET expires_at = ? WHERE token = ?", (time.time() - 1, token))
-    r = client.post("/register", data={"invite": token, "username": "y", "password": "a-fine-password",
-                                       "password2": "a-fine-password"})
+    r = register(client, token, username="y")
     assert r.status_code == 400 and "expired" in r.text
 
 
@@ -331,16 +363,13 @@ def test_max_users_cap(secured, monkeypatch):
     r = secured.post("/api/invites")
     assert r.status_code == 200
     token = r.json()["token"]
-    TestClient(main.app, follow_redirects=False).post(
-        "/register", data={"invite": token, "username": "second", "password": "a-fine-password", "password2": "a-fine-password"})
+    register(TestClient(main.app, follow_redirects=False), token, username="second", email="second@example.com")
     # at the cap: no more invites can be created...
     assert secured.post("/api/invites").status_code == 400
     # ...and a still-valid pre-existing invite can't be redeemed past the cap either
-    token2 = None
     with db.connect() as conn:
         token2 = users.create_invite(conn, admin_id(secured))
-    r2 = TestClient(main.app, follow_redirects=False).post(
-        "/register", data={"invite": token2, "username": "third", "password": "a-fine-password", "password2": "a-fine-password"})
+    r2 = register(TestClient(main.app, follow_redirects=False), token2, username="third", email="third@example.com")
     assert r2.status_code == 400 and "full" in r2.text
 
 
@@ -349,7 +378,7 @@ def test_max_users_cap(secured, monkeypatch):
 def test_two_accounts_never_see_each_others_data(secured):
     token = make_invite(secured)
     friend = TestClient(main.app, follow_redirects=False)
-    friend.post("/register", data={"invite": token, "username": "alex", "password": "friend-password", "password2": "friend-password"})
+    register(friend, token)
 
     log_in(secured)
     secured.post("/api/plan/import", json={"text": "date,sport\n2026-09-28,Run\n"})

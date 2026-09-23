@@ -192,6 +192,7 @@ def status(request: Request):
             "plan_count": conn.execute("SELECT COUNT(*) FROM plan WHERE user_id = ?", (uid,)).fetchone()[0],
             "auth_enabled": auth.enabled(),
             "username": me["username"] if me else None,
+            "display_name": (me["first_name"] or me["username"]) if me else None,
             "is_admin": bool(me["is_admin"]) if me else False,
         }
 
@@ -247,7 +248,9 @@ def list_invites(request: Request):
         accounts = users.list_accounts(conn)
     return {
         "max_users": users.max_users(),
-        "accounts": [{"username": a["username"], "is_admin": bool(a["is_admin"])} for a in accounts],
+        "accounts": [{"username": a["username"], "first_name": a["first_name"], "last_name": a["last_name"],
+                      "email": a["email"], "is_admin": bool(a["is_admin"]), "created_at": a["created_at"],
+                      "last_login_at": a["last_login_at"]} for a in accounts],
         "pending_invites": [{"url": "/register?invite=%s" % p["token"],
                              "expires_in_days": max(0, round((p["expires_at"] - p["created_at"]) / 86400))}
                             for p in pending],

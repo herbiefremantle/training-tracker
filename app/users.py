@@ -16,6 +16,7 @@ INVITE_TTL_SECONDS = 7 * 24 * 3600
 DEFAULT_MAX_USERS = 10          # matches Strava's self-serve "10 athletes" API app capacity - see README
 
 USERNAME_RE = re.compile(r"^[a-z0-9_-]{3,20}$")
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")   # a sanity check, not full RFC 5322 - good enough for a signup form
 
 PBKDF2_ITERATIONS = 200_000
 
@@ -65,14 +66,27 @@ def count(conn):
     return conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
 
 
+def get_by_email(conn, email):
+    return conn.execute("SELECT * FROM users WHERE email = ? COLLATE NOCASE", ((email or "").strip(),)).fetchone()
+
+
 def list_accounts(conn):
-    return conn.execute("SELECT username, is_admin, created_at FROM users ORDER BY created_at").fetchall()
+    return conn.execute("SELECT username, first_name, last_name, email, is_admin, created_at, last_login_at "
+                        "FROM users ORDER BY created_at").fetchall()
 
 
-def create(conn, username, password, is_admin=False):
-    conn.execute("INSERT INTO users (username, password_hash, is_admin, created_at) VALUES (?, ?, ?, ?)",
-                (username.strip().lower(), hash_password(password), int(is_admin), time.time()))
+def create(conn, username, password, is_admin=False, first_name=None, last_name=None, email=None):
+    now = time.time()
+    # account creation logs you straight in (see app/auth.py), so "last login" starts out matching "signed up"
+    conn.execute("INSERT INTO users (username, password_hash, first_name, last_name, email, is_admin, "
+                "created_at, last_login_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (username.strip().lower(), hash_password(password), (first_name or "").strip() or None,
+                 (last_name or "").strip() or None, (email or "").strip().lower() or None, int(is_admin), now, now))
     return conn.execute("SELECT id FROM users WHERE username = ? COLLATE NOCASE", (username,)).fetchone()["id"]
+
+
+def record_login(conn, user_id):
+    conn.execute("UPDATE users SET last_login_at = ? WHERE id = ?", (time.time(), user_id))
 
 
 # ---- invites ------------------------------------------------------------------------------------
@@ -98,7 +112,7 @@ class InviteError(ValueError):
     """A user-facing reason an invite couldn't be redeemed."""
 
 
-def redeem_invite(conn, token, username, password):
+def redeem_invite(conn, token, username, password, first_name, last_name, email):
     """Validate and consume the invite, creating the account. Everything runs on the caller's connection/transaction,
     so a failure here (or afterwards) leaves neither a used invite nor a half-made account. Returns the new user id."""
     row = get_invite(conn, token)
@@ -108,6 +122,14 @@ def redeem_invite(conn, token, username, password):
         raise InviteError("This invite link has already been used.")
     if row["expires_at"] < time.time():
         raise InviteError("This invite link has expired - ask for a new one.")
+    first_name, last_name = (first_name or "").strip(), (last_name or "").strip()
+    if not first_name or not last_name:
+        raise InviteError("Enter your first and last name.")
+    email = (email or "").strip().lower()
+    if not EMAIL_RE.match(email):
+        raise InviteError("Enter a valid email address.")
+    if get_by_email(conn, email):
+        raise InviteError("An account already uses that email address.")
     username = (username or "").strip().lower()
     if not valid_username(username):
         raise InviteError("Usernames are 3-20 characters: lowercase letters, numbers, - or _.")
@@ -117,7 +139,7 @@ def redeem_invite(conn, token, username, password):
         raise InviteError("Password must be at least %d characters." % MIN_PASSWORD_LENGTH)
     if count(conn) >= max_users():
         raise InviteError("This app is full (max %d accounts) - ask the admin to raise the limit." % max_users())
-    new_id = create(conn, username, password, is_admin=False)
+    new_id = create(conn, username, password, is_admin=False, first_name=first_name, last_name=last_name, email=email)
     conn.execute("UPDATE invites SET used_by = ?, used_at = ? WHERE token = ?", (new_id, time.time(), token))
     return new_id
 
@@ -147,6 +169,7 @@ def bootstrap_and_migrate(conn):
     commit or roll back together with the surrounding transaction in this sqlite3/Python combination - verified
     inconsistent enough between statement types that relying on exactly where a retry resumes isn't safe. That's
     why every step here is instead independently idempotent, rather than relying on all-or-nothing rollback."""
+    _add_profile_columns(conn)
     _fix_activities_table(conn, LOCAL_USER_ID)
 
     is_legacy = bool(_table_columns(conn, "auth"))
@@ -170,6 +193,17 @@ def bootstrap_and_migrate(conn):
 
 def _table_columns(conn, table):
     return {r["name"] for r in conn.execute("PRAGMA table_info(%s)" % table)}
+
+
+def _add_profile_columns(conn):
+    """Add first_name/last_name/email/last_login_at to `users` for a database that predates them - unconditional,
+    every startup, same reasoning as _fix_activities_table. Unlike activities' primary key, none of these
+    participate in a key, so a plain ALTER TABLE ADD COLUMN is safe here - no table rebuild needed."""
+    cols = _table_columns(conn, "users")
+    for col, coltype in (("first_name", "TEXT"), ("last_name", "TEXT"), ("email", "TEXT"), ("last_login_at", "REAL")):
+        if col not in cols:
+            conn.execute("ALTER TABLE users ADD COLUMN %s %s" % (col, coltype))
+    conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email COLLATE NOCASE)")
 
 
 def _fix_activities_table(conn, default_user_id):

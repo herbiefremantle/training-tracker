@@ -14,7 +14,7 @@ const state = {
   weekData: null, weekStart: null,          // weekStart null = the current week
   calData: null, calMonth: null,            // calMonth null = the current month
   exploreData: null, explore: { scope: "year", anchor: null, sport: null },
-  planSessions: null,
+  planSessions: null, admin: null,
   units: readUnits(),                       // "km" | "mi" - distances are stored in km, converted for display
   paceMode: null,                           // "pace" | "speed"; null = default for the selected sport
   charts: {}, flash: null,
@@ -95,8 +95,8 @@ async function refreshStatus() {
     : "";
   $("#logout-form").hidden = !s.auth_enabled;
   $("#whoami").hidden = !s.username;
-  $("#whoami").textContent = s.username ? `Logged in as ${s.username}` : "";
-  $("#invite-btn").hidden = !s.is_admin;
+  $("#whoami").textContent = s.username ? `Logged in as ${s.display_name || s.username}` : "";
+  $("#admin-link").hidden = !s.is_admin;
   $("#sync-btn").disabled = !(s.configured && s.connected);
   $("#sync-btn").title = !s.configured ? "Add your Strava credentials to .env first" : !s.connected ? "Connect Strava first" : "";
 }
@@ -127,11 +127,14 @@ function renderBanner() {
 // ---------- router -----------------------------------------------------------------------------
 
 function route() {
-  const r = location.hash.startsWith("#/plan") ? "plan" : "dashboard";
+  const r = location.hash.startsWith("#/plan") ? "plan" : location.hash.startsWith("#/admin") ? "admin" : "dashboard";
   document.querySelectorAll("nav a").forEach((a) => a.classList.toggle("active", a.dataset.route === r));
   $("#view-dashboard").hidden = r !== "dashboard";
   $("#view-plan").hidden = r !== "plan";
-  return r === "plan" ? loadPlan() : loadDashboard();
+  $("#view-admin").hidden = r !== "admin";
+  if (r === "plan") return loadPlan();
+  if (r === "admin") return loadAdmin();
+  return loadDashboard();
 }
 
 // ---------- sync -------------------------------------------------------------------------------
@@ -723,6 +726,52 @@ function renderPlanTable() {
       <td>${pill(s.status, s.duration_diff_min)}</td><td>${s.activity ? esc(dot([s.activity.name, s.activity.distance_km && fmtDist(s.activity.distance_km), s.activity.duration_min && fmtMins(s.activity.duration_min)])) : ""}</td></tr>`).join("")}</tbody></table></div>`;
 }
 
+// ---------- admin --------------------------------------------------------------------------------
+
+function fmtDateTime(epochSeconds) {
+  if (!epochSeconds) return "–";
+  return new Date(epochSeconds * 1000).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+async function loadAdmin() {
+  const el = $("#view-admin");
+  el.innerHTML = `<div class="stack"><div class="card"><p class="muted">Loading…</p></div></div>`;
+  try {
+    state.admin = await api("/api/invites");
+    renderAdmin();
+  } catch (e) {
+    el.innerHTML = `<div class="banner error">Couldn't load this page: ${esc(e.message)}</div>`;
+  }
+}
+
+function renderAdmin() {
+  const a = state.admin;
+  const cell = (text) => (text ? esc(text) : '<span class="muted">—</span>');
+  const rows = a.accounts.map((u) => `<tr><td>${cell(dot([u.first_name, u.last_name]))}</td>
+      <td>${esc(u.username)}${u.is_admin ? '<span class="badge-admin">Admin</span>' : ""}</td>
+      <td>${cell(u.email)}</td><td>${fmtDateTime(u.created_at)}</td><td>${fmtDateTime(u.last_login_at)}</td></tr>`).join("");
+  const invites = a.pending_invites.length
+    ? `<ul class="errors">${a.pending_invites.map((p) => `<li><code style="user-select:all">${esc(location.origin + p.url)}</code> <span class="muted small">(expires in ${p.expires_in_days} days)</span></li>`).join("")}</ul>`
+    : '<p class="muted small" style="margin:6px 0 0">No pending invites.</p>';
+  const atCap = a.accounts.length >= a.max_users;
+  $("#view-admin").innerHTML = `<div class="stack">
+    <div class="card">
+      <div class="card-head"><h2>Invite a friend</h2><span class="sub">${a.accounts.length} of ${a.max_users} accounts used</span></div>
+      <button class="btn primary" type="button" data-act="invite" ${atCap ? "disabled" : ""}>Create invite link</button>
+      ${atCap ? '<p class="risk-note">At the account limit - raise MAX_USERS (and your Strava API app\'s athlete capacity) to invite more.</p>' : ""}
+      <div id="invite-result"></div>
+      <h3 style="margin-top:16px">Pending invites</h3>
+      ${invites}
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Accounts</h2></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Signed up</th><th>Last login</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>
+    </div>
+  </div>`;
+}
+
 // ---------- interaction ------------------------------------------------------------------------
 
 function syncUnitsSeg() {
@@ -760,6 +809,18 @@ const actions = {
   exNow: () => drillTo(state.explore.scope, null),
   exDrill: (d) => drillTo(d.scope, d.anchor),
   paceMode(d) { state.paceMode = d.mode; renderExplore(); },
+  async invite() {
+    const r = await api("/api/invites", { method: "POST" });
+    const url = location.origin + r.url;
+    await loadAdmin();   // refresh the account count and pending-invites list first...
+    $("#invite-result").innerHTML = `<div class="banner ok"><b>Invite link created</b> (expires in ${r.expires_in_days} days):<br>
+      <code style="user-select:all;display:inline-block;margin-top:4px">${esc(url)}</code><br>
+      <button class="btn small" type="button" id="copy-invite" style="margin-top:8px">Copy link</button></div>`;
+    document.getElementById("copy-invite")?.addEventListener("click", (e) => {   // ...then show the banner, so the refresh can't wipe it
+      navigator.clipboard?.writeText(url);
+      e.target.textContent = "Copied";
+    });
+  },
 };
 
 document.addEventListener("click", (ev) => {
@@ -778,21 +839,6 @@ document.addEventListener("change", (e) => {
 });
 
 $("#sync-btn").addEventListener("click", doSync);
-$("#invite-btn").addEventListener("click", async () => {
-  try {
-    const r = await api("/api/invites", { method: "POST" });
-    const url = location.origin + r.url;
-    setFlash("ok", `<b>Invite link created</b> (expires in ${r.expires_in_days} days) - send this to a friend:<br>
-      <code style="user-select:all;display:inline-block;margin-top:4px">${esc(url)}</code><br>
-      <button class="btn small" type="button" id="copy-invite" style="margin-top:8px">Copy link</button>`);
-    document.getElementById("copy-invite")?.addEventListener("click", (e) => {
-      navigator.clipboard?.writeText(url);
-      e.target.textContent = "Copied";
-    });
-  } catch (e) {
-    setFlash("error", "Couldn't create an invite: " + esc(e.message));
-  }
-});
 window.addEventListener("hashchange", () => { state.flash = null; renderBanner(); route(); });
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
   if (state.dashboard && state.exploreData && !$("#view-dashboard").hidden) renderAll();

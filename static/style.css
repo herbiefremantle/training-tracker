@@ -241,8 +241,18 @@ td.day-cell { white-space: nowrap; font-weight: 600; }
 @media (max-width: 520px) { .topbar { position: static; } }
 
 /* ---- login page ---- */
-input[type=password], input[type=text].field { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; width: 100%; margin-top: 4px; }
+/* .field on ANY input type (not just type=text) - narrower selectors here have twice now let a new field
+   type (email, ...) fall through unstyled; see the login/register forms in app/auth.py */
+input[type=password], input.field { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; width: 100%; margin-top: 4px; }
 input[type=password]:focus-visible { outline: 2px solid var(--series-1); outline-offset: 2px; }
 .login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
 .login-card { width: 100%; max-width: 360px; }
 #logout-form { margin: 0; }
+
+/* ---- register form: side-by-side fields on a wide screen, stacked on narrow ---- */
+.row.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+.row.two-col > div { display: flex; flex-direction: column; }
+@media (max-width: 420px) { .row.two-col { grid-template-columns: 1fr; } }
+
+/* ---- admin: accounts table ---- */
+.badge-admin { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--series-1); color: #fff; margin-left: 6px; }

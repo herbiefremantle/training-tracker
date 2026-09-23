@@ -156,8 +156,9 @@ def _login_html(next_path, error=""):
 </form></main></body></html>""" % body
 
 
-def _register_html(invite, error=""):
+def _register_html(invite, error="", first_name="", last_name="", username="", email=""):
     err = '<div class="banner error" role="alert">%s</div>' % html.escape(error) if error else ""
+    esc = lambda s: html.escape(s, quote=True)
     return """<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Create your account - Training Tracker</title><link rel="stylesheet" href="/static/style.css"></head>
@@ -165,15 +166,24 @@ def _register_html(invite, error=""):
   <h1 style="font-size:20px;margin-bottom:14px">Create your account</h1>
   %s
   <input type="hidden" name="invite" value="%s">
+  <div class="row two-col">
+    <div><label class="muted small" for="fn">First name</label>
+    <input id="fn" type="text" name="first_name" class="field" autocomplete="given-name" required autofocus value="%s"></div>
+    <div><label class="muted small" for="ln">Last name</label>
+    <input id="ln" type="text" name="last_name" class="field" autocomplete="family-name" required value="%s"></div>
+  </div>
+  <label class="muted small" for="em">Email address</label>
+  <input id="em" type="email" name="email" class="field" autocomplete="email" required value="%s">
   <label class="muted small" for="un">Username</label>
-  <input id="un" type="text" name="username" class="field" autocomplete="username" required autofocus
-         pattern="[a-z0-9_-]{3,20}" title="3-20 characters: lowercase letters, numbers, - or _">
+  <input id="un" type="text" name="username" class="field" autocomplete="username" required
+         pattern="[a-z0-9_-]{3,20}" title="3-20 characters: lowercase letters, numbers, - or _" value="%s">
   <label class="muted small" for="pw">Password</label>
   <input id="pw" type="password" name="password" autocomplete="new-password" required minlength="%d">
   <label class="muted small" for="pw2">Confirm password</label>
   <input id="pw2" type="password" name="password2" autocomplete="new-password" required minlength="%d">
   <button class="btn primary" type="submit" style="width:100%%;margin-top:14px">Create account</button>
-</form></main></body></html>""" % (err, html.escape(invite, quote=True), users.MIN_PASSWORD_LENGTH, users.MIN_PASSWORD_LENGTH)
+</form></main></body></html>""" % (err, esc(invite), esc(first_name), esc(last_name), esc(email), esc(username),
+                                   users.MIN_PASSWORD_LENGTH, users.MIN_PASSWORD_LENGTH)
 
 
 def _page(html_text, status=200):
@@ -206,6 +216,8 @@ async def login_submit(request: Request):
         _failures.append(now)
         await asyncio.sleep(1)                                        # slows a guessing script down further
         return _page(_login_html(target, "Wrong username or password."), 401)
+    with db.connect() as conn:
+        users.record_login(conn, row["id"])
     response = RedirectResponse(target, status_code=303)
     _set_cookie(response, request, row["id"])
     return response
@@ -223,18 +235,25 @@ async def register_submit(request: Request):
     body = await request.body()
     form = parse_qs(body[:4096].decode("utf-8", "replace"))
     invite = form.get("invite", [""])[0]
+    first_name = form.get("first_name", [""])[0]
+    last_name = form.get("last_name", [""])[0]
+    email = form.get("email", [""])[0]
     username = form.get("username", [""])[0]
     password = form.get("password", [""])[0]
     password2 = form.get("password2", [""])[0]
+
+    def redisplay(error, status=400):   # keeps whatever they'd already typed except the passwords
+        return _page(_register_html(invite, error, first_name, last_name, username, email), status)
+
     if len(body) > 4096:
-        return _page(_register_html(invite, "That's too much data."), 400)
+        return redisplay("That's too much data.")
     if password != password2:
-        return _page(_register_html(invite, "Passwords don't match."), 400)
+        return redisplay("Passwords don't match.")
     try:
         with db.connect() as conn:
-            new_id = users.redeem_invite(conn, invite, username, password)
+            new_id = users.redeem_invite(conn, invite, username, password, first_name, last_name, email)
     except users.InviteError as e:
-        return _page(_register_html(invite, str(e)), 400)
+        return redisplay(str(e))
     response = RedirectResponse("/", status_code=303)
     _set_cookie(response, request, new_id)
     return response

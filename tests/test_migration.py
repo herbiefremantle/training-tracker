@@ -311,3 +311,48 @@ def test_short_app_password_leaves_no_partial_account(legacy_db, monkeypatch):
     with db.connect() as conn:
         assert users.count(conn) == 0
         assert conn.execute("SELECT name FROM sqlite_master WHERE name = 'auth'").fetchone() is not None
+
+
+def test_users_table_gains_profile_columns_on_an_existing_multiuser_database(tmp_path, monkeypatch):
+    """A database from before first/last name, email and last_login_at existed - the accounts table itself
+    predates those columns, not just the activities/plan/meta tables the rest of this file covers."""
+    path = tmp_path / "no_profile_columns.db"
+    conn = sqlite3.connect(path)
+    conn.executescript("""
+        CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE COLLATE NOCASE,
+            password_hash TEXT NOT NULL, is_admin INTEGER NOT NULL DEFAULT 0, created_at REAL NOT NULL);
+        CREATE TABLE invites (token TEXT PRIMARY KEY, created_by INTEGER, created_at REAL, expires_at REAL,
+            used_by INTEGER, used_at REAL);
+        CREATE TABLE strava_auth (user_id INTEGER PRIMARY KEY, athlete_id INTEGER, athlete_name TEXT,
+            access_token TEXT NOT NULL, refresh_token TEXT NOT NULL, expires_at INTEGER NOT NULL, scope TEXT);
+    """)
+    conn.executescript(db.ACTIVITIES_TABLE_SQL.replace("IF NOT EXISTS ", ""))
+    conn.executescript("""
+        CREATE TABLE plan (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, date TEXT NOT NULL,
+            session_type TEXT, sport TEXT, sport_group TEXT NOT NULL, planned_distance_km REAL,
+            planned_duration_min REAL, notes TEXT, position INTEGER NOT NULL DEFAULT 0);
+        CREATE TABLE meta (user_id INTEGER NOT NULL, key TEXT NOT NULL, value TEXT, PRIMARY KEY (user_id, key));
+    """)
+    conn.execute("INSERT INTO users (id, username, password_hash, is_admin, created_at) "
+                "VALUES (1, 'pete', 'pbkdf2_sha256$1$aa$bb', 1, 12345.0)")
+    conn.commit()
+    conn.close()
+
+    monkeypatch.setenv("FITNESS_DB", str(path))
+    db.init_db()
+
+    with db.connect() as conn:
+        cols = {r["name"] for r in conn.execute("PRAGMA table_info(users)")}
+        assert {"first_name", "last_name", "email", "last_login_at"} <= cols
+        row = conn.execute("SELECT * FROM users WHERE username = 'pete'").fetchone()
+        assert row["created_at"] == 12345.0 and row["first_name"] is None and row["email"] is None   # untouched
+
+        # the email uniqueness index now exists and actually works
+        with pytest.raises(sqlite3.IntegrityError):
+            conn.execute("UPDATE users SET email = 'a@b.com' WHERE username = 'pete'")
+            conn.execute("INSERT INTO users (username, password_hash, email, is_admin, created_at) "
+                         "VALUES ('other', 'x', 'A@B.COM', 0, 1)")   # same email, different case - must collide
+
+    db.init_db()   # idempotent
+    with db.connect() as conn:
+        assert conn.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 1
