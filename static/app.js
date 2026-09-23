@@ -475,7 +475,7 @@ function renderExplore() {
           <button class="btn icon" type="button" data-act="exNav" data-to="${e.prev}" aria-label="Previous ${e.scope}">‹</button>
           <span class="nav-label">${esc(e.label)}</span>
           <button class="btn icon" type="button" data-act="exNav" data-to="${e.next}" aria-label="Next ${e.scope}" ${e.has_next ? "" : "disabled"}>›</button>
-          ${inPeriod ? "" : `<button class="btn small" type="button" data-act="exNow">Today</button>`}
+          <button class="btn small" type="button" data-act="exNow" ${inPeriod ? "disabled" : ""}>Today</button>
         </div>
       </div>
       <div class="crumbs">${crumbsHTML(e)}</div>
