@@ -16,6 +16,7 @@ const state = {
   exploreData: null, explore: { scope: "year", anchor: null, sport: null },
   planSessions: null, admin: null,
   planImportOpen: null,                     // null = decide from whether a plan already exists; else explicit user choice
+  planTab: "templates", planTemplates: null, selectedTemplate: null,
   units: readUnits(),                       // "km" | "mi" - distances are stored in km, converted for display
   paceMode: null,                           // "pace" | "speed"; null = default for the selected sport
   charts: {}, flash: null,
@@ -657,32 +658,39 @@ async function loadPlan() {
     // it below), open if the plan is empty (nothing to look at yet, so show the importer). Once the user has
     // toggled it by hand this session, respect that instead of re-deciding on every visit.
     if (state.planImportOpen === null) state.planImportOpen = !(state.status && state.status.plan_count > 0);
-    const open = state.planImportOpen;
+    const open = state.planImportOpen, tab = state.planTab;
     el.innerHTML = `<div class="stack">
       <div class="card">
         <div class="card-head">
-          <h2>Import a training plan</h2>
+          <h2>Add or update your plan</h2>
           <button class="btn small" id="plan-import-toggle" type="button" aria-expanded="${open}" aria-controls="plan-import-body">${open ? "Hide" : "Add / update plan"}</button>
         </div>
-        <div class="form-grid" id="plan-import-body"${open ? "" : " hidden"}>
-          <p class="muted small" style="margin:0">Paste from a spreadsheet (tab-separated) or CSV, or choose a file. Columns:
-            <b>date, session type, sport, planned distance, planned duration, notes</b>. A header row is optional, and columns can be in any order if you include one.
-            <span id="plan-unit-note"></span>
-            Duration takes <code>90</code> (minutes), <code>1:30</code> (h:mm), <code>1h30</code>. Use <i>Rest</i> as the sport for rest days.</p>
-          <textarea id="plan-text" spellcheck="false" placeholder="${esc(PLAN_HELP)}" aria-label="Training plan"></textarea>
-          <div class="row">
-            <input type="file" id="plan-file" accept=".csv,.tsv,.txt,text/csv,text/plain" aria-label="Choose plan file">
-            <label class="muted small">Dates <select id="plan-dayfirst"><option value="1">day first (21/09/2026)</option><option value="0">month first (09/21/2026)</option></select></label>
-            <label class="muted small">On import <select id="plan-mode">
-              <option value="replace_dates">replace sessions on the dates in this upload</option>
-              <option value="replace_all">replace the whole plan</option></select></label>
+        <div id="plan-import-body"${open ? "" : " hidden"}>
+          <div class="seg" role="group" aria-label="How to add a plan" style="margin-bottom:14px">
+            <button type="button" data-act="planTab" data-tab="templates" aria-pressed="${tab === "templates"}">Choose a ready-made plan</button>
+            <button type="button" data-act="planTab" data-tab="paste" aria-pressed="${tab === "paste"}">Paste / upload your own</button>
           </div>
-          <div class="row">
-            <button class="btn" id="plan-preview" type="button">Preview</button>
-            <button class="btn primary" id="plan-import" type="button">Import plan</button>
-            <button class="btn danger" id="plan-clear" type="button" style="margin-left:auto">Clear entire plan</button>
+          <div id="plan-tab-templates"${tab === "templates" ? "" : " hidden"}><div class="empty">Loading plans…</div></div>
+          <div class="form-grid" id="plan-tab-paste"${tab === "paste" ? "" : " hidden"}>
+            <p class="muted small" style="margin:0">Paste from a spreadsheet (tab-separated) or CSV, or choose a file. Columns:
+              <b>date, session type, sport, planned distance, planned duration, notes</b>. A header row is optional, and columns can be in any order if you include one.
+              <span id="plan-unit-note"></span>
+              Duration takes <code>90</code> (minutes), <code>1:30</code> (h:mm), <code>1h30</code>. Use <i>Rest</i> as the sport for rest days.</p>
+            <textarea id="plan-text" spellcheck="false" placeholder="${esc(PLAN_HELP)}" aria-label="Training plan"></textarea>
+            <div class="row">
+              <input type="file" id="plan-file" accept=".csv,.tsv,.txt,text/csv,text/plain" aria-label="Choose plan file">
+              <label class="muted small">Dates <select id="plan-dayfirst"><option value="1">day first (21/09/2026)</option><option value="0">month first (09/21/2026)</option></select></label>
+              <label class="muted small">On import <select id="plan-mode">
+                <option value="replace_dates">replace sessions on the dates in this upload</option>
+                <option value="replace_all">replace the whole plan</option></select></label>
+            </div>
+            <div class="row">
+              <button class="btn" id="plan-preview" type="button">Preview</button>
+              <button class="btn primary" id="plan-import" type="button">Import plan</button>
+              <button class="btn danger" id="plan-clear" type="button" style="margin-left:auto">Clear entire plan</button>
+            </div>
+            <div id="plan-result"></div>
           </div>
-          <div id="plan-result"></div>
         </div>
       </div>
       <div class="card"><div class="card-head"><h2>Current plan</h2><span class="sub" id="plan-sub"></span></div><div id="plan-table"></div></div>
@@ -695,9 +703,17 @@ async function loadPlan() {
     $("#plan-preview").addEventListener("click", () => submitPlan(true));
     $("#plan-import").addEventListener("click", () => submitPlan(false));
     $("#plan-clear").addEventListener("click", clearPlan);
+    loadPlanTemplates();
   }
   $("#plan-unit-note").innerHTML = planUnitNote();
   await loadPlanTable();
+}
+
+function setPlanTab(tab) {
+  state.planTab = tab;
+  $("#plan-tab-templates").hidden = tab !== "templates";
+  $("#plan-tab-paste").hidden = tab !== "paste";
+  document.querySelectorAll('[data-act="planTab"]').forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tab === tab)));
 }
 
 async function submitPlan(dry) {
@@ -755,6 +771,74 @@ function renderPlanTable() {
     <tbody>${sessions.map((s) => `<tr><td>${fmtDay(s.date)}</td><td>${esc(s.sport_label)}</td><td>${esc(s.session_type)}</td>
       <td class="num">${fmtDist(s.planned_distance_km)}</td><td class="num">${fmtMins(s.planned_duration_min)}</td><td>${esc(s.notes)}</td>
       <td>${pill(s.status, s.duration_diff_min)}</td><td>${s.activity ? esc(dot([s.activity.name, s.activity.distance_km && fmtDist(s.activity.distance_km), s.activity.duration_min && fmtMins(s.activity.duration_min)])) : ""}</td></tr>`).join("")}</tbody></table></div>`;
+}
+
+// ---------- ready-made plan picker --------------------------------------------------------------
+
+function mondayOf(iso) {
+  const dow = (new Date(utc(iso)).getUTCDay() + 6) % 7;   // Mon=0..Sun=6
+  return isoAdd(iso, -dow);
+}
+
+async function loadPlanTemplates() {
+  if (!state.planTemplates) state.planTemplates = await api("/api/plan-templates");
+  renderPlanTemplatePicker();
+}
+
+function renderPlanTemplatePicker() {
+  const el = $("#plan-tab-templates");
+  if (!el || !state.planTemplates) return;
+  const { disclaimer, plans } = state.planTemplates;
+  const groups = [];
+  for (const p of plans) {
+    if (!groups.length || groups[groups.length - 1].race !== p.race) groups.push({ race: p.race, plans: [] });
+    groups[groups.length - 1].plans.push(p);
+  }
+  const sel = state.selectedTemplate && plans.find((p) => p.plan_id === state.selectedTemplate);
+  el.innerHTML = `
+    <div class="banner info" style="margin-bottom:14px"><b>Not personalised coaching.</b> ${esc(disclaimer)}</div>
+    <div class="tpl-grid">
+      ${groups.map((g) => `<div class="tpl-race">
+        <div class="tpl-race-name">${esc(g.race)}</div>
+        <div class="seg" role="group" aria-label="${esc(g.race)} level">
+          ${g.plans.map((p) => `<button type="button" data-act="tplSelect" data-plan="${p.plan_id}" aria-pressed="${state.selectedTemplate === p.plan_id}">
+            ${esc(p.level)}<br><span class="muted small">${p.weeks} wks${p.race_duration_min ? ` · ~<span style="white-space:nowrap">${fmtMins(p.race_duration_min)}</span> target` : ""}</span></button>`).join("")}
+        </div>
+      </div>`).join("")}
+    </div>
+    ${sel ? renderTemplateApplyPanel(sel) : ""}`;
+  if (sel) {
+    $("#tpl-start-date").addEventListener("change", () => updateTplPreview(sel));
+    updateTplPreview(sel);
+  }
+}
+
+function renderTemplateApplyPanel(p) {
+  return `<div class="card tpl-apply" style="margin-top:14px">
+    <div class="card-head" style="margin-bottom:8px"><h3 style="margin:0">${esc(p.name)}</h3>
+      <span class="sub">${p.weeks} weeks${p.race_distance_km ? ` · ${fmtDist(p.race_distance_km)} race` : ""}</span></div>
+    <div class="row">
+      <label class="muted small">Start date <input type="date" id="tpl-start-date" value="${esc(p.default_start_date)}"></label>
+      <label class="muted small">On apply <select id="tpl-mode">
+        <option value="replace_all">replace the whole plan</option>
+        <option value="replace_dates">replace sessions on the dates in this plan</option></select></label>
+    </div>
+    <p class="muted small" id="tpl-preview"></p>
+    <div class="row">
+      <button class="btn primary" type="button" data-act="tplApply">Use this plan</button>
+      <button class="btn" type="button" data-act="tplCancel">Cancel</button>
+    </div>
+    <div id="tpl-result"></div>
+  </div>`;
+}
+
+function updateTplPreview(p) {
+  const raw = $("#tpl-start-date").value;
+  const out = $("#tpl-preview");
+  if (!raw) { out.textContent = ""; return; }
+  const monday = mondayOf(raw);
+  const raceDate = isoAdd(monday, (p.weeks - 1) * 7 + p.race_day_offset);
+  out.innerHTML = `First session <b>${fmtDay(monday)}</b>${monday !== raw ? ` <span class="muted">(sessions always start on a Monday - snapped from ${fmtDay(raw)})</span>` : ""}, race day <b>${fmtDay(raceDate)}</b>.`;
 }
 
 // ---------- admin --------------------------------------------------------------------------------
@@ -840,6 +924,25 @@ const actions = {
   exNow: () => drillTo(state.explore.scope, null),
   exDrill: (d) => drillTo(d.scope, d.anchor),
   paceMode(d) { state.paceMode = d.mode; renderExplore(); },
+  planTab: (d) => setPlanTab(d.tab),
+  tplSelect(d) { state.selectedTemplate = d.plan; renderPlanTemplatePicker(); },
+  tplCancel() { state.selectedTemplate = null; renderPlanTemplatePicker(); },
+  async tplApply() {
+    const plan = state.planTemplates.plans.find((p) => p.plan_id === state.selectedTemplate);
+    const out = $("#tpl-result");
+    const startRaw = $("#tpl-start-date").value;
+    if (!startRaw) { out.innerHTML = '<div class="banner warn">Pick a start date first.</div>'; return; }
+    try {
+      const r = await api(`/api/plan-templates/${encodeURIComponent(plan.plan_id)}/apply`, { method: "POST",
+        body: JSON.stringify({ start_date: mondayOf(startRaw), mode: $("#tpl-mode").value }) });
+      await refreshStatus(); await loadPlanTable();
+      setFlash("ok", `<b>${esc(plan.name)} applied</b> - ${r.saved} sessions, ${fmtDay(r.start_date)} to ${fmtDay(r.race_date)}.`);
+      state.selectedTemplate = null;
+      setPlanImportOpen(false);
+    } catch (e) {
+      out.innerHTML = `<div class="banner error">${esc(e.message)}</div>`;
+    }
+  },
   async invite() {
     const r = await api("/api/invites", { method: "POST" });
     const url = location.origin + r.url;

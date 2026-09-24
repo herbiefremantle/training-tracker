@@ -143,9 +143,26 @@ straight after.
 above for how, and note that everyone connects through *your* Strava API app (one `STRAVA_CLIENT_ID`), so Strava's
 per-app rate limit and athlete-capacity cap are shared across every account, not per person.
 
+## Ready-made plans
+
+The **Plan** page's "Add or update your plan" card opens on **Choose a ready-made plan** by default: 10
+built-in templates (10K, Half Marathon, Marathon, 50K and 100K, each as Beginner and Intermediate), built
+from established, publicly documented endurance-training principles - standard
+progressive overload with a step-back week every 4th week for 10K/Half/Marathon, and for the two ultra
+distances, longer builds with back-to-back weekend long runs every 3rd week (train on tired legs, standard
+ultra practice). Source data and columns: `app/data/training_plans.csv` and `app/plan_templates.py`.
+
+Pick a level and a start date (sessions always start on a Monday - a different day snaps to that week's
+Monday) and **Use this plan** either replaces your whole plan or only the dates the template covers, same
+choice as a normal import. **These are general templates, not personalised coaching** - they know nothing
+about your current fitness, injury history, or the terrain and elevation of your actual event. The
+disclaimer says so above the picker; uploading your own plan (the other tab) is strongly recommended
+once you know more about what you actually need.
+
 ## Plan format
 
-Paste from a spreadsheet or CSV, or choose a file, on the **Plan** page. Columns:
+Paste from a spreadsheet or CSV, or choose a file, on the **Paste / upload your own** tab of the same
+card. Columns:
 `date, session type, sport, planned distance, planned duration, notes`. A header row is optional
 (with one, columns can be in any order). **Preview** shows exactly what will be imported and any bad rows.
 
@@ -227,5 +244,7 @@ without `FITNESS_DB`, so it can't touch your real data.
 Covers accounts and invites (registration, admin-only invites, the max-accounts cap, per-account data isolation),
 login (forged/expired cookies, open redirects, lockout, fail-closed startup), the one-time migration from the old
 single-user database (against a frozen copy of that schema, including a crash-and-retry case), deployment config,
-plan parsing, matching (incl. same-day multi-sport and the ±10 min rule), load/ratio/flags, the week / calendar /
-drill-down endpoints, token refresh and rotation, pagination, incremental sync/deletion, and the OAuth callback.
+plan parsing, the ready-made plan templates (every template round-trips with no unrecognised or unmatched
+sports, Monday-snapping, the apply/replace modes), matching (incl. same-day multi-sport and the ±10 min rule),
+load/ratio/flags, the week / calendar / drill-down endpoints, token refresh and rotation, pagination, incremental
+sync/deletion, and the OAuth callback.

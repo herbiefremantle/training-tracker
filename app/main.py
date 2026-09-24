@@ -16,7 +16,7 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Red
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import auth, clock, matching, metrics, planparse, sports, strava, users, views
+from . import auth, clock, matching, metrics, plan_templates, planparse, sports, strava, users, views
 from .db import LOCAL_USER_ID, ROOT, connect, db_path, get_meta, init_db, volume_warning
 
 # override=True: .env is the source of truth, even if the shell already exports (stale/empty) STRAVA_* vars
@@ -267,6 +267,21 @@ class PlanImport(BaseModel):
     distance_unit: Literal["km", "mi"] = "km"   # for distances written without a unit
 
 
+def _save_plan_rows(conn, uid, rows, mode):
+    """Shared by /api/plan/import and /api/plan-templates/{id}/apply: both end up with the same
+    row shape (planparse.parse_plan's output, or plan_templates.build_rows's), so both save the
+    same way."""
+    if mode == "replace_all":
+        conn.execute("DELETE FROM plan WHERE user_id = ?", (uid,))
+    else:
+        conn.executemany("DELETE FROM plan WHERE user_id = ? AND date = ?",
+                         [(uid, d) for d in {r["date"] for r in rows}])
+    conn.executemany(
+        "INSERT INTO plan (user_id, date, session_type, sport, sport_group, planned_distance_km, "
+        "planned_duration_min, notes, position) VALUES (:user_id, :date, :session_type, :sport, :sport_group, "
+        ":planned_distance_km, :planned_duration_min, :notes, :position)", rows)
+
+
 @app.post("/api/plan/import")
 def plan_import(body: PlanImport, request: Request):
     uid = current_user_id(request)
@@ -279,15 +294,44 @@ def plan_import(body: PlanImport, request: Request):
     if body.dry_run or not rows:
         return result
     with connect() as conn:
-        if body.mode == "replace_all":
-            conn.execute("DELETE FROM plan WHERE user_id = ?", (uid,))
-        else:
-            conn.executemany("DELETE FROM plan WHERE user_id = ? AND date = ?",
-                             [(uid, d) for d in {r["date"] for r in rows}])
-        conn.executemany(
-            "INSERT INTO plan (user_id, date, session_type, sport, sport_group, planned_distance_km, "
-            "planned_duration_min, notes, position) VALUES (:user_id, :date, :session_type, :sport, :sport_group, "
-            ":planned_distance_km, :planned_duration_min, :notes, :position)", rows)
+        _save_plan_rows(conn, uid, rows, body.mode)
+    result["saved"] = len(rows)
+    return result
+
+
+# ---- ready-made plan templates ---------------------------------------------------------------
+
+@app.get("/api/plan-templates")
+def plan_templates_list():
+    return {"disclaimer": plan_templates.DISCLAIMER, "plans": plan_templates.list_templates(clock.today())}
+
+
+class PlanTemplateApply(BaseModel):
+    start_date: Optional[str] = None   # ISO date; snapped to that week's Monday. Default: the coming Monday.
+    mode: Literal["replace_dates", "replace_all"] = "replace_all"
+    dry_run: bool = False
+
+
+@app.post("/api/plan-templates/{plan_id}/apply")
+def plan_templates_apply(plan_id: str, body: PlanTemplateApply, request: Request):
+    uid = current_user_id(request)
+    if body.start_date:
+        try:
+            start = date.fromisoformat(body.start_date)
+        except ValueError:
+            raise HTTPException(400, "start_date must be YYYY-MM-DD.")
+    else:
+        start = plan_templates.default_start_monday(clock.today())
+    try:
+        rows = plan_templates.build_rows(plan_id, start, uid)
+    except KeyError:
+        raise HTTPException(404, "No such plan template.")
+    result = {"rows": rows, "errors": [], "warnings": [], "dry_run": body.dry_run, "saved": 0,
+              "start_date": rows[0]["date"], "race_date": rows[-1]["date"]}
+    if body.dry_run:
+        return result
+    with connect() as conn:
+        _save_plan_rows(conn, uid, rows, body.mode)
     result["saved"] = len(rows)
     return result
 
