@@ -68,6 +68,24 @@ real app rather than a browser tab - full screen, its own icon, no address bar.
 - Already installed, or on desktop? The button doesn't appear (it checks `display-mode: standalone` /
   `navigator.standalone` first).
 
+## Look and feel
+
+The topbar shows the app's actual icon and wordmark - "Training" in the page's ink colour, "Tracker" in a
+warm orange accent - built from the icon/logo artwork in `static/icons/`, not an embedded image, so it stays
+crisp and theme-aware.
+
+Besides the normal light/dark appearance (light by default, dark automatically if the OS prefers it - see
+`prefers-color-scheme` in `static/style.css`), a **Standard / Colourful** switch in the topbar offers a second,
+brand-coloured look: a warm pink→orange→yellow gradient header with a white wordmark, and deep-purple/pink-red/
+orange chart and accent colours everywhere else, while cards, tables and status colours (done/missed/over/
+under) stay exactly as legible as normal - "colourful" changes the app's identity colours, not its
+readability. It's a deliberate, explicit choice (`data-theme="colourful"`), never OS-driven, remembered per
+browser (`localStorage`), and applied before first paint everywhere - the app itself and the login/register/
+reset-password pages - so switching between them never flashes the wrong theme. The palette lives in
+`static/style.css` as a `:root[data-theme="colourful"]` block of the same CSS custom properties every other
+theme defines, so it needs no code changes anywhere else to take effect - charts, buttons and pills all read
+their colours from those variables already.
+
 ## Login
 
 Each person gets their own account: their own username/password, their own Strava connection, their own plan and
@@ -269,7 +287,8 @@ Covers accounts and invites (registration, admin-only invites, the max-accounts 
 login (forged/expired cookies, open redirects, lockout, fail-closed startup), admin-generated password resets
 (redeem/reuse/expiry, mismatched/short passwords, admin-only), "last active" tracking (updates from ordinary
 requests, at most once a day), the one-time migration from the old single-user database (against a frozen copy
-of that schema, including a crash-and-retry case), deployment config, plan parsing, the ready-made plan templates
+of that schema, including a crash-and-retry case), deployment config (incl. the branded icons and the
+colourful theme switch), plan parsing, the ready-made plan templates
 (every template round-trips with no unrecognised or unmatched sports, Monday-snapping, the apply/replace modes),
 matching (incl. same-day multi-sport and the ±10 min rule), load/ratio/flags, the week / calendar / drill-down
 endpoints, token refresh and rotation, pagination, incremental sync/deletion, and the OAuth callback.

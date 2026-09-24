@@ -18,7 +18,7 @@
   --radius: 10px;
 }
 @media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme="light"])) {
+  :root:where(:not([data-theme="light"]):not([data-theme="colourful"])) {
     color-scheme: dark;
     --surface: #1a1a19;
     --surface-2: #262624;
@@ -37,6 +37,30 @@
   color-scheme: dark;
   --surface: #1a1a19; --surface-2: #262624; --card: #21211f; --border: #383835; --grid: #2f2f2c;
   --ink: #ffffff; --ink-2: #c3c2b7; --ink-3: #97968c; --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+}
+
+/* "Colourful" theme: an explicit, user-chosen switch (never OS-driven) using the brand palette from
+   theme-colours.md. Deliberately a light-background theme, not a dark one - see the topbar override below
+   for where the actual gradient lives. Status colours (good/warning/critical/neutral) are intentionally left
+   at their light-theme values: universal red/amber/green reads faster than a fourth brand hue would, and
+   nothing here asked to change what "missed" or "over" look like, just the app's own identity colours. */
+:root[data-theme="colourful"] {
+  color-scheme: light;
+  --surface: #fff8f1;
+  --surface-2: #ffeee0;
+  --card: #ffffff;
+  --border: #f3d9c8;
+  --grid: #fbe8da;
+  --ink: #2e1f47;
+  --ink-2: #6b5480;
+  --ink-3: #9c8cae;
+  --series-1: #ff5f6d;   /* pink-red */
+  --series-2: #4a2e6b;   /* deep purple - the one non-warm hue available, for contrast against 1 and 3 */
+  --series-3: #ff9a44;   /* orange */
+  --brand-dark: #2e1f47;
+  --brand-accent: #fff200;
+  --brand-text-accent: #ff7a3d;
+  --gradient-primary: linear-gradient(135deg, #ff5f6d, #ff9a44, #ffc93c);
 }
 
 * { box-sizing: border-box; }
@@ -61,6 +85,31 @@ a { color: var(--series-1); }
 .topbar nav a.active { background: var(--surface-2); color: var(--ink); }
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 
+/* brand: the icon glyph + two-tone "Training"/"Tracker" wordmark, used in the topbar and on the login page */
+.brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.brand-icon { display: block; border-radius: 22%; flex: none; }
+.brand h1 { display: flex; gap: 0.32em; white-space: nowrap; }
+.brand-tracker { color: var(--brand-text-accent, #ff7a3d); }
+
+/* the colourful theme's defining move: a gradient header, white wordmark and nav, everywhere else untouched */
+:root[data-theme="colourful"] .topbar {
+  background: var(--gradient-primary); border-bottom: 0;
+}
+:root[data-theme="colourful"] .topbar h1,
+:root[data-theme="colourful"] .topbar .brand-tracker,
+:root[data-theme="colourful"] .topbar nav a,
+:root[data-theme="colourful"] .topbar-right .muted {
+  color: #fff;
+}
+:root[data-theme="colourful"] .topbar nav a.active { background: rgba(255, 255, 255, .22); color: #fff; }
+:root[data-theme="colourful"] .topbar nav a:not(.active):hover { background: rgba(255, 255, 255, .12); }
+:root[data-theme="colourful"] .topbar .seg { border-color: rgba(255, 255, 255, .55); }
+:root[data-theme="colourful"] .topbar .seg button { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .4); }
+:root[data-theme="colourful"] .topbar .seg button[aria-pressed=true] { background: rgba(255, 255, 255, .28); color: #fff; }
+:root[data-theme="colourful"] .topbar .btn { border-color: rgba(255, 255, 255, .6); color: #fff; background: rgba(255, 255, 255, .12); }
+:root[data-theme="colourful"] .topbar .btn:hover { background: rgba(255, 255, 255, .22); }
+:root[data-theme="colourful"] .topbar .btn.primary { background: #fff; border-color: #fff; color: var(--brand-dark, #2e1f47); }
+
 .page { max-width: 1200px; margin: 0 auto; padding: 20px 16px 60px; }
 
 /* controls */
@@ -72,6 +121,7 @@ a { color: var(--series-1); }
 .btn:disabled { opacity: .55; cursor: default; }
 .btn.primary { background: var(--series-1); border-color: var(--series-1); color: #fff; }
 .btn.primary:hover { filter: brightness(1.08); }
+:root[data-theme="colourful"] .btn.primary { background: var(--gradient-primary); border-color: transparent; color: #fff; }
 .btn.danger { color: var(--critical); }
 .btn:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible, summary:focus-visible {
   outline: 2px solid var(--series-1); outline-offset: 2px;

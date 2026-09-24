@@ -156,13 +156,20 @@ def _set_cookie(response, request, user_id):
 
 # Shared with static/index.html, so the manifest/icons/theme-colour are consistent whichever page a browser (or
 # an "Add to Home Screen" install) first sees, and #install-slot + install.js offer that on these pages too.
+# The inline script (same one static/index.html carries) applies a saved "colourful" choice before first paint,
+# so it never flashes the standard theme first - login/register/reset-password should feel like the same app.
 _HEAD_EXTRA = """<link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#2a78d6">
+<meta name="theme-color" content="#ff7a3d">
 <link rel="icon" href="/static/icons/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Training">"""
+<meta name="apple-mobile-web-app-title" content="Training">
+<script>(function(){try{if(localStorage.getItem("colourMode")==="colourful")document.documentElement.setAttribute("data-theme","colourful");}catch(e){}})();</script>"""
 _INSTALL_SLOT = '<div id="install-slot" style="margin-top:14px;text-align:center"></div>\n<script src="/static/install.js"></script>'
+_BRAND = ('<div class="brand" style="margin-bottom:14px">'
+          '<img src="/static/icons/icon-192.png" alt="" width="28" height="28" class="brand-icon">'
+          '<h1 style="font-size:20px"><span class="brand-training">Training</span><span class="brand-tracker">Tracker</span></h1>'
+          '</div>')
 
 
 def _login_html(next_path, error=""):
@@ -181,12 +188,12 @@ def _login_html(next_path, error=""):
 %s
 <link rel="stylesheet" href="/static/style.css"></head>
 <body><main class="login-wrap"><form class="card login-card" method="post" action="/login">
-  <h1 style="font-size:20px;margin-bottom:14px">Training Tracker</h1>
+  %s
   %s
 </form>
 <p class="muted small" style="text-align:center;margin-top:10px">Forgot your password? Ask an admin to send you a reset link.</p>
 %s
-</main></body></html>""" % (_HEAD_EXTRA, body, _INSTALL_SLOT)
+</main></body></html>""" % (_HEAD_EXTRA, _BRAND, body, _INSTALL_SLOT)
 
 
 def _register_html(invite, error="", first_name="", last_name="", username="", email=""):

@@ -5,25 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Training Tracker</title>
 <link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#2a78d6">
+<meta name="theme-color" content="#ff7a3d">
 <link rel="icon" href="/static/icons/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Training">
+<!-- applied before first paint, so a saved "colourful" choice never flashes the standard theme first -->
+<script>(function(){try{if(localStorage.getItem("colourMode")==="colourful")document.documentElement.setAttribute("data-theme","colourful");}catch(e){}})();</script>
 <link rel="stylesheet" href="/static/style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <header class="topbar">
   <div class="topbar-inner">
-    <h1>Training Tracker</h1>
+    <div class="brand">
+      <img src="/static/icons/icon-192.png" alt="" width="28" height="28" class="brand-icon">
+      <h1><span class="brand-training">Training</span><span class="brand-tracker">Tracker</span></h1>
+    </div>
     <nav>
       <a href="#/" data-route="dashboard">Dashboard</a>
       <a href="#/plan" data-route="plan">Plan</a>
       <a href="#/admin" data-route="admin" id="admin-link" hidden>Admin</a>
     </nav>
     <div class="topbar-right">
+      <div class="seg" id="colour-seg" role="group" aria-label="Colour theme">
+        <button type="button" data-act="colourMode" data-mode="standard" aria-pressed="true">Standard</button>
+        <button type="button" data-act="colourMode" data-mode="colourful" aria-pressed="false">Colourful</button>
+      </div>
       <div class="seg" id="units-seg" role="group" aria-label="Distance units">
         <button type="button" data-act="units" data-units="km" aria-pressed="true">km</button>
         <button type="button" data-act="units" data-units="mi" aria-pressed="false">mi</button>

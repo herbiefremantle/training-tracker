@@ -18,6 +18,7 @@ const state = {
   planImportOpen: null,                     // null = decide from whether a plan already exists; else explicit user choice
   planTab: "templates", planTemplates: null, selectedTemplate: null,
   units: readUnits(),                       // "km" | "mi" - distances are stored in km, converted for display
+  colourful: document.documentElement.dataset.theme === "colourful",   // set before paint by index.html's inline script
   paceMode: null,                           // "pace" | "speed"; null = default for the selected sport
   charts: {}, flash: null,
 };
@@ -923,6 +924,11 @@ function syncUnitsSeg() {
   document.querySelectorAll("#units-seg button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.units === state.units)));
 }
 
+function syncColourSeg() {
+  document.querySelectorAll("#colour-seg button").forEach((b) =>
+    b.setAttribute("aria-pressed", String((b.dataset.mode === "colourful") === state.colourful)));
+}
+
 // change the drill-down period and reload it
 async function drillTo(scope, anchor) {
   state.explore.scope = scope;
@@ -937,6 +943,15 @@ const actions = {
     syncUnitsSeg();
     if (state.dashboard && state.exploreData) renderAll();
     if ($("#plan-unit-note")) { $("#plan-unit-note").innerHTML = planUnitNote(); renderPlanTable(); }
+  },
+  colourMode(d) {
+    state.colourful = d.mode === "colourful";
+    if (state.colourful) document.documentElement.setAttribute("data-theme", "colourful");
+    else document.documentElement.removeAttribute("data-theme");
+    try { localStorage.setItem("colourMode", state.colourful ? "colourful" : "standard"); } catch (_) { /* private mode: fine, just not remembered */ }
+    syncColourSeg();
+    // CSS variables re-cascade on their own; only Chart.js canvases need an explicit re-render to pick up the new colours
+    if (state.dashboard && state.exploreData) renderAll();
   },
   weekNav: (d) => loadWeek(d.to || null),
   calNav: (d) => loadCalendar(d.to || null),
@@ -1035,6 +1050,7 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () 
 (async function boot() {
   const q = new URLSearchParams(location.search);
   syncUnitsSeg();
+  syncColourSeg();
   try {
     await refreshStatus();
   } catch (e) {

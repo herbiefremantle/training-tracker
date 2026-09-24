@@ -198,7 +198,10 @@ def test_manifest_is_valid_and_matches_what_the_pages_reference():
     assert {"192x192", "512x512"} <= sizes
     for icon in manifest["icons"]:
         assert (ROOT / icon["src"].lstrip("/")).is_file(), icon["src"]
-        assert "maskable" in icon.get("purpose", "")   # survives being cropped to a circle/squircle by the OS
+        # Not "maskable": the branded icon artwork ships its own rounded corners and transparency (a finished
+        # icon, not a full-bleed safe-zone design), so letting the OS additionally crop/mask it would double
+        # up or clip the corners - "any" is the honest purpose for this artwork.
+        assert icon.get("purpose") == "any"
 
     for page_path in ("static/index.html",):
         html = (ROOT / page_path).read_text()
@@ -221,6 +224,41 @@ def test_icons_are_real_square_images_at_the_declared_sizes():
         with Image.open(ROOT / "static" / "icons" / name) as img:
             assert img.size == (size, size), name
             assert img.mode in ("RGB", "RGBA"), name   # not a broken/empty file
+
+
+def test_apple_touch_icon_has_no_transparency():
+    """iOS applies its own squircle mask and doesn't support a transparent home-screen icon (historically fills
+    transparent pixels with black) - this one must be fully opaque, unlike the manifest/favicon icons."""
+    from PIL import Image
+    with Image.open(ROOT / "static" / "icons" / "apple-touch-icon.png") as img:
+        assert img.mode == "RGB"   # no alpha channel at all
+
+
+# ---- the "colourful" theme switch ---------------------------------------------------------------
+
+def test_colourful_theme_is_defined_and_never_follows_os_dark_mode():
+    css = (ROOT / "static" / "style.css").read_text()
+    assert ':root[data-theme="colourful"]' in css
+    # the OS dark-mode media query must not also match when colourful is on, or the two would fight
+    assert 'not([data-theme="colourful"])' in css
+
+
+def test_index_page_offers_the_colourful_switch_and_brand_wordmark():
+    html = (ROOT / "static" / "index.html").read_text()
+    assert 'id="colour-seg"' in html
+    assert 'data-act="colourMode"' in html and 'data-mode="colourful"' in html
+    assert 'class="brand-training"' in html and 'class="brand-tracker"' in html
+    assert '/static/icons/icon-192.png' in html
+
+
+def test_auth_pages_apply_a_saved_colourful_choice_before_first_paint():
+    """No toggle control on these pages (there's no topbar to put it in) - they just have to respect a choice
+    already made in the main app, and do it early enough that switching pages never flashes the wrong theme."""
+    from app import auth
+    for html in (auth._login_html("/"), auth._register_html("token"), auth._reset_password_html("token")):
+        assert 'localStorage.getItem("colourMode")' in html
+        assert 'setAttribute("data-theme","colourful")' in html
+    assert 'class="brand-tracker"' in auth._login_html("/")   # the login page also gets the branded wordmark
 
 
 def test_service_worker_does_not_cache_aggressively():
