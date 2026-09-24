@@ -259,7 +259,10 @@ textarea { width: 100%; min-height: 200px; font-family: ui-monospace, SFMono-Reg
 .nav-label { min-width: 140px; text-align: center; font-weight: 600; }
 .btn.icon { padding: 3px 12px; font-size: 18px; line-height: 1.2; }
 .btn.small { padding: 4px 10px; font-size: 13px; }
-.linkbtn { background: none; border: 0; padding: 0; color: var(--series-1); font: inherit; cursor: pointer; text-align: left; text-decoration: underline; text-underline-offset: 2px; }
+/* white-space: normal overrides Safari's UA default of `pre` for <button> - without it, a linkbtn embedded in
+   running text (like the download-template banner) refuses to wrap and pushes its container past the
+   viewport on narrow screens, even though the exact same markup wraps fine everywhere else. */
+.linkbtn { background: none; border: 0; padding: 0; color: var(--series-1); font: inherit; cursor: pointer; text-align: left; white-space: normal; text-decoration: underline; text-underline-offset: 2px; }
 .linkbtn:focus-visible { outline: 2px solid var(--series-1); outline-offset: 2px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .chip { font: inherit; font-size: 13px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--ink); cursor: pointer; }
