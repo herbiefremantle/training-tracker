@@ -105,6 +105,20 @@ def monday_of(d):
     return d - timedelta(days=d.weekday())
 
 
+def sunday_of(d):
+    """The Sunday of the week containing d."""
+    return d + timedelta(days=6 - d.weekday())
+
+
+def start_monday_for_race_date(plan_id, race_date):
+    """The Monday build_rows() needs to start on so this template's race day lands on race_date's week - the
+    inverse of build_rows()'s own date math, for picking a plan by "I want to race on this day" instead of
+    "I want to start training on this day". Raises KeyError if plan_id is unknown."""
+    template = _TEMPLATES[plan_id]
+    sunday = sunday_of(race_date)
+    return sunday - timedelta(weeks=template["weeks"] - 1, days=template["race_day_offset"])
+
+
 def list_templates(today=None):
     """Summary rows for the picker, each with a race-day preview against the default start date."""
     monday = default_start_monday(today)

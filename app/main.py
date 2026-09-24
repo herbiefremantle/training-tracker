@@ -323,6 +323,7 @@ def plan_templates_list():
 
 class PlanTemplateApply(BaseModel):
     start_date: Optional[str] = None   # ISO date; snapped to that week's Monday. Default: the coming Monday.
+    race_date: Optional[str] = None    # ISO date; snapped to that week's Sunday. Wins over start_date if both are given.
     mode: Literal["replace_dates", "replace_all"] = "replace_all"
     dry_run: bool = False
 
@@ -330,13 +331,17 @@ class PlanTemplateApply(BaseModel):
 @app.post("/api/plan-templates/{plan_id}/apply")
 def plan_templates_apply(plan_id: str, body: PlanTemplateApply, request: Request):
     uid = current_user_id(request)
-    if body.start_date:
-        try:
+    try:
+        if body.race_date:
+            start = plan_templates.start_monday_for_race_date(plan_id, date.fromisoformat(body.race_date))
+        elif body.start_date:
             start = date.fromisoformat(body.start_date)
-        except ValueError:
-            raise HTTPException(400, "start_date must be YYYY-MM-DD.")
-    else:
-        start = plan_templates.default_start_monday(clock.today())
+        else:
+            start = plan_templates.default_start_monday(clock.today())
+    except ValueError:
+        raise HTTPException(400, "start_date/race_date must be YYYY-MM-DD.")
+    except KeyError:
+        raise HTTPException(404, "No such plan template.")
     try:
         rows = plan_templates.build_rows(plan_id, start, uid)
     except KeyError:

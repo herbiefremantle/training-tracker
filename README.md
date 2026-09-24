@@ -186,13 +186,14 @@ progressive overload with a step-back week every 4th week for 10K/Half/Marathon,
 distances, longer builds with back-to-back weekend long runs every 3rd week (train on tired legs, standard
 ultra practice). Source data and columns: `app/data/training_plans.csv` and `app/plan_templates.py`.
 
-Pick a level and a start date (sessions always start on a Monday - a different day snaps to that week's
-Monday); every session the plan would add is listed right there, open by default, before you commit to
-anything. **Use this plan** either replaces your whole plan or only the dates the template covers, same
-choice as a normal import. **These are general templates, not personalised coaching** - they know nothing
-about your current fitness, injury history, or the terrain and elevation of your actual event. The
-disclaimer says so above the picker; uploading your own plan (the other tab) is strongly recommended
-once you know more about what you actually need.
+Pick a level, then plan around either a **start date** (sessions always start on a Monday - a different day
+snaps to that week's Monday) or a **race day** (always a Sunday - same snapping, the other direction) if you
+know when your event actually is. Every session the plan would add is listed right there, open by default,
+before you commit to anything - both date modes recompute it live. **Use this plan** either replaces your
+whole plan or only the dates the template covers, same choice as a normal import. **These are general
+templates, not personalised coaching** - they know nothing about your current fitness, injury history, or the
+terrain and elevation of your actual event. The disclaimer says so above the picker; uploading your own plan
+(the other tab) is strongly recommended once you know more about what you actually need.
 
 ## Plan format
 

@@ -16,7 +16,7 @@ const state = {
   exploreData: null, explore: { scope: "year", anchor: null, sport: null },
   planSessions: null, admin: null,
   planImportOpen: null,                     // null = decide from whether a plan already exists; else explicit user choice
-  planTab: "templates", planTemplates: null, selectedTemplate: null,
+  planTab: "templates", planTemplates: null, selectedTemplate: null, tplDateMode: "start",
   units: readUnits(),                       // "km" | "mi" - distances are stored in km, converted for display
   colourful: document.documentElement.dataset.theme === "colourful",   // set before paint by index.html's inline script
   paceMode: null,                           // "pace" | "speed"; null = default for the selected sport
@@ -783,11 +783,6 @@ function renderPlanTable() {
 
 // ---------- ready-made plan picker --------------------------------------------------------------
 
-function mondayOf(iso) {
-  const dow = (new Date(utc(iso)).getUTCDay() + 6) % 7;   // Mon=0..Sun=6
-  return isoAdd(iso, -dow);
-}
-
 async function loadPlanTemplates() {
   if (!state.planTemplates) state.planTemplates = await api("/api/plan-templates");
   renderPlanTemplatePicker();
@@ -816,17 +811,24 @@ function renderPlanTemplatePicker() {
     </div>
     ${sel ? renderTemplateApplyPanel(sel) : ""}`;
   if (sel) {
-    $("#tpl-start-date").addEventListener("change", () => updateTplPreview(sel));
+    $("#tpl-date-input").addEventListener("change", () => updateTplPreview(sel));
     updateTplPreview(sel);   // also loads the full-session preview table
   }
 }
 
 function renderTemplateApplyPanel(p) {
+  const mode = state.tplDateMode || "start";
+  const isRace = mode === "race";
   return `<div class="card tpl-apply" style="margin-top:14px">
     <div class="card-head" style="margin-bottom:8px"><h3 style="margin:0">${esc(p.name)}</h3>
       <span class="sub">${p.weeks} weeks${p.race_distance_km ? ` · ${fmtDist(p.race_distance_km)} race` : ""}</span></div>
     <div class="row">
-      <label class="muted small">Start date <input type="date" id="tpl-start-date" value="${esc(p.default_start_date)}"></label>
+      <div class="seg" role="group" aria-label="Plan around">
+        <button type="button" data-act="tplDateMode" data-mode="start" aria-pressed="${!isRace}">Start date</button>
+        <button type="button" data-act="tplDateMode" data-mode="race" aria-pressed="${isRace}">Race day</button>
+      </div>
+      <label class="muted small">${isRace ? "Race day (a Sunday)" : "Start date (a Monday)"}
+        <input type="date" id="tpl-date-input" value="${esc(isRace ? p.default_race_date : p.default_start_date)}"></label>
       <label class="muted small">On apply <select id="tpl-mode">
         <option value="replace_all">replace the whole plan</option>
         <option value="replace_dates">replace sessions on the dates in this plan</option></select></label>
@@ -844,29 +846,25 @@ function renderTemplateApplyPanel(p) {
   </div>`;
 }
 
-function updateTplPreview(p) {
-  const raw = $("#tpl-start-date").value;
-  const out = $("#tpl-preview");
-  if (!raw) { out.textContent = ""; return; }
-  const monday = mondayOf(raw);
-  const raceDate = isoAdd(monday, (p.weeks - 1) * 7 + p.race_day_offset);
-  out.innerHTML = `First session <b>${fmtDay(monday)}</b>${monday !== raw ? ` <span class="muted">(sessions always start on a Monday - snapped from ${fmtDay(raw)})</span>` : ""}, race day <b>${fmtDay(raceDate)}</b>.`;
-  loadTplPreviewTable(p);
-}
-
-async function loadTplPreviewTable(p) {
-  const el = $("#tpl-preview-table");
-  const raw = $("#tpl-start-date").value;
-  if (!el || !raw) return;
-  el.innerHTML = '<p class="muted small">Loading…</p>';
+async function updateTplPreview(p) {
+  const mode = state.tplDateMode || "start";
+  const raw = $("#tpl-date-input").value;
+  const textOut = $("#tpl-preview"), tableOut = $("#tpl-preview-table");
+  if (!raw) { textOut.textContent = ""; tableOut.innerHTML = ""; return; }
+  tableOut.innerHTML = '<p class="muted small">Loading…</p>';
   try {
-    const r = await api(`/api/plan-templates/${encodeURIComponent(p.plan_id)}/apply`,
-      { method: "POST", body: JSON.stringify({ start_date: raw, dry_run: true }) });
-    el.innerHTML = `<div class="table-wrap tall"><table><thead><tr><th>Date</th><th>Sport</th><th>Session</th><th class="num">Distance</th><th class="num">Duration</th><th>Notes</th></tr></thead><tbody>${
+    const body = mode === "race" ? { race_date: raw, dry_run: true } : { start_date: raw, dry_run: true };
+    const r = await api(`/api/plan-templates/${encodeURIComponent(p.plan_id)}/apply`, { method: "POST", body: JSON.stringify(body) });
+    const picked = mode === "race" ? r.race_date : r.start_date;
+    const snapNote = picked !== raw
+      ? ` <span class="muted">(${mode === "race" ? "race days always fall on a Sunday" : "sessions always start on a Monday"} - snapped from ${fmtDay(raw)})</span>` : "";
+    textOut.innerHTML = `First session <b>${fmtDay(r.start_date)}</b>, race day <b>${fmtDay(r.race_date)}</b>.${snapNote}`;
+    tableOut.innerHTML = `<div class="table-wrap tall"><table><thead><tr><th>Date</th><th>Sport</th><th>Session</th><th class="num">Distance</th><th class="num">Duration</th><th>Notes</th></tr></thead><tbody>${
       r.rows.map((x) => `<tr><td>${fmtDay(x.date)}</td><td>${esc(x.sport)}</td><td>${esc(x.session_type)}</td>
         <td class="num">${fmtDist(x.planned_distance_km)}</td><td class="num">${fmtMins(x.planned_duration_min)}</td><td>${esc(x.notes)}</td></tr>`).join("")}</tbody></table></div>`;
   } catch (e) {
-    el.innerHTML = `<div class="banner error">${esc(e.message)}</div>`;
+    textOut.textContent = "";
+    tableOut.innerHTML = `<div class="banner error">${esc(e.message)}</div>`;
   }
 }
 
@@ -970,8 +968,9 @@ const actions = {
   exDrill: (d) => drillTo(d.scope, d.anchor),
   paceMode(d) { state.paceMode = d.mode; renderExplore(); },
   planTab: (d) => setPlanTab(d.tab),
-  tplSelect(d) { state.selectedTemplate = d.plan; renderPlanTemplatePicker(); },
+  tplSelect(d) { state.selectedTemplate = d.plan; state.tplDateMode = "start"; renderPlanTemplatePicker(); },
   tplCancel() { state.selectedTemplate = null; renderPlanTemplatePicker(); },
+  tplDateMode(d) { state.tplDateMode = d.mode === "race" ? "race" : "start"; renderPlanTemplatePicker(); },
   tplDownloadTemplate() {
     const blob = new Blob([PLAN_HELP + "\n"], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -986,11 +985,13 @@ const actions = {
   async tplApply() {
     const plan = state.planTemplates.plans.find((p) => p.plan_id === state.selectedTemplate);
     const out = $("#tpl-result");
-    const startRaw = $("#tpl-start-date").value;
-    if (!startRaw) { out.innerHTML = '<div class="banner warn">Pick a start date first.</div>'; return; }
+    const raw = $("#tpl-date-input").value;
+    const isRace = state.tplDateMode === "race";
+    if (!raw) { out.innerHTML = `<div class="banner warn">Pick a ${isRace ? "race day" : "start date"} first.</div>`; return; }
     try {
+      const body = isRace ? { race_date: raw } : { start_date: raw };
       const r = await api(`/api/plan-templates/${encodeURIComponent(plan.plan_id)}/apply`, { method: "POST",
-        body: JSON.stringify({ start_date: mondayOf(startRaw), mode: $("#tpl-mode").value }) });
+        body: JSON.stringify({ ...body, mode: $("#tpl-mode").value }) });
       await refreshStatus(); await loadPlanTable();
       setFlash("ok", `<b>${esc(plan.name)} applied</b> - ${r.saved} sessions, ${fmtDay(r.start_date)} to ${fmtDay(r.race_date)}.`);
       state.selectedTemplate = null;

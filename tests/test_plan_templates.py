@@ -67,6 +67,24 @@ def test_build_rows_snaps_a_non_monday_start_date_to_that_weeks_monday():
     assert rows[0]["date"] == "2026-09-28"   # that week's Monday
 
 
+@pytest.mark.parametrize("race_pick,expected_sunday", [
+    (date(2026, 11, 22), date(2026, 11, 22)),   # already a Sunday
+    (date(2026, 11, 19), date(2026, 11, 22)),   # a Thursday - snaps forward to that week's Sunday
+    (date(2026, 11, 16), date(2026, 11, 22)),   # a Monday - same week, same snap
+])
+def test_start_monday_for_race_date_lands_the_race_on_the_chosen_week(race_pick, expected_sunday):
+    start = plan_templates.start_monday_for_race_date("10k_beg", race_pick)
+    assert start.weekday() == 0   # a Monday
+    rows = plan_templates.build_rows("10k_beg", start, user_id=0)
+    assert rows[-1]["date"] == expected_sunday.isoformat()
+    assert rows[-1]["session_type"] == "RACE DAY"
+
+
+def test_start_monday_for_race_date_rejects_an_unknown_plan_id():
+    with pytest.raises(KeyError):
+        plan_templates.start_monday_for_race_date("does-not-exist", date(2026, 11, 22))
+
+
 @pytest.mark.parametrize("plan_id", list(plan_templates._TEMPLATES))
 def test_every_template_round_trips_with_no_unknown_or_unmatched_sports(plan_id):
     """The real regression this feature had to avoid: a session_type whose sport_group comes back
@@ -148,6 +166,32 @@ def test_apply_rejects_a_bad_start_date(client):
 
 def test_apply_rejects_an_unknown_plan_id(client):
     assert client.post("/api/plan-templates/nope/apply", json={}).status_code == 404
+
+
+def test_apply_honours_a_race_date_instead_of_a_start_date(client):
+    r = client.post("/api/plan-templates/10k_beg/apply", json={"race_date": "2026-11-22"}).json()
+    assert r["race_date"] == "2026-11-22"          # already a Sunday
+    assert r["start_date"] == "2026-09-28"         # the Monday 8 weeks earlier
+    assert r["saved"] == 56
+
+
+def test_apply_snaps_a_non_sunday_race_date_to_that_weeks_sunday(client):
+    r = client.post("/api/plan-templates/10k_beg/apply", json={"race_date": "2026-11-19"}).json()   # a Thursday
+    assert r["race_date"] == "2026-11-22"
+
+
+def test_apply_prefers_race_date_over_start_date_when_both_are_given(client):
+    r = client.post("/api/plan-templates/10k_beg/apply",
+                    json={"start_date": "2026-01-05", "race_date": "2026-11-22"}).json()
+    assert r["race_date"] == "2026-11-22" and r["start_date"] == "2026-09-28"
+
+
+def test_apply_rejects_a_bad_race_date(client):
+    assert client.post("/api/plan-templates/10k_beg/apply", json={"race_date": "not-a-date"}).status_code == 400
+
+
+def test_apply_rejects_an_unknown_plan_id_via_race_date(client):
+    assert client.post("/api/plan-templates/nope/apply", json={"race_date": "2026-11-22"}).status_code == 404
 
 
 def test_applied_plan_matches_against_strava_activities_like_any_other_plan(client):
