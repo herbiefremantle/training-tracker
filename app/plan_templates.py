@@ -35,6 +35,7 @@ DISCLAIMER = (
 SESSION_TYPE_SPORT = {
     "Run - easy": "Run",
     "Run - easy (back-to-back)": "Run",
+    "Run - easy (recovery)": "Run",   # the day after a back-to-back long run, in the two ultra intermediate plans
     "Run - speed/intervals": "Run",
     "Run - tempo": "Run",
     "Long run": "Run",
