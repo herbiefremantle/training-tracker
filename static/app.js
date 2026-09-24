@@ -676,6 +676,13 @@ async function loadPlan() {
               <b>date, session type, sport, planned distance, planned duration, notes</b>. A header row is optional, and columns can be in any order if you include one.
               <span id="plan-unit-note"></span>
               Duration takes <code>90</code> (minutes), <code>1:30</code> (h:mm), <code>1h30</code>. Use <i>Rest</i> as the sport for rest days.</p>
+            <div class="banner info" style="margin:0">
+              Converting a plan from a coach, a PDF or a spreadsheet in a different layout?
+              <button class="linkbtn" type="button" data-act="tplDownloadTemplate">Download a blank CSV template</button>
+              with the right headers and a few example rows - fill it in (in Excel, Numbers or Google Sheets) and
+              paste or upload it below. You can also paste your plan and this template's header row into an AI
+              assistant and ask it to reformat one into the other.
+            </div>
             <textarea id="plan-text" spellcheck="false" placeholder="${esc(PLAN_HELP)}" aria-label="Training plan"></textarea>
             <div class="row">
               <input type="file" id="plan-file" accept=".csv,.tsv,.txt,text/csv,text/plain" aria-label="Choose plan file">
@@ -809,7 +816,7 @@ function renderPlanTemplatePicker() {
     ${sel ? renderTemplateApplyPanel(sel) : ""}`;
   if (sel) {
     $("#tpl-start-date").addEventListener("change", () => updateTplPreview(sel));
-    updateTplPreview(sel);
+    updateTplPreview(sel);   // also loads the full-session preview table
   }
 }
 
@@ -824,7 +831,11 @@ function renderTemplateApplyPanel(p) {
         <option value="replace_dates">replace sessions on the dates in this plan</option></select></label>
     </div>
     <p class="muted small" id="tpl-preview"></p>
-    <div class="row">
+    <details class="data" open>
+      <summary>Preview every session before you add it</summary>
+      <div id="tpl-preview-table"><p class="muted small">Loading…</p></div>
+    </details>
+    <div class="row" style="margin-top:12px">
       <button class="btn primary" type="button" data-act="tplApply">Use this plan</button>
       <button class="btn" type="button" data-act="tplCancel">Cancel</button>
     </div>
@@ -839,6 +850,23 @@ function updateTplPreview(p) {
   const monday = mondayOf(raw);
   const raceDate = isoAdd(monday, (p.weeks - 1) * 7 + p.race_day_offset);
   out.innerHTML = `First session <b>${fmtDay(monday)}</b>${monday !== raw ? ` <span class="muted">(sessions always start on a Monday - snapped from ${fmtDay(raw)})</span>` : ""}, race day <b>${fmtDay(raceDate)}</b>.`;
+  loadTplPreviewTable(p);
+}
+
+async function loadTplPreviewTable(p) {
+  const el = $("#tpl-preview-table");
+  const raw = $("#tpl-start-date").value;
+  if (!el || !raw) return;
+  el.innerHTML = '<p class="muted small">Loading…</p>';
+  try {
+    const r = await api(`/api/plan-templates/${encodeURIComponent(p.plan_id)}/apply`,
+      { method: "POST", body: JSON.stringify({ start_date: raw, dry_run: true }) });
+    el.innerHTML = `<div class="table-wrap tall"><table><thead><tr><th>Date</th><th>Sport</th><th>Session</th><th class="num">Distance</th><th class="num">Duration</th><th>Notes</th></tr></thead><tbody>${
+      r.rows.map((x) => `<tr><td>${fmtDay(x.date)}</td><td>${esc(x.sport)}</td><td>${esc(x.session_type)}</td>
+        <td class="num">${fmtDist(x.planned_distance_km)}</td><td class="num">${fmtMins(x.planned_duration_min)}</td><td>${esc(x.notes)}</td></tr>`).join("")}</tbody></table></div>`;
+  } catch (e) {
+    el.innerHTML = `<div class="banner error">${esc(e.message)}</div>`;
+  }
 }
 
 // ---------- admin --------------------------------------------------------------------------------
@@ -927,6 +955,17 @@ const actions = {
   planTab: (d) => setPlanTab(d.tab),
   tplSelect(d) { state.selectedTemplate = d.plan; renderPlanTemplatePicker(); },
   tplCancel() { state.selectedTemplate = null; renderPlanTemplatePicker(); },
+  tplDownloadTemplate() {
+    const blob = new Blob([PLAN_HELP + "\n"], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "training-plan-template.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  },
   async tplApply() {
     const plan = state.planTemplates.plans.find((p) => p.plan_id === state.selectedTemplate);
     const out = $("#tpl-result");

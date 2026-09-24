@@ -153,7 +153,8 @@ distances, longer builds with back-to-back weekend long runs every 3rd week (tra
 ultra practice). Source data and columns: `app/data/training_plans.csv` and `app/plan_templates.py`.
 
 Pick a level and a start date (sessions always start on a Monday - a different day snaps to that week's
-Monday) and **Use this plan** either replaces your whole plan or only the dates the template covers, same
+Monday); every session the plan would add is listed right there, open by default, before you commit to
+anything. **Use this plan** either replaces your whole plan or only the dates the template covers, same
 choice as a normal import. **These are general templates, not personalised coaching** - they know nothing
 about your current fitness, injury history, or the terrain and elevation of your actual event. The
 disclaimer says so above the picker; uploading your own plan (the other tab) is strongly recommended
@@ -165,6 +166,13 @@ Paste from a spreadsheet or CSV, or choose a file, on the **Paste / upload your 
 card. Columns:
 `date, session type, sport, planned distance, planned duration, notes`. A header row is optional
 (with one, columns can be in any order). **Preview** shows exactly what will be imported and any bad rows.
+
+Converting a plan from a coach, a PDF, or a different spreadsheet layout? **Download a blank CSV
+template** (right there on that tab) - the correct header row plus a few example rows showing the
+accepted formats, ready to fill in in Excel, Numbers or Google Sheets and paste or upload back in. It's
+also written to be AI-assistant-friendly: paste your existing plan alongside the template's header row
+into any AI assistant and ask it to reformat one into the other - a mechanical column-mapping job well
+suited to that, rather than hand-transcribing weeks of sessions.
 
 | Field | Accepted |
 |---|---|
