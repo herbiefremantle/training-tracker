@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS users (
     last_name     TEXT,
     email         TEXT,
     is_admin       INTEGER NOT NULL DEFAULT 0,
+    is_demo        INTEGER NOT NULL DEFAULT 0,   -- the one shared read-only demo login - see app/demo_data.py
     created_at     REAL NOT NULL,
     last_login_at  REAL,   -- an actual credential login (the /login form or redeeming an invite/reset link)
     last_active_at REAL    -- any authenticated request, at most once/day - see app/auth.py:resolve_user

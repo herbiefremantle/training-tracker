@@ -73,17 +73,23 @@ def get_by_email(conn, email):
 
 
 def list_accounts(conn):
-    return conn.execute("SELECT username, first_name, last_name, email, is_admin, created_at, last_login_at, "
-                        "last_active_at FROM users ORDER BY created_at").fetchall()
+    return conn.execute("SELECT username, first_name, last_name, email, is_admin, is_demo, created_at, "
+                        "last_login_at, last_active_at FROM users ORDER BY created_at").fetchall()
 
 
-def create(conn, username, password, is_admin=False, first_name=None, last_name=None, email=None):
+def get_demo_account(conn):
+    """The one shared read-only demo login, or None if DEMO_ACCOUNT was never enabled - see demo_data.py."""
+    return conn.execute("SELECT * FROM users WHERE is_demo = 1 LIMIT 1").fetchone()
+
+
+def create(conn, username, password, is_admin=False, is_demo=False, first_name=None, last_name=None, email=None):
     now = time.time()
     # account creation logs you straight in (see app/auth.py), so "last login"/"last active" start out matching "signed up"
-    conn.execute("INSERT INTO users (username, password_hash, first_name, last_name, email, is_admin, "
-                "created_at, last_login_at, last_active_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    conn.execute("INSERT INTO users (username, password_hash, first_name, last_name, email, is_admin, is_demo, "
+                "created_at, last_login_at, last_active_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (username.strip().lower(), hash_password(password), (first_name or "").strip() or None,
-                 (last_name or "").strip() or None, (email or "").strip().lower() or None, int(is_admin), now, now, now))
+                 (last_name or "").strip() or None, (email or "").strip().lower() or None, int(is_admin),
+                 int(is_demo), now, now, now))
     return conn.execute("SELECT id FROM users WHERE username = ? COLLATE NOCASE", (username,)).fetchone()["id"]
 
 
@@ -204,7 +210,7 @@ def redeem_reset_link(conn, token, password, password2):
 def bootstrap_and_migrate(conn):
     """Runs on every startup (inside init_db, same transaction as the schema creation).
 
-    Three independent steps:
+    Four independent steps:
     1. Always: make sure `activities` actually has the composite (user_id, id) primary key sync's upsert needs.
        Unconditional, not gated on anything else, because a database can be *fully account-migrated* and still
        have the wrong key here - that was a real shipped bug (see _fix_activities_table's docstring) that an
@@ -216,6 +222,13 @@ def bootstrap_and_migrate(conn):
        whether or not APP_PASSWORD is set.
     3. If APP_PASSWORD is set and there are no accounts yet, create the first (admin) account from it, and - if
        this was a legacy database - move that LOCAL_USER_ID data (Strava tokens included) onto the new account.
+    4. If DEMO_ACCOUNT is set and there's no demo account yet, create the fixed demo/demo login - see
+       app/demo_data.py for what it's for and who's allowed to touch it. Deliberately *after* step 3 and never
+       gated on "no accounts yet" itself - creating the demo account must never be what makes step 3 above see
+       count(conn) > 0 and skip bootstrapping the real admin account (that was a real bug here: the two were
+       adjacent enough in an earlier version that this shipped broken - see tests/test_demo_account.py). Runs
+       on every startup, not just the first, so enabling DEMO_ACCOUNT later on an already-running deployment
+       still creates it on the next restart.
 
     Safe to interrupt and retry: every step here is guarded (an "already done?" check, or a WHERE clause that
     only matches what's left to do), so a crash partway through - however far it got - always converges to the
@@ -231,19 +244,22 @@ def bootstrap_and_migrate(conn):
     if is_legacy:
         _add_user_id_columns(conn, LOCAL_USER_ID)
 
-    if count(conn) > 0:
-        return
-    password = os.environ.get("APP_PASSWORD", "").strip()
-    if not password:
-        return   # nothing to bootstrap - the app runs with zero accounts (login off) until one is created
-    if len(password) < MIN_PASSWORD_LENGTH:
-        raise RuntimeError("APP_PASSWORD is too short: use at least %d characters." % MIN_PASSWORD_LENGTH)
-    username = (os.environ.get("ADMIN_USERNAME", "").strip().lower() or "pete")
-    if not valid_username(username):
-        username = "admin"
-    admin_id = create(conn, username, password, is_admin=True)
-    if is_legacy:
-        _reassign_legacy_data(conn, admin_id)
+    if count(conn) == 0:
+        password = os.environ.get("APP_PASSWORD", "").strip()
+        if not password:
+            pass   # nothing to bootstrap yet - the app runs with zero accounts (login off) until one is created
+        elif len(password) < MIN_PASSWORD_LENGTH:
+            raise RuntimeError("APP_PASSWORD is too short: use at least %d characters." % MIN_PASSWORD_LENGTH)
+        else:
+            username = (os.environ.get("ADMIN_USERNAME", "").strip().lower() or "pete")
+            if not valid_username(username):
+                username = "admin"
+            admin_id = create(conn, username, password, is_admin=True)
+            if is_legacy:
+                _reassign_legacy_data(conn, admin_id)
+
+    if os.environ.get("DEMO_ACCOUNT", "").strip().lower() in ("1", "true", "yes") and get_demo_account(conn) is None:
+        create(conn, "demo", "demo", is_demo=True, first_name="Demo", last_name="Account")
 
 
 def _table_columns(conn, table):
@@ -251,13 +267,14 @@ def _table_columns(conn, table):
 
 
 def _add_profile_columns(conn):
-    """Add first_name/last_name/email/last_login_at/last_active_at to `users` for a database that predates
-    them - unconditional, every startup, same reasoning as _fix_activities_table. Unlike activities' primary
-    key, none of these participate in a key, so a plain ALTER TABLE ADD COLUMN is safe here - no table
+    """Add first_name/last_name/email/last_login_at/last_active_at/is_demo to `users` for a database that
+    predates them - unconditional, every startup, same reasoning as _fix_activities_table. Unlike activities'
+    primary key, none of these participate in a key, so a plain ALTER TABLE ADD COLUMN is safe here - no table
     rebuild needed."""
     cols = _table_columns(conn, "users")
     for col, coltype in (("first_name", "TEXT"), ("last_name", "TEXT"), ("email", "TEXT"),
-                          ("last_login_at", "REAL"), ("last_active_at", "REAL")):
+                          ("last_login_at", "REAL"), ("last_active_at", "REAL"),
+                          ("is_demo", "INTEGER NOT NULL DEFAULT 0")):
         if col not in cols:
             conn.execute("ALTER TABLE users ADD COLUMN %s %s" % (col, coltype))
     conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email COLLATE NOCASE)")

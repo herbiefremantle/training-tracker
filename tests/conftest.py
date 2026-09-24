@@ -10,7 +10,7 @@ _REAL_DB = Path(__file__).resolve().parent.parent / "training.db"
 @pytest.fixture(autouse=True)
 def clean_auth_environment(monkeypatch):
     """Existing tests assume no login. Auth tests opt in with their own env vars and accounts."""
-    for var in ("APP_PASSWORD", "REQUIRE_AUTH", "SESSION_SECRET", "ADMIN_USERNAME", "MAX_USERS"):
+    for var in ("APP_PASSWORD", "REQUIRE_AUTH", "SESSION_SECRET", "ADMIN_USERNAME", "MAX_USERS", "DEMO_ACCOUNT"):
         monkeypatch.delenv(var, raising=False)
     auth._failures.clear()
     yield

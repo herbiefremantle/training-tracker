@@ -4,8 +4,9 @@ import os
 import secrets
 import sqlite3
 import threading
+import time
 from contextlib import asynccontextmanager
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Literal, Optional
 from urllib.parse import urlencode, urlsplit
 
@@ -16,7 +17,7 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Red
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import auth, clock, matching, metrics, plan_templates, planparse, sports, strava, users, views
+from . import auth, clock, demo_data, matching, metrics, plan_templates, planparse, sports, strava, users, views
 from .db import LOCAL_USER_ID, ROOT, connect, db_path, get_meta, init_db, volume_warning
 
 # override=True: .env is the source of truth, even if the shell already exports (stale/empty) STRAVA_* vars
@@ -24,6 +25,41 @@ load_dotenv(ROOT / ".env", override=True)
 
 
 log = logging.getLogger("uvicorn.error")
+
+
+def _regenerate_demo_if_stale():
+    """Rebuild the demo account's plan/activities if they weren't already regenerated today. Called at
+    startup (covers a restart that crossed midnight, or the very first boot with DEMO_ACCOUNT set) and once a
+    day from _demo_scheduler_loop (covers a process that stays up across midnight without restarting)."""
+    with connect() as conn:
+        demo = users.get_demo_account(conn)
+        if demo is None:
+            return
+        today = clock.today()
+        if demo_data.is_stale(conn, demo["id"], today):
+            demo_data.regenerate(conn, demo["id"], today)
+            log.info("Demo account data regenerated for %s", today)
+
+
+def _demo_scheduler_loop():
+    """Sleeps until the next local midnight, regenerates the demo account, repeats - for as long as the
+    process stays up. A plain background thread, not an asyncio task: it only needs to run synchronous,
+    blocking work on a real-time schedule, entirely independent of the request-handling event loop - and
+    unlike an asyncio task started from `lifespan`, a daemon thread needs no explicit shutdown/cancellation
+    dance (it just dies with the process), which sidesteps a real hang seen in testing with the asyncio-task
+    version: Starlette's TestClient doesn't reliably drive a lifespan-owned background task's cancellation to
+    completion, so `await`ing it after `.cancel()` could hang the test process indefinitely.
+
+    Real wall-clock time throughout (sleeping has to be); the regeneration itself still goes through
+    clock.today(), so FITNESS_TODAY can pin it for local testing - see README "Testing the demo account"."""
+    while True:
+        now = datetime.now()
+        next_midnight = datetime.combine(now.date() + timedelta(days=1), datetime.min.time())
+        time.sleep(max(1.0, (next_midnight - now).total_seconds()))
+        try:
+            _regenerate_demo_if_stale()
+        except Exception:
+            log.exception("Scheduled demo data regeneration failed")
 
 
 @asynccontextmanager
@@ -34,6 +70,8 @@ async def lifespan(_app):
     if volume_warning():
         log.warning(volume_warning())
     log.info("Login: %s", "required" if auth.enabled() else "OFF (no accounts yet)")
+    _regenerate_demo_if_stale()
+    threading.Thread(target=_demo_scheduler_loop, daemon=True, name="demo-scheduler").start()
     yield
 
 
@@ -107,6 +145,15 @@ def current_user_id(request):
     return user["id"] if user else LOCAL_USER_ID
 
 
+def _block_if_demo(request):
+    """Refuses any write on the shared demo login - see app/demo_data.py. The frontend also disables the
+    buttons that would reach these routes, but that's just the UX layer; this is the actual enforcement, since
+    a disabled button is not a security boundary."""
+    me = current_user(request)
+    if me and me["is_demo"]:
+        raise HTTPException(403, "Demo mode is read-only - try this on your own account.")
+
+
 _oauth_state = {}                    # user_id -> the random token issued for their in-flight Strava connect
 _oauth_state_guard = threading.Lock()
 _sync_locks = {}                     # user_id -> lock, so one account's sync can't be blocked by another's
@@ -143,6 +190,11 @@ def index():
 
 @app.get("/auth/login", include_in_schema=False)
 def auth_login(request: Request):
+    me = current_user(request)
+    if me and me["is_demo"]:
+        # a plain 403 would be an ugly page for a browser navigation (unlike the JSON write endpoints below) -
+        # redirect home with the same friendly message auth_callback's own failures already use
+        return RedirectResponse("/?" + urlencode({"auth_error": "Demo mode can't connect a real Strava account."}))
     if not strava.is_configured():
         return RedirectResponse("/?" + urlencode({"auth_error": "Set STRAVA_CLIENT_ID and STRAVA_CLIENT_SECRET in .env first."}))
     uid = current_user_id(request)
@@ -157,6 +209,9 @@ def auth_callback(request: Request, code: str = "", state: str = "", scope: str 
     def fail(msg):
         return RedirectResponse("/?" + urlencode({"auth_error": msg}))
 
+    me = current_user(request)
+    if me and me["is_demo"]:
+        return fail("Demo mode can't connect a real Strava account.")
     uid = current_user_id(request)
     with _oauth_state_guard:
         expected = _oauth_state.pop(uid, None)
@@ -194,11 +249,13 @@ def status(request: Request):
             "username": me["username"] if me else None,
             "display_name": (me["first_name"] or me["username"]) if me else None,
             "is_admin": bool(me["is_admin"]) if me else False,
+            "is_demo": bool(me["is_demo"]) if me else False,
         }
 
 
 @app.post("/api/sync")
 def sync(request: Request):
+    _block_if_demo(request)
     uid = current_user_id(request)
     if not strava.is_configured():
         raise HTTPException(400, "Strava credentials aren't configured (see .env).")
@@ -249,8 +306,9 @@ def list_invites(request: Request):
     return {
         "max_users": users.max_users(),
         "accounts": [{"username": a["username"], "first_name": a["first_name"], "last_name": a["last_name"],
-                      "email": a["email"], "is_admin": bool(a["is_admin"]), "created_at": a["created_at"],
-                      "last_login_at": a["last_login_at"], "last_active_at": a["last_active_at"]} for a in accounts],
+                      "email": a["email"], "is_admin": bool(a["is_admin"]), "is_demo": bool(a["is_demo"]),
+                      "created_at": a["created_at"], "last_login_at": a["last_login_at"],
+                      "last_active_at": a["last_active_at"]} for a in accounts],
         "pending_invites": [{"url": "/register?invite=%s" % p["token"],
                              "expires_in_days": max(0, round((p["expires_at"] - p["created_at"]) / 86400))}
                             for p in pending],
@@ -308,6 +366,7 @@ def plan_import(body: PlanImport, request: Request):
     result["dry_run"] = body.dry_run
     if body.dry_run or not rows:
         return result
+    _block_if_demo(request)   # previewing (dry_run) is fine - only the actual save is blocked
     with connect() as conn:
         _save_plan_rows(conn, uid, rows, body.mode)
     result["saved"] = len(rows)
@@ -350,6 +409,7 @@ def plan_templates_apply(plan_id: str, body: PlanTemplateApply, request: Request
               "start_date": rows[0]["date"], "race_date": rows[-1]["date"]}
     if body.dry_run:
         return result
+    _block_if_demo(request)   # previewing (dry_run) is fine - only the actual save is blocked
     with connect() as conn:
         _save_plan_rows(conn, uid, rows, body.mode)
     result["saved"] = len(rows)
@@ -358,6 +418,7 @@ def plan_templates_apply(plan_id: str, body: PlanTemplateApply, request: Request
 
 @app.delete("/api/plan")
 def plan_clear(request: Request):
+    _block_if_demo(request)
     uid = current_user_id(request)
     with connect() as conn:
         n = conn.execute("DELETE FROM plan WHERE user_id = ?", (uid,)).rowcount

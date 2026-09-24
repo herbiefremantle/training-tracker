@@ -325,6 +325,7 @@ input[type=password]:focus-visible { outline: 2px solid var(--series-1); outline
 
 /* ---- admin: accounts table ---- */
 .badge-admin { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--series-1); color: #fff; margin-left: 6px; }
+.badge-demo { background: var(--warning); }
 
 /* ---- add to home screen ---- */
 #install-slot:empty { display: none; }

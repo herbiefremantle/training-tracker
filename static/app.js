@@ -3,6 +3,10 @@
 const $ = (sel, el = document) => el.querySelector(sel);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+// disabled+title attributes for any button that would write data, when logged in as the read-only demo account -
+// the backend refuses the same requests regardless (see app/main.py:_block_if_demo); this is just the UX layer.
+const _demoAttrs = () => (state.status && state.status.is_demo ? 'disabled title="Demo mode - try this on your own account"' : "");
+
 const KM_PER_MI = 1.609344;
 
 function readUnits() {
@@ -108,8 +112,9 @@ async function refreshStatus() {
   $("#whoami").hidden = !s.username;
   $("#whoami").textContent = s.username ? `Logged in as ${s.display_name || s.username}` : "";
   $("#admin-link").hidden = !s.is_admin;
-  $("#sync-btn").disabled = !(s.configured && s.connected);
-  $("#sync-btn").title = !s.configured ? "Add your Strava credentials to .env first" : !s.connected ? "Connect Strava first" : "";
+  $("#sync-btn").disabled = s.is_demo || !(s.configured && s.connected);
+  $("#sync-btn").title = s.is_demo ? "Demo mode - try this on your own account"
+    : !s.configured ? "Add your Strava credentials to .env first" : !s.connected ? "Connect Strava first" : "";
 }
 
 function setFlash(kind, html) { state.flash = { kind, html }; renderBanner(); }
@@ -117,6 +122,10 @@ function setFlash(kind, html) { state.flash = { kind, html }; renderBanner(); }
 function renderBanner() {
   const s = state.status, out = [];
   if (state.flash) out.push(`<div class="banner ${state.flash.kind}" role="status">${state.flash.html}</div>`);
+  if (s && s.is_demo) {
+    out.push(`<div class="banner info" role="status"><b>You're viewing a demo account with sample data.</b> `
+      + `Ask for an invite to connect your own Strava.</div>`);
+  }
   if (s && !s.configured) {
     out.push(`<div class="banner info"><h3>Set up Strava</h3>
       <ol>
@@ -694,8 +703,8 @@ async function loadPlan() {
             </div>
             <div class="row">
               <button class="btn" id="plan-preview" type="button">Preview</button>
-              <button class="btn primary" id="plan-import" type="button">Import plan</button>
-              <button class="btn danger" id="plan-clear" type="button" style="margin-left:auto">Clear entire plan</button>
+              <button class="btn primary" id="plan-import" type="button" ${_demoAttrs()}>Import plan</button>
+              <button class="btn danger" id="plan-clear" type="button" style="margin-left:auto" ${_demoAttrs()}>Clear entire plan</button>
             </div>
             <div id="plan-result"></div>
           </div>
@@ -839,7 +848,7 @@ function renderTemplateApplyPanel(p) {
       <div id="tpl-preview-table"><p class="muted small">Loading…</p></div>
     </details>
     <div class="row" style="margin-top:12px">
-      <button class="btn primary" type="button" data-act="tplApply">Use this plan</button>
+      <button class="btn primary" type="button" data-act="tplApply" ${_demoAttrs()}>Use this plan</button>
       <button class="btn" type="button" data-act="tplCancel">Cancel</button>
     </div>
     <div id="tpl-result"></div>
@@ -890,9 +899,11 @@ function renderAdmin() {
   const a = state.admin;
   const cell = (text) => (text ? esc(text) : '<span class="muted">—</span>');
   const rows = a.accounts.map((u) => `<tr><td>${cell(dot([u.first_name, u.last_name]))}</td>
-      <td>${esc(u.username)}${u.is_admin ? '<span class="badge-admin">Admin</span>' : ""}</td>
+      <td>${esc(u.username)}${u.is_admin ? '<span class="badge-admin">Admin</span>' : ""}${u.is_demo ? '<span class="badge-admin badge-demo">Demo</span>' : ""}</td>
       <td>${cell(u.email)}</td><td>${fmtDateTime(u.created_at)}</td><td>${fmtDateTime(u.last_active_at)}</td>
-      <td><button class="btn small" type="button" data-act="resetLink" data-username="${esc(u.username)}">Send reset link</button></td></tr>`).join("");
+      <td>${u.is_demo
+        ? '<button class="btn small" type="button" disabled title="The demo login is a fixed demo/demo password, on purpose">Send reset link</button>'
+        : `<button class="btn small" type="button" data-act="resetLink" data-username="${esc(u.username)}">Send reset link</button>`}</td></tr>`).join("");
   const invites = a.pending_invites.length
     ? `<ul class="errors">${a.pending_invites.map((p) => `<li><code style="user-select:all">${esc(location.origin + p.url)}</code> <span class="muted small">(expires in ${p.expires_in_days} days)</span></li>`).join("")}</ul>`
     : '<p class="muted small" style="margin:6px 0 0">No pending invites.</p>';

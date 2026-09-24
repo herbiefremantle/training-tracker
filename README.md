@@ -130,6 +130,67 @@ sent by hand (text, WhatsApp, email, whatever) - there's no outgoing email integ
 scales past a handful of invited people; until then, one admin action plus a copy-paste is simpler than standing
 up an email-sending service for a few users.
 
+## Demo account
+
+Set `DEMO_ACCOUNT=1` and the app creates a fixed, shared login - username and password both `demo` - so you can
+send people a link to try the app without an invite or their own Strava. It's read-only and self-updating, built
+for handing out in public.
+
+- **Looks lived-in, not empty.** It logs straight in with a populated dashboard: a 16-week marathon plan
+  positioned so today always falls in week 6, the last 4 weeks mostly showing "Done" with a couple of "Missed"
+  and one unplanned "Extra" session (so all the status colours are visible at a glance), a believable "on track"
+  load ratio, and the next 7 days sitting there unfilled, waiting. Strava shows as already connected ("Demo
+  Athlete") - no OAuth prompt, no empty state.
+- **Relative to today, always.** None of it is stored against fixed calendar dates - `app/demo_data.py` rebuilds
+  the whole thing from "today" every time it regenerates, so the demo never visibly ages.
+- **Self-updating, isolated to itself.** Regenerates once a day (`app/main.py`'s background scheduler, a plain
+  daemon thread - real time, not tied to the request-handling event loop) plus once at startup if it's gone
+  stale (covers a restart that landed after midnight without the process staying up to see it), wiping out
+  whatever an earlier visitor left behind back to a clean baseline. `demo_data.regenerate()` refuses to run
+  against any account that isn't flagged `is_demo` in the database, so a bug elsewhere can't turn this into a
+  real account's data loss.
+- **Read-only where it matters.** Syncing Strava, connecting a real Strava account, importing or clearing the
+  plan, and applying a ready-made plan are all refused with a 403 - enforced server-side
+  (`app/main.py:_block_if_demo`), not just by disabling the buttons (though those are disabled too, with a
+  tooltip). Browsing, previewing a paste/upload, and previewing a ready-made plan template all still work fully -
+  nothing about those writes anything.
+- **A permanent banner** ("You're viewing a demo account with sample data...") shows on every page while logged
+  in as demo, and the Admin page lists it with a **Demo** badge (its **Send reset link** button is disabled - the
+  password is fixed on purpose).
+- **Counts toward `MAX_USERS`** like any other account (one fewer real invite slot) - raise the limit if that
+  matters to you.
+
+### Testing it locally before sharing the link
+
+```bash
+DEMO_ACCOUNT=1 APP_PASSWORD=<a-password-for-you> SESSION_SECRET=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))") \
+  .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+(Or add `DEMO_ACCOUNT=1` to your `.env` alongside the `APP_PASSWORD`/`SESSION_SECRET` you'd already need to test
+login locally at all - see "Login" above.)
+
+1. Open <http://localhost:8000/login> and sign in with **demo** / **demo**. You should land straight on a
+   populated dashboard - no "Connect with Strava" prompt, a load ratio around 1.0-1.2 marked "In range", and a
+   mix of done/missed/extra sessions in the last few weeks.
+2. Try to break it: click **Sync Strava** (greyed out, with a tooltip), open the **Plan** page and try **Import
+   plan** / **Clear entire plan** / **Use this plan** on a ready-made template (all greyed out) - **Preview**
+   should still work. Try visiting `/auth/login` directly in the address bar - it redirects home with an
+   explanatory message instead of reaching Strava.
+3. Log out, log back in as your own (admin) account, open the **Admin** page, and confirm the `demo` account is
+   listed with a **Demo** badge and a disabled **Send reset link** button.
+4. **Check the regeneration is really date-relative**, without waiting a day for it: stop the server, restart it
+   with `FITNESS_TODAY` pinned a week or two later than before (e.g. `FITNESS_TODAY=2026-10-08`, alongside the
+   same `DEMO_ACCOUNT=1`/`APP_PASSWORD`/`SESSION_SECRET`), log in as demo again, and confirm the plan and
+   activities shifted forward with it - still "week 6", still the last 4 weeks relative to the new date, still a
+   believable load ratio. (In production there's no `FITNESS_TODAY` - this is purely a local way to fast-forward
+   without actually waiting.)
+5. When you're done, unset `DEMO_ACCOUNT` (or just stop passing it) if you don't want the login active locally
+   any more - the account itself stays in the database (nothing deletes it), it just stops mattering once you're
+   not testing against it. To actually remove it, delete the row from `training.db`'s `users` table directly.
+
+On Railway, set `DEMO_ACCOUNT=1` alongside your existing `APP_PASSWORD`/`SESSION_SECRET`/Strava variables and
+redeploy - the demo account is created on that next startup, same as locally.
+
 ## Deploy to Railway
 
 Files: `Dockerfile`, `railway.json`, `.dockerignore`, pinned `requirements.txt`. The app reads everything from environment
@@ -287,7 +348,10 @@ without `FITNESS_DB`, so it can't touch your real data.
 Covers accounts and invites (registration, admin-only invites, the max-accounts cap, per-account data isolation),
 login (forged/expired cookies, open redirects, lockout, fail-closed startup), admin-generated password resets
 (redeem/reuse/expiry, mismatched/short passwords, admin-only), "last active" tracking (updates from ordinary
-requests, at most once a day), the one-time migration from the old single-user database (against a frozen copy
+requests, at most once a day), the demo account (bootstrap order against the real admin account - this caught a
+real bug - the believable status mix and on-track load ratio it generates across several different "today"s,
+every write endpoint refusing it while a real account is unaffected, and that a non-demo user_id can't be
+regenerated even if asked to), the one-time migration from the old single-user database (against a frozen copy
 of that schema, including a crash-and-retry case), deployment config (incl. the branded icons and the
 colourful theme switch), plan parsing, the ready-made plan templates
 (every template round-trips with no unrecognised or unmatched sports, Monday-snapping, the apply/replace modes),
