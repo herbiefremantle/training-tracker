@@ -81,12 +81,12 @@ def test_every_template_round_trips_with_no_unknown_or_unmatched_sports(plan_id)
     assert len(rows) == len({r["date"] for r in rows})   # one session per day - no double-booking
 
 
-def test_optional_cross_training_rest_days_are_never_missed_but_a_real_cross_training_session_is_gym():
-    # beginner plans use the optional "Cross-training / rest"; intermediate plans the mandatory "Cross-training"
-    beg = plan_templates.build_rows("10k_beg", date(2026, 9, 28), user_id=0)
-    intr = plan_templates.build_rows("10k_int", date(2026, 9, 28), user_id=0)
-    assert {r["sport_group"] for r in beg if r["session_type"] == "Cross-training / rest"} == {"rest"}
-    assert {r["sport_group"] for r in intr if r["session_type"] == "Cross-training"} == {"gym"}
+def test_optional_cross_training_rest_days_are_never_missed():
+    # "Cross-training / rest" is explicitly optional in its own notes text, on every plan and level -
+    # it must always land in the rest group, never gym, so skipping it is never "Missed".
+    for plan_id in ("10k_beg", "10k_int"):
+        rows = plan_templates.build_rows(plan_id, date(2026, 9, 28), user_id=0)
+        assert {r["sport_group"] for r in rows if r["session_type"] == "Cross-training / rest"} == {"rest"}
 
 
 def test_unknown_plan_id_raises_keyerror():

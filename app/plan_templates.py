@@ -40,7 +40,6 @@ SESSION_TYPE_SPORT = {
     "Run - tempo": "Run",
     "Long run": "Run",
     "RACE DAY": "Run",
-    "Cross-training": "Gym",          # a real, non-optional session ("bike/swim/strength")
     "Cross-training / rest": "Rest",  # explicitly optional in the notes - never "missed" if skipped
     "Rest": "Rest",
 }

@@ -1,1051 +1,1051 @@
 plan_id,plan_name,level,week,day_offset,day_name,session_type,planned_distance_km,planned_duration_min,notes
 10k_beg,10K - Beginner,Beginner,1,0,Mon,Rest,,,
 10k_beg,10K - Beginner,Beginner,1,1,Tue,Run - easy,3.0,23,Easy conversational pace
-10k_beg,10K - Beginner,Beginner,1,2,Wed,Cross-training / rest,,30,Optional light cross-training
+10k_beg,10K - Beginner,Beginner,1,2,Wed,Cross-training / rest,,,Optional light cross-training
 10k_beg,10K - Beginner,Beginner,1,3,Thu,Run - easy,3.0,23,Easy conversational pace
 10k_beg,10K - Beginner,Beginner,1,4,Fri,Rest,,,
 10k_beg,10K - Beginner,Beginner,1,5,Sat,Run - easy,2.0,15,Short easy run
 10k_beg,10K - Beginner,Beginner,1,6,Sun,Long run,3.0,23,"Weekend long run - go slow, this builds endurance"
 10k_beg,10K - Beginner,Beginner,2,0,Mon,Rest,,,
 10k_beg,10K - Beginner,Beginner,2,1,Tue,Run - easy,3.1,24,Easy conversational pace
-10k_beg,10K - Beginner,Beginner,2,2,Wed,Cross-training / rest,,30,Optional light cross-training
+10k_beg,10K - Beginner,Beginner,2,2,Wed,Cross-training / rest,,,Optional light cross-training
 10k_beg,10K - Beginner,Beginner,2,3,Thu,Run - easy,3.1,24,Easy conversational pace
 10k_beg,10K - Beginner,Beginner,2,4,Fri,Rest,,,
 10k_beg,10K - Beginner,Beginner,2,5,Sat,Run - easy,2.1,16,Short easy run
 10k_beg,10K - Beginner,Beginner,2,6,Sun,Long run,3.9,30,"Weekend long run - go slow, this builds endurance"
 10k_beg,10K - Beginner,Beginner,3,0,Mon,Rest,,,
 10k_beg,10K - Beginner,Beginner,3,1,Tue,Run - easy,3.1,24,Easy conversational pace
-10k_beg,10K - Beginner,Beginner,3,2,Wed,Cross-training / rest,,30,Optional light cross-training
+10k_beg,10K - Beginner,Beginner,3,2,Wed,Cross-training / rest,,,Optional light cross-training
 10k_beg,10K - Beginner,Beginner,3,3,Thu,Run - easy,3.1,24,Easy conversational pace
 10k_beg,10K - Beginner,Beginner,3,4,Fri,Rest,,,
 10k_beg,10K - Beginner,Beginner,3,5,Sat,Run - easy,2.1,16,Short easy run
 10k_beg,10K - Beginner,Beginner,3,6,Sun,Long run,4.8,36,"Weekend long run - go slow, this builds endurance"
 10k_beg,10K - Beginner,Beginner,4,0,Mon,Rest,,,
 10k_beg,10K - Beginner,Beginner,4,1,Tue,Run - easy,3.2,24,Easy conversational pace
-10k_beg,10K - Beginner,Beginner,4,2,Wed,Cross-training / rest,,30,Optional light cross-training
+10k_beg,10K - Beginner,Beginner,4,2,Wed,Cross-training / rest,,,Optional light cross-training
 10k_beg,10K - Beginner,Beginner,4,3,Thu,Run - easy,3.2,24,Easy conversational pace
 10k_beg,10K - Beginner,Beginner,4,4,Fri,Rest,,,
 10k_beg,10K - Beginner,Beginner,4,5,Sat,Run - easy,2.2,17,Short easy run
 10k_beg,10K - Beginner,Beginner,4,6,Sun,Long run,3.6,27,"Weekend long run - go slow, this builds endurance"
 10k_beg,10K - Beginner,Beginner,5,0,Mon,Rest,,,
 10k_beg,10K - Beginner,Beginner,5,1,Tue,Run - easy,3.2,24,Easy conversational pace
-10k_beg,10K - Beginner,Beginner,5,2,Wed,Cross-training / rest,,30,Optional light cross-training
+10k_beg,10K - Beginner,Beginner,5,2,Wed,Cross-training / rest,,,Optional light cross-training
 10k_beg,10K - Beginner,Beginner,5,3,Thu,Run - easy,3.2,24,Easy conversational pace
 10k_beg,10K - Beginner,Beginner,5,4,Fri,Rest,,,
 10k_beg,10K - Beginner,Beginner,5,5,Sat,Run - easy,2.2,17,Short easy run
 10k_beg,10K - Beginner,Beginner,5,6,Sun,Long run,6.6,50,"Weekend long run - go slow, this builds endurance"
 10k_beg,10K - Beginner,Beginner,6,0,Mon,Rest,,,
 10k_beg,10K - Beginner,Beginner,6,1,Tue,Run - easy,3.3,25,Easy conversational pace
-10k_beg,10K - Beginner,Beginner,6,2,Wed,Cross-training / rest,,30,Optional light cross-training
+10k_beg,10K - Beginner,Beginner,6,2,Wed,Cross-training / rest,,,Optional light cross-training
 10k_beg,10K - Beginner,Beginner,6,3,Thu,Run - easy,3.3,25,Easy conversational pace
 10k_beg,10K - Beginner,Beginner,6,4,Fri,Rest,,,
 10k_beg,10K - Beginner,Beginner,6,5,Sat,Run - easy,2.2,17,Short easy run
 10k_beg,10K - Beginner,Beginner,6,6,Sun,Long run,7.5,57,"Weekend long run - go slow, this builds endurance"
 10k_beg,10K - Beginner,Beginner,7,0,Mon,Rest,,,
 10k_beg,10K - Beginner,Beginner,7,1,Tue,Run - easy,3.4,26,Easy conversational pace
-10k_beg,10K - Beginner,Beginner,7,2,Wed,Cross-training / rest,,30,Optional light cross-training
+10k_beg,10K - Beginner,Beginner,7,2,Wed,Cross-training / rest,,,Optional light cross-training
 10k_beg,10K - Beginner,Beginner,7,3,Thu,Run - easy,3.4,26,Easy conversational pace
 10k_beg,10K - Beginner,Beginner,7,4,Fri,Rest,,,
 10k_beg,10K - Beginner,Beginner,7,5,Sat,Run - easy,2.3,17,Short easy run
 10k_beg,10K - Beginner,Beginner,7,6,Sun,Long run,4.9,37,"Weekend long run - go slow, this builds endurance"
 10k_beg,10K - Beginner,Beginner,8,0,Mon,Rest,,,
 10k_beg,10K - Beginner,Beginner,8,1,Tue,Run - easy,3.4,26,Easy conversational pace
-10k_beg,10K - Beginner,Beginner,8,2,Wed,Cross-training / rest,,30,Optional light cross-training
+10k_beg,10K - Beginner,Beginner,8,2,Wed,Cross-training / rest,,,Optional light cross-training
 10k_beg,10K - Beginner,Beginner,8,3,Thu,Run - easy,3.4,26,Easy conversational pace
 10k_beg,10K - Beginner,Beginner,8,4,Fri,Rest,,,
 10k_beg,10K - Beginner,Beginner,8,5,Sat,Run - easy,2.3,17,Short easy run
 10k_beg,10K - Beginner,Beginner,8,6,Sun,RACE DAY,10,70,Race day!
-10k_int,10K - Intermediate,Intermediate,1,0,Mon,Run - easy,4.0,25,Easy recovery pace
-10k_int,10K - Intermediate,Intermediate,1,1,Tue,Run - speed/intervals,5.0,32,Intervals or hill repeats
-10k_int,10K - Intermediate,Intermediate,1,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-10k_int,10K - Intermediate,Intermediate,1,3,Thu,Run - tempo,6.0,38,"Comfortably hard, sustained effort"
-10k_int,10K - Intermediate,Intermediate,1,4,Fri,Rest,,,
+10k_int,10K - Intermediate,Intermediate,1,0,Mon,Run - easy,4.0,25,"Easy recovery pace, day after long run"
+10k_int,10K - Intermediate,Intermediate,1,1,Tue,Run - easy,3.5,22,Second easy day - full recovery before Wednesday's quality session
+10k_int,10K - Intermediate,Intermediate,1,2,Wed,Run - speed/intervals,5.0,32,Intervals or hill repeats
+10k_int,10K - Intermediate,Intermediate,1,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+10k_int,10K - Intermediate,Intermediate,1,4,Fri,Run - tempo,6.0,38,"Comfortably hard, sustained effort"
 10k_int,10K - Intermediate,Intermediate,1,5,Sat,Run - easy,3.0,19,Easy pace
 10k_int,10K - Intermediate,Intermediate,1,6,Sun,Long run,5.0,32,"Weekend long run, steady effort"
-10k_int,10K - Intermediate,Intermediate,2,0,Mon,Run - easy,4.1,26,Easy recovery pace
-10k_int,10K - Intermediate,Intermediate,2,1,Tue,Run - speed/intervals,5.1,32,Intervals or hill repeats
-10k_int,10K - Intermediate,Intermediate,2,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-10k_int,10K - Intermediate,Intermediate,2,3,Thu,Run - tempo,6.1,38,"Comfortably hard, sustained effort"
-10k_int,10K - Intermediate,Intermediate,2,4,Fri,Rest,,,
+10k_int,10K - Intermediate,Intermediate,2,0,Mon,Run - easy,4.1,26,"Easy recovery pace, day after long run"
+10k_int,10K - Intermediate,Intermediate,2,1,Tue,Run - easy,3.6,23,Second easy day - full recovery before Wednesday's quality session
+10k_int,10K - Intermediate,Intermediate,2,2,Wed,Run - speed/intervals,5.1,32,Intervals or hill repeats
+10k_int,10K - Intermediate,Intermediate,2,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+10k_int,10K - Intermediate,Intermediate,2,4,Fri,Run - tempo,6.1,38,"Comfortably hard, sustained effort"
 10k_int,10K - Intermediate,Intermediate,2,5,Sat,Run - easy,3.1,20,Easy pace
 10k_int,10K - Intermediate,Intermediate,2,6,Sun,Long run,5.8,37,"Weekend long run, steady effort"
-10k_int,10K - Intermediate,Intermediate,3,0,Mon,Run - easy,4.2,26,Easy recovery pace
-10k_int,10K - Intermediate,Intermediate,3,1,Tue,Run - speed/intervals,5.1,32,Intervals or hill repeats
-10k_int,10K - Intermediate,Intermediate,3,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-10k_int,10K - Intermediate,Intermediate,3,3,Thu,Run - tempo,6.1,38,"Comfortably hard, sustained effort"
-10k_int,10K - Intermediate,Intermediate,3,4,Fri,Rest,,,
+10k_int,10K - Intermediate,Intermediate,3,0,Mon,Run - easy,4.2,26,"Easy recovery pace, day after long run"
+10k_int,10K - Intermediate,Intermediate,3,1,Tue,Run - easy,3.6,23,Second easy day - full recovery before Wednesday's quality session
+10k_int,10K - Intermediate,Intermediate,3,2,Wed,Run - speed/intervals,5.1,32,Intervals or hill repeats
+10k_int,10K - Intermediate,Intermediate,3,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+10k_int,10K - Intermediate,Intermediate,3,4,Fri,Run - tempo,6.1,38,"Comfortably hard, sustained effort"
 10k_int,10K - Intermediate,Intermediate,3,5,Sat,Run - easy,3.1,20,Easy pace
 10k_int,10K - Intermediate,Intermediate,3,6,Sun,Long run,6.6,42,"Weekend long run, steady effort"
-10k_int,10K - Intermediate,Intermediate,4,0,Mon,Run - easy,4.2,26,Easy recovery pace
-10k_int,10K - Intermediate,Intermediate,4,1,Tue,Run - speed/intervals,5.1,32,Intervals or hill repeats
-10k_int,10K - Intermediate,Intermediate,4,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-10k_int,10K - Intermediate,Intermediate,4,3,Thu,Run - tempo,6.2,39,"Comfortably hard, sustained effort"
-10k_int,10K - Intermediate,Intermediate,4,4,Fri,Rest,,,
+10k_int,10K - Intermediate,Intermediate,4,0,Mon,Run - easy,4.2,26,"Easy recovery pace, day after long run"
+10k_int,10K - Intermediate,Intermediate,4,1,Tue,Run - easy,3.7,23,Second easy day - full recovery before Wednesday's quality session
+10k_int,10K - Intermediate,Intermediate,4,2,Wed,Run - speed/intervals,5.1,32,Intervals or hill repeats
+10k_int,10K - Intermediate,Intermediate,4,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+10k_int,10K - Intermediate,Intermediate,4,4,Fri,Run - tempo,6.2,39,"Comfortably hard, sustained effort"
 10k_int,10K - Intermediate,Intermediate,4,5,Sat,Run - easy,3.2,20,Easy pace
 10k_int,10K - Intermediate,Intermediate,4,6,Sun,Long run,4.9,31,"Weekend long run, steady effort"
-10k_int,10K - Intermediate,Intermediate,5,0,Mon,Run - easy,4.2,26,Easy recovery pace
-10k_int,10K - Intermediate,Intermediate,5,1,Tue,Run - speed/intervals,5.2,33,Intervals or hill repeats
-10k_int,10K - Intermediate,Intermediate,5,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-10k_int,10K - Intermediate,Intermediate,5,3,Thu,Run - tempo,6.2,39,"Comfortably hard, sustained effort"
-10k_int,10K - Intermediate,Intermediate,5,4,Fri,Rest,,,
+10k_int,10K - Intermediate,Intermediate,5,0,Mon,Run - easy,4.2,26,"Easy recovery pace, day after long run"
+10k_int,10K - Intermediate,Intermediate,5,1,Tue,Run - easy,3.7,23,Second easy day - full recovery before Wednesday's quality session
+10k_int,10K - Intermediate,Intermediate,5,2,Wed,Run - speed/intervals,5.2,33,Intervals or hill repeats
+10k_int,10K - Intermediate,Intermediate,5,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+10k_int,10K - Intermediate,Intermediate,5,4,Fri,Run - tempo,6.2,39,"Comfortably hard, sustained effort"
 10k_int,10K - Intermediate,Intermediate,5,5,Sat,Run - easy,3.2,20,Easy pace
 10k_int,10K - Intermediate,Intermediate,5,6,Sun,Long run,8.2,52,"Weekend long run, steady effort"
-10k_int,10K - Intermediate,Intermediate,6,0,Mon,Run - easy,4.3,27,Easy recovery pace
-10k_int,10K - Intermediate,Intermediate,6,1,Tue,Run - speed/intervals,5.2,33,Intervals or hill repeats
-10k_int,10K - Intermediate,Intermediate,6,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-10k_int,10K - Intermediate,Intermediate,6,3,Thu,Run - tempo,6.2,39,"Comfortably hard, sustained effort"
-10k_int,10K - Intermediate,Intermediate,6,4,Fri,Rest,,,
+10k_int,10K - Intermediate,Intermediate,6,0,Mon,Run - easy,4.3,27,"Easy recovery pace, day after long run"
+10k_int,10K - Intermediate,Intermediate,6,1,Tue,Run - easy,3.7,23,Second easy day - full recovery before Wednesday's quality session
+10k_int,10K - Intermediate,Intermediate,6,2,Wed,Run - speed/intervals,5.2,33,Intervals or hill repeats
+10k_int,10K - Intermediate,Intermediate,6,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+10k_int,10K - Intermediate,Intermediate,6,4,Fri,Run - tempo,6.2,39,"Comfortably hard, sustained effort"
 10k_int,10K - Intermediate,Intermediate,6,5,Sat,Run - easy,3.3,21,Easy pace
 10k_int,10K - Intermediate,Intermediate,6,6,Sun,Long run,9.0,57,"Weekend long run, steady effort"
-10k_int,10K - Intermediate,Intermediate,7,0,Mon,Run - easy,4.3,27,Easy recovery pace
-10k_int,10K - Intermediate,Intermediate,7,1,Tue,Run - speed/intervals,5.2,33,Intervals or hill repeats
-10k_int,10K - Intermediate,Intermediate,7,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-10k_int,10K - Intermediate,Intermediate,7,3,Thu,Run - tempo,6.3,40,"Comfortably hard, sustained effort"
-10k_int,10K - Intermediate,Intermediate,7,4,Fri,Rest,,,
+10k_int,10K - Intermediate,Intermediate,7,0,Mon,Run - easy,4.3,27,"Easy recovery pace, day after long run"
+10k_int,10K - Intermediate,Intermediate,7,1,Tue,Run - easy,3.8,24,Second easy day - full recovery before Wednesday's quality session
+10k_int,10K - Intermediate,Intermediate,7,2,Wed,Run - speed/intervals,5.2,33,Intervals or hill repeats
+10k_int,10K - Intermediate,Intermediate,7,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+10k_int,10K - Intermediate,Intermediate,7,4,Fri,Run - tempo,6.3,40,"Comfortably hard, sustained effort"
 10k_int,10K - Intermediate,Intermediate,7,5,Sat,Run - easy,3.4,21,Easy pace
 10k_int,10K - Intermediate,Intermediate,7,6,Sun,Long run,5.9,37,"Weekend long run, steady effort"
-10k_int,10K - Intermediate,Intermediate,8,0,Mon,Run - easy,4.4,28,Easy recovery pace
-10k_int,10K - Intermediate,Intermediate,8,1,Tue,Run - speed/intervals,5.2,33,Intervals or hill repeats
-10k_int,10K - Intermediate,Intermediate,8,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-10k_int,10K - Intermediate,Intermediate,8,3,Thu,Run - tempo,6.3,40,"Comfortably hard, sustained effort"
-10k_int,10K - Intermediate,Intermediate,8,4,Fri,Rest,,,
+10k_int,10K - Intermediate,Intermediate,8,0,Mon,Run - easy,4.4,28,"Easy recovery pace, day after long run"
+10k_int,10K - Intermediate,Intermediate,8,1,Tue,Run - easy,3.8,24,Second easy day - full recovery before Wednesday's quality session
+10k_int,10K - Intermediate,Intermediate,8,2,Wed,Run - speed/intervals,5.2,33,Intervals or hill repeats
+10k_int,10K - Intermediate,Intermediate,8,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+10k_int,10K - Intermediate,Intermediate,8,4,Fri,Run - tempo,6.3,40,"Comfortably hard, sustained effort"
 10k_int,10K - Intermediate,Intermediate,8,5,Sat,Run - easy,3.4,21,Easy pace
 10k_int,10K - Intermediate,Intermediate,8,6,Sun,RACE DAY,10,55,Race day!
 half_beg,Half Marathon - Beginner,Beginner,1,0,Mon,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,1,1,Tue,Run - easy,3.0,23,Easy conversational pace
-half_beg,Half Marathon - Beginner,Beginner,1,2,Wed,Cross-training / rest,,30,Optional light cross-training
+half_beg,Half Marathon - Beginner,Beginner,1,2,Wed,Cross-training / rest,,,Optional light cross-training
 half_beg,Half Marathon - Beginner,Beginner,1,3,Thu,Run - easy,3.0,23,Easy conversational pace
 half_beg,Half Marathon - Beginner,Beginner,1,4,Fri,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,1,5,Sat,Run - easy,2.0,16,Short easy run
 half_beg,Half Marathon - Beginner,Beginner,1,6,Sun,Long run,6.0,47,"Weekend long run - go slow, this builds endurance"
 half_beg,Half Marathon - Beginner,Beginner,2,0,Mon,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,2,1,Tue,Run - easy,3.1,24,Easy conversational pace
-half_beg,Half Marathon - Beginner,Beginner,2,2,Wed,Cross-training / rest,,30,Optional light cross-training
+half_beg,Half Marathon - Beginner,Beginner,2,2,Wed,Cross-training / rest,,,Optional light cross-training
 half_beg,Half Marathon - Beginner,Beginner,2,3,Thu,Run - easy,3.1,24,Easy conversational pace
 half_beg,Half Marathon - Beginner,Beginner,2,4,Fri,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,2,5,Sat,Run - easy,2.1,16,Short easy run
 half_beg,Half Marathon - Beginner,Beginner,2,6,Sun,Long run,7.2,56,"Weekend long run - go slow, this builds endurance"
 half_beg,Half Marathon - Beginner,Beginner,3,0,Mon,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,3,1,Tue,Run - easy,3.1,24,Easy conversational pace
-half_beg,Half Marathon - Beginner,Beginner,3,2,Wed,Cross-training / rest,,30,Optional light cross-training
+half_beg,Half Marathon - Beginner,Beginner,3,2,Wed,Cross-training / rest,,,Optional light cross-training
 half_beg,Half Marathon - Beginner,Beginner,3,3,Thu,Run - easy,3.1,24,Easy conversational pace
 half_beg,Half Marathon - Beginner,Beginner,3,4,Fri,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,3,5,Sat,Run - easy,2.1,16,Short easy run
 half_beg,Half Marathon - Beginner,Beginner,3,6,Sun,Long run,8.5,66,"Weekend long run - go slow, this builds endurance"
 half_beg,Half Marathon - Beginner,Beginner,4,0,Mon,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,4,1,Tue,Run - easy,3.2,25,Easy conversational pace
-half_beg,Half Marathon - Beginner,Beginner,4,2,Wed,Cross-training / rest,,30,Optional light cross-training
+half_beg,Half Marathon - Beginner,Beginner,4,2,Wed,Cross-training / rest,,,Optional light cross-training
 half_beg,Half Marathon - Beginner,Beginner,4,3,Thu,Run - easy,3.2,25,Easy conversational pace
 half_beg,Half Marathon - Beginner,Beginner,4,4,Fri,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,4,5,Sat,Run - easy,2.2,17,Short easy run
 half_beg,Half Marathon - Beginner,Beginner,4,6,Sun,Long run,6.4,50,"Weekend long run - go slow, this builds endurance"
 half_beg,Half Marathon - Beginner,Beginner,5,0,Mon,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,5,1,Tue,Run - easy,3.2,25,Easy conversational pace
-half_beg,Half Marathon - Beginner,Beginner,5,2,Wed,Cross-training / rest,,30,Optional light cross-training
+half_beg,Half Marathon - Beginner,Beginner,5,2,Wed,Cross-training / rest,,,Optional light cross-training
 half_beg,Half Marathon - Beginner,Beginner,5,3,Thu,Run - easy,3.2,25,Easy conversational pace
 half_beg,Half Marathon - Beginner,Beginner,5,4,Fri,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,5,5,Sat,Run - easy,2.2,17,Short easy run
 half_beg,Half Marathon - Beginner,Beginner,5,6,Sun,Long run,11.0,86,"Weekend long run - go slow, this builds endurance"
 half_beg,Half Marathon - Beginner,Beginner,6,0,Mon,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,6,1,Tue,Run - easy,3.3,26,Easy conversational pace
-half_beg,Half Marathon - Beginner,Beginner,6,2,Wed,Cross-training / rest,,30,Optional light cross-training
+half_beg,Half Marathon - Beginner,Beginner,6,2,Wed,Cross-training / rest,,,Optional light cross-training
 half_beg,Half Marathon - Beginner,Beginner,6,3,Thu,Run - easy,3.3,26,Easy conversational pace
 half_beg,Half Marathon - Beginner,Beginner,6,4,Fri,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,6,5,Sat,Run - easy,2.2,17,Short easy run
 half_beg,Half Marathon - Beginner,Beginner,6,6,Sun,Long run,12.2,95,"Weekend long run - go slow, this builds endurance"
 half_beg,Half Marathon - Beginner,Beginner,7,0,Mon,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,7,1,Tue,Run - easy,3.4,27,Easy conversational pace
-half_beg,Half Marathon - Beginner,Beginner,7,2,Wed,Cross-training / rest,,30,Optional light cross-training
+half_beg,Half Marathon - Beginner,Beginner,7,2,Wed,Cross-training / rest,,,Optional light cross-training
 half_beg,Half Marathon - Beginner,Beginner,7,3,Thu,Run - easy,3.4,27,Easy conversational pace
 half_beg,Half Marathon - Beginner,Beginner,7,4,Fri,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,7,5,Sat,Run - easy,2.3,18,Short easy run
 half_beg,Half Marathon - Beginner,Beginner,7,6,Sun,Long run,13.5,105,"Weekend long run - go slow, this builds endurance"
 half_beg,Half Marathon - Beginner,Beginner,8,0,Mon,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,8,1,Tue,Run - easy,3.4,27,Easy conversational pace
-half_beg,Half Marathon - Beginner,Beginner,8,2,Wed,Cross-training / rest,,30,Optional light cross-training
+half_beg,Half Marathon - Beginner,Beginner,8,2,Wed,Cross-training / rest,,,Optional light cross-training
 half_beg,Half Marathon - Beginner,Beginner,8,3,Thu,Run - easy,3.4,27,Easy conversational pace
 half_beg,Half Marathon - Beginner,Beginner,8,4,Fri,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,8,5,Sat,Run - easy,2.3,18,Short easy run
 half_beg,Half Marathon - Beginner,Beginner,8,6,Sun,Long run,10.1,79,"Weekend long run - go slow, this builds endurance"
 half_beg,Half Marathon - Beginner,Beginner,9,0,Mon,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,9,1,Tue,Run - easy,3.5,27,Easy conversational pace
-half_beg,Half Marathon - Beginner,Beginner,9,2,Wed,Cross-training / rest,,30,Optional light cross-training
+half_beg,Half Marathon - Beginner,Beginner,9,2,Wed,Cross-training / rest,,,Optional light cross-training
 half_beg,Half Marathon - Beginner,Beginner,9,3,Thu,Run - easy,3.5,27,Easy conversational pace
 half_beg,Half Marathon - Beginner,Beginner,9,4,Fri,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,9,5,Sat,Run - easy,2.4,19,Short easy run
 half_beg,Half Marathon - Beginner,Beginner,9,6,Sun,Long run,16.0,125,"Weekend long run - go slow, this builds endurance"
 half_beg,Half Marathon - Beginner,Beginner,10,0,Mon,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,10,1,Tue,Run - easy,3.5,27,Easy conversational pace
-half_beg,Half Marathon - Beginner,Beginner,10,2,Wed,Cross-training / rest,,30,Optional light cross-training
+half_beg,Half Marathon - Beginner,Beginner,10,2,Wed,Cross-training / rest,,,Optional light cross-training
 half_beg,Half Marathon - Beginner,Beginner,10,3,Thu,Run - easy,3.5,27,Easy conversational pace
 half_beg,Half Marathon - Beginner,Beginner,10,4,Fri,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,10,5,Sat,Run - easy,2.4,19,Short easy run
 half_beg,Half Marathon - Beginner,Beginner,10,6,Sun,Long run,10.4,81,"Weekend long run - go slow, this builds endurance"
 half_beg,Half Marathon - Beginner,Beginner,11,0,Mon,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,11,1,Tue,Run - easy,3.5,27,Easy conversational pace
-half_beg,Half Marathon - Beginner,Beginner,11,2,Wed,Cross-training / rest,,30,Optional light cross-training
+half_beg,Half Marathon - Beginner,Beginner,11,2,Wed,Cross-training / rest,,,Optional light cross-training
 half_beg,Half Marathon - Beginner,Beginner,11,3,Thu,Run - easy,3.5,27,Easy conversational pace
 half_beg,Half Marathon - Beginner,Beginner,11,4,Fri,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,11,5,Sat,Run - easy,2.4,19,Short easy run
 half_beg,Half Marathon - Beginner,Beginner,11,6,Sun,Long run,7.2,56,"Weekend long run - go slow, this builds endurance"
 half_beg,Half Marathon - Beginner,Beginner,12,0,Mon,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,12,1,Tue,Run - easy,3.6,28,Easy conversational pace
-half_beg,Half Marathon - Beginner,Beginner,12,2,Wed,Cross-training / rest,,30,Optional light cross-training
+half_beg,Half Marathon - Beginner,Beginner,12,2,Wed,Cross-training / rest,,,Optional light cross-training
 half_beg,Half Marathon - Beginner,Beginner,12,3,Thu,Run - easy,3.6,28,Easy conversational pace
 half_beg,Half Marathon - Beginner,Beginner,12,4,Fri,Rest,,,
 half_beg,Half Marathon - Beginner,Beginner,12,5,Sat,Run - easy,2.5,20,Short easy run
 half_beg,Half Marathon - Beginner,Beginner,12,6,Sun,RACE DAY,21.1,145,Race day!
-half_int,Half Marathon - Intermediate,Intermediate,1,0,Mon,Run - easy,4.0,25,Easy recovery pace
-half_int,Half Marathon - Intermediate,Intermediate,1,1,Tue,Run - speed/intervals,5.0,32,Intervals or hill repeats
-half_int,Half Marathon - Intermediate,Intermediate,1,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-half_int,Half Marathon - Intermediate,Intermediate,1,3,Thu,Run - tempo,6.0,38,"Comfortably hard, sustained effort"
-half_int,Half Marathon - Intermediate,Intermediate,1,4,Fri,Rest,,,
+half_int,Half Marathon - Intermediate,Intermediate,1,0,Mon,Run - easy,4.0,25,"Easy recovery pace, day after long run"
+half_int,Half Marathon - Intermediate,Intermediate,1,1,Tue,Run - easy,3.5,22,Second easy day - full recovery before Wednesday's quality session
+half_int,Half Marathon - Intermediate,Intermediate,1,2,Wed,Run - speed/intervals,5.0,32,Intervals or hill repeats
+half_int,Half Marathon - Intermediate,Intermediate,1,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+half_int,Half Marathon - Intermediate,Intermediate,1,4,Fri,Run - tempo,6.0,38,"Comfortably hard, sustained effort"
 half_int,Half Marathon - Intermediate,Intermediate,1,5,Sat,Run - easy,3.0,19,Easy pace
 half_int,Half Marathon - Intermediate,Intermediate,1,6,Sun,Long run,8.0,50,"Weekend long run, steady effort"
-half_int,Half Marathon - Intermediate,Intermediate,2,0,Mon,Run - easy,4.1,26,Easy recovery pace
-half_int,Half Marathon - Intermediate,Intermediate,2,1,Tue,Run - speed/intervals,5.1,32,Intervals or hill repeats
-half_int,Half Marathon - Intermediate,Intermediate,2,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-half_int,Half Marathon - Intermediate,Intermediate,2,3,Thu,Run - tempo,6.1,38,"Comfortably hard, sustained effort"
-half_int,Half Marathon - Intermediate,Intermediate,2,4,Fri,Rest,,,
+half_int,Half Marathon - Intermediate,Intermediate,2,0,Mon,Run - easy,4.1,26,"Easy recovery pace, day after long run"
+half_int,Half Marathon - Intermediate,Intermediate,2,1,Tue,Run - easy,3.6,23,Second easy day - full recovery before Wednesday's quality session
+half_int,Half Marathon - Intermediate,Intermediate,2,2,Wed,Run - speed/intervals,5.1,32,Intervals or hill repeats
+half_int,Half Marathon - Intermediate,Intermediate,2,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+half_int,Half Marathon - Intermediate,Intermediate,2,4,Fri,Run - tempo,6.1,38,"Comfortably hard, sustained effort"
 half_int,Half Marathon - Intermediate,Intermediate,2,5,Sat,Run - easy,3.1,20,Easy pace
 half_int,Half Marathon - Intermediate,Intermediate,2,6,Sun,Long run,9.4,59,"Weekend long run, steady effort"
-half_int,Half Marathon - Intermediate,Intermediate,3,0,Mon,Run - easy,4.2,26,Easy recovery pace
-half_int,Half Marathon - Intermediate,Intermediate,3,1,Tue,Run - speed/intervals,5.1,32,Intervals or hill repeats
-half_int,Half Marathon - Intermediate,Intermediate,3,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-half_int,Half Marathon - Intermediate,Intermediate,3,3,Thu,Run - tempo,6.1,38,"Comfortably hard, sustained effort"
-half_int,Half Marathon - Intermediate,Intermediate,3,4,Fri,Rest,,,
+half_int,Half Marathon - Intermediate,Intermediate,3,0,Mon,Run - easy,4.2,26,"Easy recovery pace, day after long run"
+half_int,Half Marathon - Intermediate,Intermediate,3,1,Tue,Run - easy,3.6,23,Second easy day - full recovery before Wednesday's quality session
+half_int,Half Marathon - Intermediate,Intermediate,3,2,Wed,Run - speed/intervals,5.1,32,Intervals or hill repeats
+half_int,Half Marathon - Intermediate,Intermediate,3,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+half_int,Half Marathon - Intermediate,Intermediate,3,4,Fri,Run - tempo,6.1,38,"Comfortably hard, sustained effort"
 half_int,Half Marathon - Intermediate,Intermediate,3,5,Sat,Run - easy,3.1,20,Easy pace
 half_int,Half Marathon - Intermediate,Intermediate,3,6,Sun,Long run,10.9,69,"Weekend long run, steady effort"
-half_int,Half Marathon - Intermediate,Intermediate,4,0,Mon,Run - easy,4.2,26,Easy recovery pace
-half_int,Half Marathon - Intermediate,Intermediate,4,1,Tue,Run - speed/intervals,5.1,32,Intervals or hill repeats
-half_int,Half Marathon - Intermediate,Intermediate,4,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-half_int,Half Marathon - Intermediate,Intermediate,4,3,Thu,Run - tempo,6.2,39,"Comfortably hard, sustained effort"
-half_int,Half Marathon - Intermediate,Intermediate,4,4,Fri,Rest,,,
+half_int,Half Marathon - Intermediate,Intermediate,4,0,Mon,Run - easy,4.2,26,"Easy recovery pace, day after long run"
+half_int,Half Marathon - Intermediate,Intermediate,4,1,Tue,Run - easy,3.7,23,Second easy day - full recovery before Wednesday's quality session
+half_int,Half Marathon - Intermediate,Intermediate,4,2,Wed,Run - speed/intervals,5.1,32,Intervals or hill repeats
+half_int,Half Marathon - Intermediate,Intermediate,4,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+half_int,Half Marathon - Intermediate,Intermediate,4,4,Fri,Run - tempo,6.2,39,"Comfortably hard, sustained effort"
 half_int,Half Marathon - Intermediate,Intermediate,4,5,Sat,Run - easy,3.2,20,Easy pace
 half_int,Half Marathon - Intermediate,Intermediate,4,6,Sun,Long run,8.2,52,"Weekend long run, steady effort"
-half_int,Half Marathon - Intermediate,Intermediate,5,0,Mon,Run - easy,4.2,26,Easy recovery pace
-half_int,Half Marathon - Intermediate,Intermediate,5,1,Tue,Run - speed/intervals,5.2,33,Intervals or hill repeats
-half_int,Half Marathon - Intermediate,Intermediate,5,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-half_int,Half Marathon - Intermediate,Intermediate,5,3,Thu,Run - tempo,6.2,39,"Comfortably hard, sustained effort"
-half_int,Half Marathon - Intermediate,Intermediate,5,4,Fri,Rest,,,
+half_int,Half Marathon - Intermediate,Intermediate,5,0,Mon,Run - easy,4.2,26,"Easy recovery pace, day after long run"
+half_int,Half Marathon - Intermediate,Intermediate,5,1,Tue,Run - easy,3.7,23,Second easy day - full recovery before Wednesday's quality session
+half_int,Half Marathon - Intermediate,Intermediate,5,2,Wed,Run - speed/intervals,5.2,33,Intervals or hill repeats
+half_int,Half Marathon - Intermediate,Intermediate,5,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+half_int,Half Marathon - Intermediate,Intermediate,5,4,Fri,Run - tempo,6.2,39,"Comfortably hard, sustained effort"
 half_int,Half Marathon - Intermediate,Intermediate,5,5,Sat,Run - easy,3.2,20,Easy pace
 half_int,Half Marathon - Intermediate,Intermediate,5,6,Sun,Long run,13.7,86,"Weekend long run, steady effort"
-half_int,Half Marathon - Intermediate,Intermediate,6,0,Mon,Run - easy,4.3,27,Easy recovery pace
-half_int,Half Marathon - Intermediate,Intermediate,6,1,Tue,Run - speed/intervals,5.2,33,Intervals or hill repeats
-half_int,Half Marathon - Intermediate,Intermediate,6,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-half_int,Half Marathon - Intermediate,Intermediate,6,3,Thu,Run - tempo,6.2,39,"Comfortably hard, sustained effort"
-half_int,Half Marathon - Intermediate,Intermediate,6,4,Fri,Rest,,,
+half_int,Half Marathon - Intermediate,Intermediate,6,0,Mon,Run - easy,4.3,27,"Easy recovery pace, day after long run"
+half_int,Half Marathon - Intermediate,Intermediate,6,1,Tue,Run - easy,3.7,23,Second easy day - full recovery before Wednesday's quality session
+half_int,Half Marathon - Intermediate,Intermediate,6,2,Wed,Run - speed/intervals,5.2,33,Intervals or hill repeats
+half_int,Half Marathon - Intermediate,Intermediate,6,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+half_int,Half Marathon - Intermediate,Intermediate,6,4,Fri,Run - tempo,6.2,39,"Comfortably hard, sustained effort"
 half_int,Half Marathon - Intermediate,Intermediate,6,5,Sat,Run - easy,3.3,21,Easy pace
 half_int,Half Marathon - Intermediate,Intermediate,6,6,Sun,Long run,15.1,95,"Weekend long run, steady effort"
-half_int,Half Marathon - Intermediate,Intermediate,7,0,Mon,Run - easy,4.3,27,Easy recovery pace
-half_int,Half Marathon - Intermediate,Intermediate,7,1,Tue,Run - speed/intervals,5.2,33,Intervals or hill repeats
-half_int,Half Marathon - Intermediate,Intermediate,7,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-half_int,Half Marathon - Intermediate,Intermediate,7,3,Thu,Run - tempo,6.3,40,"Comfortably hard, sustained effort"
-half_int,Half Marathon - Intermediate,Intermediate,7,4,Fri,Rest,,,
+half_int,Half Marathon - Intermediate,Intermediate,7,0,Mon,Run - easy,4.3,27,"Easy recovery pace, day after long run"
+half_int,Half Marathon - Intermediate,Intermediate,7,1,Tue,Run - easy,3.8,24,Second easy day - full recovery before Wednesday's quality session
+half_int,Half Marathon - Intermediate,Intermediate,7,2,Wed,Run - speed/intervals,5.2,33,Intervals or hill repeats
+half_int,Half Marathon - Intermediate,Intermediate,7,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+half_int,Half Marathon - Intermediate,Intermediate,7,4,Fri,Run - tempo,6.3,40,"Comfortably hard, sustained effort"
 half_int,Half Marathon - Intermediate,Intermediate,7,5,Sat,Run - easy,3.4,21,Easy pace
 half_int,Half Marathon - Intermediate,Intermediate,7,6,Sun,Long run,16.6,105,"Weekend long run, steady effort"
-half_int,Half Marathon - Intermediate,Intermediate,8,0,Mon,Run - easy,4.4,28,Easy recovery pace
-half_int,Half Marathon - Intermediate,Intermediate,8,1,Tue,Run - speed/intervals,5.2,33,Intervals or hill repeats
-half_int,Half Marathon - Intermediate,Intermediate,8,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-half_int,Half Marathon - Intermediate,Intermediate,8,3,Thu,Run - tempo,6.3,40,"Comfortably hard, sustained effort"
-half_int,Half Marathon - Intermediate,Intermediate,8,4,Fri,Rest,,,
+half_int,Half Marathon - Intermediate,Intermediate,8,0,Mon,Run - easy,4.4,28,"Easy recovery pace, day after long run"
+half_int,Half Marathon - Intermediate,Intermediate,8,1,Tue,Run - easy,3.8,24,Second easy day - full recovery before Wednesday's quality session
+half_int,Half Marathon - Intermediate,Intermediate,8,2,Wed,Run - speed/intervals,5.2,33,Intervals or hill repeats
+half_int,Half Marathon - Intermediate,Intermediate,8,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+half_int,Half Marathon - Intermediate,Intermediate,8,4,Fri,Run - tempo,6.3,40,"Comfortably hard, sustained effort"
 half_int,Half Marathon - Intermediate,Intermediate,8,5,Sat,Run - easy,3.4,21,Easy pace
 half_int,Half Marathon - Intermediate,Intermediate,8,6,Sun,Long run,12.5,79,"Weekend long run, steady effort"
-half_int,Half Marathon - Intermediate,Intermediate,9,0,Mon,Run - easy,4.5,28,Easy recovery pace
-half_int,Half Marathon - Intermediate,Intermediate,9,1,Tue,Run - speed/intervals,5.3,33,Intervals or hill repeats
-half_int,Half Marathon - Intermediate,Intermediate,9,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-half_int,Half Marathon - Intermediate,Intermediate,9,3,Thu,Run - tempo,6.4,40,"Comfortably hard, sustained effort"
-half_int,Half Marathon - Intermediate,Intermediate,9,4,Fri,Rest,,,
+half_int,Half Marathon - Intermediate,Intermediate,9,0,Mon,Run - easy,4.5,28,"Easy recovery pace, day after long run"
+half_int,Half Marathon - Intermediate,Intermediate,9,1,Tue,Run - easy,3.9,25,Second easy day - full recovery before Wednesday's quality session
+half_int,Half Marathon - Intermediate,Intermediate,9,2,Wed,Run - speed/intervals,5.3,33,Intervals or hill repeats
+half_int,Half Marathon - Intermediate,Intermediate,9,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+half_int,Half Marathon - Intermediate,Intermediate,9,4,Fri,Run - tempo,6.4,40,"Comfortably hard, sustained effort"
 half_int,Half Marathon - Intermediate,Intermediate,9,5,Sat,Run - easy,3.5,22,Easy pace
 half_int,Half Marathon - Intermediate,Intermediate,9,6,Sun,Long run,11.7,74,"Weekend long run, steady effort"
-half_int,Half Marathon - Intermediate,Intermediate,10,0,Mon,Run - easy,4.5,28,Easy recovery pace
-half_int,Half Marathon - Intermediate,Intermediate,10,1,Tue,Run - speed/intervals,5.3,33,Intervals or hill repeats
-half_int,Half Marathon - Intermediate,Intermediate,10,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-half_int,Half Marathon - Intermediate,Intermediate,10,3,Thu,Run - tempo,6.4,40,"Comfortably hard, sustained effort"
-half_int,Half Marathon - Intermediate,Intermediate,10,4,Fri,Rest,,,
+half_int,Half Marathon - Intermediate,Intermediate,10,0,Mon,Run - easy,4.5,28,"Easy recovery pace, day after long run"
+half_int,Half Marathon - Intermediate,Intermediate,10,1,Tue,Run - easy,3.9,25,Second easy day - full recovery before Wednesday's quality session
+half_int,Half Marathon - Intermediate,Intermediate,10,2,Wed,Run - speed/intervals,5.3,33,Intervals or hill repeats
+half_int,Half Marathon - Intermediate,Intermediate,10,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+half_int,Half Marathon - Intermediate,Intermediate,10,4,Fri,Run - tempo,6.4,40,"Comfortably hard, sustained effort"
 half_int,Half Marathon - Intermediate,Intermediate,10,5,Sat,Run - easy,3.5,22,Easy pace
 half_int,Half Marathon - Intermediate,Intermediate,10,6,Sun,RACE DAY,21.1,115,Race day!
 marathon_beg,Marathon - Beginner,Beginner,1,0,Mon,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,1,1,Tue,Run - easy,3.0,23,Easy conversational pace
-marathon_beg,Marathon - Beginner,Beginner,1,2,Wed,Cross-training / rest,,30,Optional light cross-training
+marathon_beg,Marathon - Beginner,Beginner,1,2,Wed,Cross-training / rest,,,Optional light cross-training
 marathon_beg,Marathon - Beginner,Beginner,1,3,Thu,Run - easy,3.0,23,Easy conversational pace
 marathon_beg,Marathon - Beginner,Beginner,1,4,Fri,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,1,5,Sat,Run - easy,2.0,16,Short easy run
 marathon_beg,Marathon - Beginner,Beginner,1,6,Sun,Long run,10.0,78,"Weekend long run - go slow, this builds endurance"
 marathon_beg,Marathon - Beginner,Beginner,2,0,Mon,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,2,1,Tue,Run - easy,3.1,24,Easy conversational pace
-marathon_beg,Marathon - Beginner,Beginner,2,2,Wed,Cross-training / rest,,30,Optional light cross-training
+marathon_beg,Marathon - Beginner,Beginner,2,2,Wed,Cross-training / rest,,,Optional light cross-training
 marathon_beg,Marathon - Beginner,Beginner,2,3,Thu,Run - easy,3.1,24,Easy conversational pace
 marathon_beg,Marathon - Beginner,Beginner,2,4,Fri,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,2,5,Sat,Run - easy,2.1,16,Short easy run
 marathon_beg,Marathon - Beginner,Beginner,2,6,Sun,Long run,11.7,91,"Weekend long run - go slow, this builds endurance"
 marathon_beg,Marathon - Beginner,Beginner,3,0,Mon,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,3,1,Tue,Run - easy,3.1,24,Easy conversational pace
-marathon_beg,Marathon - Beginner,Beginner,3,2,Wed,Cross-training / rest,,30,Optional light cross-training
+marathon_beg,Marathon - Beginner,Beginner,3,2,Wed,Cross-training / rest,,,Optional light cross-training
 marathon_beg,Marathon - Beginner,Beginner,3,3,Thu,Run - easy,3.1,24,Easy conversational pace
 marathon_beg,Marathon - Beginner,Beginner,3,4,Fri,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,3,5,Sat,Run - easy,2.1,16,Short easy run
 marathon_beg,Marathon - Beginner,Beginner,3,6,Sun,Long run,13.3,104,"Weekend long run - go slow, this builds endurance"
 marathon_beg,Marathon - Beginner,Beginner,4,0,Mon,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,4,1,Tue,Run - easy,3.2,25,Easy conversational pace
-marathon_beg,Marathon - Beginner,Beginner,4,2,Wed,Cross-training / rest,,30,Optional light cross-training
+marathon_beg,Marathon - Beginner,Beginner,4,2,Wed,Cross-training / rest,,,Optional light cross-training
 marathon_beg,Marathon - Beginner,Beginner,4,3,Thu,Run - easy,3.2,25,Easy conversational pace
 marathon_beg,Marathon - Beginner,Beginner,4,4,Fri,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,4,5,Sat,Run - easy,2.2,17,Short easy run
 marathon_beg,Marathon - Beginner,Beginner,4,6,Sun,Long run,10.0,78,"Weekend long run - go slow, this builds endurance"
 marathon_beg,Marathon - Beginner,Beginner,5,0,Mon,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,5,1,Tue,Run - easy,3.2,25,Easy conversational pace
-marathon_beg,Marathon - Beginner,Beginner,5,2,Wed,Cross-training / rest,,30,Optional light cross-training
+marathon_beg,Marathon - Beginner,Beginner,5,2,Wed,Cross-training / rest,,,Optional light cross-training
 marathon_beg,Marathon - Beginner,Beginner,5,3,Thu,Run - easy,3.2,25,Easy conversational pace
 marathon_beg,Marathon - Beginner,Beginner,5,4,Fri,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,5,5,Sat,Run - easy,2.2,17,Short easy run
 marathon_beg,Marathon - Beginner,Beginner,5,6,Sun,Long run,16.7,130,"Weekend long run - go slow, this builds endurance"
 marathon_beg,Marathon - Beginner,Beginner,6,0,Mon,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,6,1,Tue,Run - easy,3.3,26,Easy conversational pace
-marathon_beg,Marathon - Beginner,Beginner,6,2,Wed,Cross-training / rest,,30,Optional light cross-training
+marathon_beg,Marathon - Beginner,Beginner,6,2,Wed,Cross-training / rest,,,Optional light cross-training
 marathon_beg,Marathon - Beginner,Beginner,6,3,Thu,Run - easy,3.3,26,Easy conversational pace
 marathon_beg,Marathon - Beginner,Beginner,6,4,Fri,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,6,5,Sat,Run - easy,2.2,17,Short easy run
 marathon_beg,Marathon - Beginner,Beginner,6,6,Sun,Long run,18.3,143,"Weekend long run - go slow, this builds endurance"
 marathon_beg,Marathon - Beginner,Beginner,7,0,Mon,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,7,1,Tue,Run - easy,3.4,27,Easy conversational pace
-marathon_beg,Marathon - Beginner,Beginner,7,2,Wed,Cross-training / rest,,30,Optional light cross-training
+marathon_beg,Marathon - Beginner,Beginner,7,2,Wed,Cross-training / rest,,,Optional light cross-training
 marathon_beg,Marathon - Beginner,Beginner,7,3,Thu,Run - easy,3.4,27,Easy conversational pace
 marathon_beg,Marathon - Beginner,Beginner,7,4,Fri,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,7,5,Sat,Run - easy,2.3,18,Short easy run
 marathon_beg,Marathon - Beginner,Beginner,7,6,Sun,Long run,20.0,156,"Weekend long run - go slow, this builds endurance"
 marathon_beg,Marathon - Beginner,Beginner,8,0,Mon,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,8,1,Tue,Run - easy,3.4,27,Easy conversational pace
-marathon_beg,Marathon - Beginner,Beginner,8,2,Wed,Cross-training / rest,,30,Optional light cross-training
+marathon_beg,Marathon - Beginner,Beginner,8,2,Wed,Cross-training / rest,,,Optional light cross-training
 marathon_beg,Marathon - Beginner,Beginner,8,3,Thu,Run - easy,3.4,27,Easy conversational pace
 marathon_beg,Marathon - Beginner,Beginner,8,4,Fri,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,8,5,Sat,Run - easy,2.3,18,Short easy run
 marathon_beg,Marathon - Beginner,Beginner,8,6,Sun,Long run,15.0,117,"Weekend long run - go slow, this builds endurance"
 marathon_beg,Marathon - Beginner,Beginner,9,0,Mon,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,9,1,Tue,Run - easy,3.5,27,Easy conversational pace
-marathon_beg,Marathon - Beginner,Beginner,9,2,Wed,Cross-training / rest,,30,Optional light cross-training
+marathon_beg,Marathon - Beginner,Beginner,9,2,Wed,Cross-training / rest,,,Optional light cross-training
 marathon_beg,Marathon - Beginner,Beginner,9,3,Thu,Run - easy,3.5,27,Easy conversational pace
 marathon_beg,Marathon - Beginner,Beginner,9,4,Fri,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,9,5,Sat,Run - easy,2.4,19,Short easy run
 marathon_beg,Marathon - Beginner,Beginner,9,6,Sun,Long run,23.3,182,"Weekend long run - go slow, this builds endurance"
 marathon_beg,Marathon - Beginner,Beginner,10,0,Mon,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,10,1,Tue,Run - easy,3.5,27,Easy conversational pace
-marathon_beg,Marathon - Beginner,Beginner,10,2,Wed,Cross-training / rest,,30,Optional light cross-training
+marathon_beg,Marathon - Beginner,Beginner,10,2,Wed,Cross-training / rest,,,Optional light cross-training
 marathon_beg,Marathon - Beginner,Beginner,10,3,Thu,Run - easy,3.5,27,Easy conversational pace
 marathon_beg,Marathon - Beginner,Beginner,10,4,Fri,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,10,5,Sat,Run - easy,2.4,19,Short easy run
 marathon_beg,Marathon - Beginner,Beginner,10,6,Sun,Long run,25.0,195,"Weekend long run - go slow, this builds endurance"
 marathon_beg,Marathon - Beginner,Beginner,11,0,Mon,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,11,1,Tue,Run - easy,3.5,27,Easy conversational pace
-marathon_beg,Marathon - Beginner,Beginner,11,2,Wed,Cross-training / rest,,30,Optional light cross-training
+marathon_beg,Marathon - Beginner,Beginner,11,2,Wed,Cross-training / rest,,,Optional light cross-training
 marathon_beg,Marathon - Beginner,Beginner,11,3,Thu,Run - easy,3.5,27,Easy conversational pace
 marathon_beg,Marathon - Beginner,Beginner,11,4,Fri,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,11,5,Sat,Run - easy,2.4,19,Short easy run
 marathon_beg,Marathon - Beginner,Beginner,11,6,Sun,Long run,26.7,208,"Weekend long run - go slow, this builds endurance"
 marathon_beg,Marathon - Beginner,Beginner,12,0,Mon,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,12,1,Tue,Run - easy,3.6,28,Easy conversational pace
-marathon_beg,Marathon - Beginner,Beginner,12,2,Wed,Cross-training / rest,,30,Optional light cross-training
+marathon_beg,Marathon - Beginner,Beginner,12,2,Wed,Cross-training / rest,,,Optional light cross-training
 marathon_beg,Marathon - Beginner,Beginner,12,3,Thu,Run - easy,3.6,28,Easy conversational pace
 marathon_beg,Marathon - Beginner,Beginner,12,4,Fri,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,12,5,Sat,Run - easy,2.5,20,Short easy run
 marathon_beg,Marathon - Beginner,Beginner,12,6,Sun,Long run,20.0,156,"Weekend long run - go slow, this builds endurance"
 marathon_beg,Marathon - Beginner,Beginner,13,0,Mon,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,13,1,Tue,Run - easy,3.6,28,Easy conversational pace
-marathon_beg,Marathon - Beginner,Beginner,13,2,Wed,Cross-training / rest,,30,Optional light cross-training
+marathon_beg,Marathon - Beginner,Beginner,13,2,Wed,Cross-training / rest,,,Optional light cross-training
 marathon_beg,Marathon - Beginner,Beginner,13,3,Thu,Run - easy,3.6,28,Easy conversational pace
 marathon_beg,Marathon - Beginner,Beginner,13,4,Fri,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,13,5,Sat,Run - easy,2.5,20,Short easy run
 marathon_beg,Marathon - Beginner,Beginner,13,6,Sun,Long run,30.0,234,"Weekend long run - go slow, this builds endurance"
 marathon_beg,Marathon - Beginner,Beginner,14,0,Mon,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,14,1,Tue,Run - easy,3.7,29,Easy conversational pace
-marathon_beg,Marathon - Beginner,Beginner,14,2,Wed,Cross-training / rest,,30,Optional light cross-training
+marathon_beg,Marathon - Beginner,Beginner,14,2,Wed,Cross-training / rest,,,Optional light cross-training
 marathon_beg,Marathon - Beginner,Beginner,14,3,Thu,Run - easy,3.7,29,Easy conversational pace
 marathon_beg,Marathon - Beginner,Beginner,14,4,Fri,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,14,5,Sat,Run - easy,2.6,20,Short easy run
 marathon_beg,Marathon - Beginner,Beginner,14,6,Sun,Long run,19.5,152,"Weekend long run - go slow, this builds endurance"
 marathon_beg,Marathon - Beginner,Beginner,15,0,Mon,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,15,1,Tue,Run - easy,3.8,30,Easy conversational pace
-marathon_beg,Marathon - Beginner,Beginner,15,2,Wed,Cross-training / rest,,30,Optional light cross-training
+marathon_beg,Marathon - Beginner,Beginner,15,2,Wed,Cross-training / rest,,,Optional light cross-training
 marathon_beg,Marathon - Beginner,Beginner,15,3,Thu,Run - easy,3.8,30,Easy conversational pace
 marathon_beg,Marathon - Beginner,Beginner,15,4,Fri,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,15,5,Sat,Run - easy,2.6,20,Short easy run
 marathon_beg,Marathon - Beginner,Beginner,15,6,Sun,Long run,13.5,105,"Weekend long run - go slow, this builds endurance"
 marathon_beg,Marathon - Beginner,Beginner,16,0,Mon,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,16,1,Tue,Run - easy,3.8,30,Easy conversational pace
-marathon_beg,Marathon - Beginner,Beginner,16,2,Wed,Cross-training / rest,,30,Optional light cross-training
+marathon_beg,Marathon - Beginner,Beginner,16,2,Wed,Cross-training / rest,,,Optional light cross-training
 marathon_beg,Marathon - Beginner,Beginner,16,3,Thu,Run - easy,3.8,30,Easy conversational pace
 marathon_beg,Marathon - Beginner,Beginner,16,4,Fri,Rest,,,
 marathon_beg,Marathon - Beginner,Beginner,16,5,Sat,Run - easy,2.6,20,Short easy run
 marathon_beg,Marathon - Beginner,Beginner,16,6,Sun,RACE DAY,42.2,290,Race day!
-marathon_int,Marathon - Intermediate,Intermediate,1,0,Mon,Run - easy,4.0,26,Easy recovery pace
-marathon_int,Marathon - Intermediate,Intermediate,1,1,Tue,Run - speed/intervals,5.0,32,Intervals or hill repeats
-marathon_int,Marathon - Intermediate,Intermediate,1,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-marathon_int,Marathon - Intermediate,Intermediate,1,3,Thu,Run - tempo,6.0,39,"Comfortably hard, sustained effort"
-marathon_int,Marathon - Intermediate,Intermediate,1,4,Fri,Rest,,,
+marathon_int,Marathon - Intermediate,Intermediate,1,0,Mon,Run - easy,4.0,26,"Easy recovery pace, day after long run"
+marathon_int,Marathon - Intermediate,Intermediate,1,1,Tue,Run - easy,3.5,23,Second easy day - full recovery before Wednesday's quality session
+marathon_int,Marathon - Intermediate,Intermediate,1,2,Wed,Run - speed/intervals,5.0,32,Intervals or hill repeats
+marathon_int,Marathon - Intermediate,Intermediate,1,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+marathon_int,Marathon - Intermediate,Intermediate,1,4,Fri,Run - tempo,6.0,39,"Comfortably hard, sustained effort"
 marathon_int,Marathon - Intermediate,Intermediate,1,5,Sat,Run - easy,3.0,20,Easy pace
 marathon_int,Marathon - Intermediate,Intermediate,1,6,Sun,Long run,12.0,78,"Weekend long run, steady effort"
-marathon_int,Marathon - Intermediate,Intermediate,2,0,Mon,Run - easy,4.1,27,Easy recovery pace
-marathon_int,Marathon - Intermediate,Intermediate,2,1,Tue,Run - speed/intervals,5.1,33,Intervals or hill repeats
-marathon_int,Marathon - Intermediate,Intermediate,2,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-marathon_int,Marathon - Intermediate,Intermediate,2,3,Thu,Run - tempo,6.1,40,"Comfortably hard, sustained effort"
-marathon_int,Marathon - Intermediate,Intermediate,2,4,Fri,Rest,,,
+marathon_int,Marathon - Intermediate,Intermediate,2,0,Mon,Run - easy,4.1,27,"Easy recovery pace, day after long run"
+marathon_int,Marathon - Intermediate,Intermediate,2,1,Tue,Run - easy,3.6,23,Second easy day - full recovery before Wednesday's quality session
+marathon_int,Marathon - Intermediate,Intermediate,2,2,Wed,Run - speed/intervals,5.1,33,Intervals or hill repeats
+marathon_int,Marathon - Intermediate,Intermediate,2,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+marathon_int,Marathon - Intermediate,Intermediate,2,4,Fri,Run - tempo,6.1,40,"Comfortably hard, sustained effort"
 marathon_int,Marathon - Intermediate,Intermediate,2,5,Sat,Run - easy,3.1,20,Easy pace
 marathon_int,Marathon - Intermediate,Intermediate,2,6,Sun,Long run,13.8,90,"Weekend long run, steady effort"
-marathon_int,Marathon - Intermediate,Intermediate,3,0,Mon,Run - easy,4.2,27,Easy recovery pace
-marathon_int,Marathon - Intermediate,Intermediate,3,1,Tue,Run - speed/intervals,5.1,33,Intervals or hill repeats
-marathon_int,Marathon - Intermediate,Intermediate,3,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-marathon_int,Marathon - Intermediate,Intermediate,3,3,Thu,Run - tempo,6.1,40,"Comfortably hard, sustained effort"
-marathon_int,Marathon - Intermediate,Intermediate,3,4,Fri,Rest,,,
+marathon_int,Marathon - Intermediate,Intermediate,3,0,Mon,Run - easy,4.2,27,"Easy recovery pace, day after long run"
+marathon_int,Marathon - Intermediate,Intermediate,3,1,Tue,Run - easy,3.6,23,Second easy day - full recovery before Wednesday's quality session
+marathon_int,Marathon - Intermediate,Intermediate,3,2,Wed,Run - speed/intervals,5.1,33,Intervals or hill repeats
+marathon_int,Marathon - Intermediate,Intermediate,3,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+marathon_int,Marathon - Intermediate,Intermediate,3,4,Fri,Run - tempo,6.1,40,"Comfortably hard, sustained effort"
 marathon_int,Marathon - Intermediate,Intermediate,3,5,Sat,Run - easy,3.1,20,Easy pace
 marathon_int,Marathon - Intermediate,Intermediate,3,6,Sun,Long run,15.7,102,"Weekend long run, steady effort"
-marathon_int,Marathon - Intermediate,Intermediate,4,0,Mon,Run - easy,4.2,27,Easy recovery pace
-marathon_int,Marathon - Intermediate,Intermediate,4,1,Tue,Run - speed/intervals,5.1,33,Intervals or hill repeats
-marathon_int,Marathon - Intermediate,Intermediate,4,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-marathon_int,Marathon - Intermediate,Intermediate,4,3,Thu,Run - tempo,6.2,40,"Comfortably hard, sustained effort"
-marathon_int,Marathon - Intermediate,Intermediate,4,4,Fri,Rest,,,
+marathon_int,Marathon - Intermediate,Intermediate,4,0,Mon,Run - easy,4.2,27,"Easy recovery pace, day after long run"
+marathon_int,Marathon - Intermediate,Intermediate,4,1,Tue,Run - easy,3.7,24,Second easy day - full recovery before Wednesday's quality session
+marathon_int,Marathon - Intermediate,Intermediate,4,2,Wed,Run - speed/intervals,5.1,33,Intervals or hill repeats
+marathon_int,Marathon - Intermediate,Intermediate,4,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+marathon_int,Marathon - Intermediate,Intermediate,4,4,Fri,Run - tempo,6.2,40,"Comfortably hard, sustained effort"
 marathon_int,Marathon - Intermediate,Intermediate,4,5,Sat,Run - easy,3.2,21,Easy pace
 marathon_int,Marathon - Intermediate,Intermediate,4,6,Sun,Long run,11.8,77,"Weekend long run, steady effort"
-marathon_int,Marathon - Intermediate,Intermediate,5,0,Mon,Run - easy,4.2,27,Easy recovery pace
-marathon_int,Marathon - Intermediate,Intermediate,5,1,Tue,Run - speed/intervals,5.2,34,Intervals or hill repeats
-marathon_int,Marathon - Intermediate,Intermediate,5,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-marathon_int,Marathon - Intermediate,Intermediate,5,3,Thu,Run - tempo,6.2,40,"Comfortably hard, sustained effort"
-marathon_int,Marathon - Intermediate,Intermediate,5,4,Fri,Rest,,,
+marathon_int,Marathon - Intermediate,Intermediate,5,0,Mon,Run - easy,4.2,27,"Easy recovery pace, day after long run"
+marathon_int,Marathon - Intermediate,Intermediate,5,1,Tue,Run - easy,3.7,24,Second easy day - full recovery before Wednesday's quality session
+marathon_int,Marathon - Intermediate,Intermediate,5,2,Wed,Run - speed/intervals,5.2,34,Intervals or hill repeats
+marathon_int,Marathon - Intermediate,Intermediate,5,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+marathon_int,Marathon - Intermediate,Intermediate,5,4,Fri,Run - tempo,6.2,40,"Comfortably hard, sustained effort"
 marathon_int,Marathon - Intermediate,Intermediate,5,5,Sat,Run - easy,3.2,21,Easy pace
 marathon_int,Marathon - Intermediate,Intermediate,5,6,Sun,Long run,19.3,125,"Weekend long run, steady effort"
-marathon_int,Marathon - Intermediate,Intermediate,6,0,Mon,Run - easy,4.3,28,Easy recovery pace
-marathon_int,Marathon - Intermediate,Intermediate,6,1,Tue,Run - speed/intervals,5.2,34,Intervals or hill repeats
-marathon_int,Marathon - Intermediate,Intermediate,6,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-marathon_int,Marathon - Intermediate,Intermediate,6,3,Thu,Run - tempo,6.2,40,"Comfortably hard, sustained effort"
-marathon_int,Marathon - Intermediate,Intermediate,6,4,Fri,Rest,,,
+marathon_int,Marathon - Intermediate,Intermediate,6,0,Mon,Run - easy,4.3,28,"Easy recovery pace, day after long run"
+marathon_int,Marathon - Intermediate,Intermediate,6,1,Tue,Run - easy,3.7,24,Second easy day - full recovery before Wednesday's quality session
+marathon_int,Marathon - Intermediate,Intermediate,6,2,Wed,Run - speed/intervals,5.2,34,Intervals or hill repeats
+marathon_int,Marathon - Intermediate,Intermediate,6,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+marathon_int,Marathon - Intermediate,Intermediate,6,4,Fri,Run - tempo,6.2,40,"Comfortably hard, sustained effort"
 marathon_int,Marathon - Intermediate,Intermediate,6,5,Sat,Run - easy,3.3,21,Easy pace
 marathon_int,Marathon - Intermediate,Intermediate,6,6,Sun,Long run,21.2,138,"Weekend long run, steady effort"
-marathon_int,Marathon - Intermediate,Intermediate,7,0,Mon,Run - easy,4.3,28,Easy recovery pace
-marathon_int,Marathon - Intermediate,Intermediate,7,1,Tue,Run - speed/intervals,5.2,34,Intervals or hill repeats
-marathon_int,Marathon - Intermediate,Intermediate,7,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-marathon_int,Marathon - Intermediate,Intermediate,7,3,Thu,Run - tempo,6.3,41,"Comfortably hard, sustained effort"
-marathon_int,Marathon - Intermediate,Intermediate,7,4,Fri,Rest,,,
+marathon_int,Marathon - Intermediate,Intermediate,7,0,Mon,Run - easy,4.3,28,"Easy recovery pace, day after long run"
+marathon_int,Marathon - Intermediate,Intermediate,7,1,Tue,Run - easy,3.8,25,Second easy day - full recovery before Wednesday's quality session
+marathon_int,Marathon - Intermediate,Intermediate,7,2,Wed,Run - speed/intervals,5.2,34,Intervals or hill repeats
+marathon_int,Marathon - Intermediate,Intermediate,7,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+marathon_int,Marathon - Intermediate,Intermediate,7,4,Fri,Run - tempo,6.3,41,"Comfortably hard, sustained effort"
 marathon_int,Marathon - Intermediate,Intermediate,7,5,Sat,Run - easy,3.4,22,Easy pace
 marathon_int,Marathon - Intermediate,Intermediate,7,6,Sun,Long run,23.0,150,"Weekend long run, steady effort"
-marathon_int,Marathon - Intermediate,Intermediate,8,0,Mon,Run - easy,4.4,29,Easy recovery pace
-marathon_int,Marathon - Intermediate,Intermediate,8,1,Tue,Run - speed/intervals,5.2,34,Intervals or hill repeats
-marathon_int,Marathon - Intermediate,Intermediate,8,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-marathon_int,Marathon - Intermediate,Intermediate,8,3,Thu,Run - tempo,6.3,41,"Comfortably hard, sustained effort"
-marathon_int,Marathon - Intermediate,Intermediate,8,4,Fri,Rest,,,
+marathon_int,Marathon - Intermediate,Intermediate,8,0,Mon,Run - easy,4.4,29,"Easy recovery pace, day after long run"
+marathon_int,Marathon - Intermediate,Intermediate,8,1,Tue,Run - easy,3.8,25,Second easy day - full recovery before Wednesday's quality session
+marathon_int,Marathon - Intermediate,Intermediate,8,2,Wed,Run - speed/intervals,5.2,34,Intervals or hill repeats
+marathon_int,Marathon - Intermediate,Intermediate,8,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+marathon_int,Marathon - Intermediate,Intermediate,8,4,Fri,Run - tempo,6.3,41,"Comfortably hard, sustained effort"
 marathon_int,Marathon - Intermediate,Intermediate,8,5,Sat,Run - easy,3.4,22,Easy pace
 marathon_int,Marathon - Intermediate,Intermediate,8,6,Sun,Long run,17.2,112,"Weekend long run, steady effort"
-marathon_int,Marathon - Intermediate,Intermediate,9,0,Mon,Run - easy,4.5,29,Easy recovery pace
-marathon_int,Marathon - Intermediate,Intermediate,9,1,Tue,Run - speed/intervals,5.3,34,Intervals or hill repeats
-marathon_int,Marathon - Intermediate,Intermediate,9,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-marathon_int,Marathon - Intermediate,Intermediate,9,3,Thu,Run - tempo,6.4,42,"Comfortably hard, sustained effort"
-marathon_int,Marathon - Intermediate,Intermediate,9,4,Fri,Rest,,,
+marathon_int,Marathon - Intermediate,Intermediate,9,0,Mon,Run - easy,4.5,29,"Easy recovery pace, day after long run"
+marathon_int,Marathon - Intermediate,Intermediate,9,1,Tue,Run - easy,3.9,25,Second easy day - full recovery before Wednesday's quality session
+marathon_int,Marathon - Intermediate,Intermediate,9,2,Wed,Run - speed/intervals,5.3,34,Intervals or hill repeats
+marathon_int,Marathon - Intermediate,Intermediate,9,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+marathon_int,Marathon - Intermediate,Intermediate,9,4,Fri,Run - tempo,6.4,42,"Comfortably hard, sustained effort"
 marathon_int,Marathon - Intermediate,Intermediate,9,5,Sat,Run - easy,3.5,23,Easy pace
 marathon_int,Marathon - Intermediate,Intermediate,9,6,Sun,Long run,26.7,174,"Weekend long run, steady effort"
-marathon_int,Marathon - Intermediate,Intermediate,10,0,Mon,Run - easy,4.5,29,Easy recovery pace
-marathon_int,Marathon - Intermediate,Intermediate,10,1,Tue,Run - speed/intervals,5.3,34,Intervals or hill repeats
-marathon_int,Marathon - Intermediate,Intermediate,10,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-marathon_int,Marathon - Intermediate,Intermediate,10,3,Thu,Run - tempo,6.4,42,"Comfortably hard, sustained effort"
-marathon_int,Marathon - Intermediate,Intermediate,10,4,Fri,Rest,,,
+marathon_int,Marathon - Intermediate,Intermediate,10,0,Mon,Run - easy,4.5,29,"Easy recovery pace, day after long run"
+marathon_int,Marathon - Intermediate,Intermediate,10,1,Tue,Run - easy,3.9,25,Second easy day - full recovery before Wednesday's quality session
+marathon_int,Marathon - Intermediate,Intermediate,10,2,Wed,Run - speed/intervals,5.3,34,Intervals or hill repeats
+marathon_int,Marathon - Intermediate,Intermediate,10,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+marathon_int,Marathon - Intermediate,Intermediate,10,4,Fri,Run - tempo,6.4,42,"Comfortably hard, sustained effort"
 marathon_int,Marathon - Intermediate,Intermediate,10,5,Sat,Run - easy,3.5,23,Easy pace
 marathon_int,Marathon - Intermediate,Intermediate,10,6,Sun,Long run,28.5,185,"Weekend long run, steady effort"
-marathon_int,Marathon - Intermediate,Intermediate,11,0,Mon,Run - easy,4.5,29,Easy recovery pace
-marathon_int,Marathon - Intermediate,Intermediate,11,1,Tue,Run - speed/intervals,5.3,34,Intervals or hill repeats
-marathon_int,Marathon - Intermediate,Intermediate,11,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-marathon_int,Marathon - Intermediate,Intermediate,11,3,Thu,Run - tempo,6.4,42,"Comfortably hard, sustained effort"
-marathon_int,Marathon - Intermediate,Intermediate,11,4,Fri,Rest,,,
+marathon_int,Marathon - Intermediate,Intermediate,11,0,Mon,Run - easy,4.5,29,"Easy recovery pace, day after long run"
+marathon_int,Marathon - Intermediate,Intermediate,11,1,Tue,Run - easy,3.9,25,Second easy day - full recovery before Wednesday's quality session
+marathon_int,Marathon - Intermediate,Intermediate,11,2,Wed,Run - speed/intervals,5.3,34,Intervals or hill repeats
+marathon_int,Marathon - Intermediate,Intermediate,11,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+marathon_int,Marathon - Intermediate,Intermediate,11,4,Fri,Run - tempo,6.4,42,"Comfortably hard, sustained effort"
 marathon_int,Marathon - Intermediate,Intermediate,11,5,Sat,Run - easy,3.5,23,Easy pace
 marathon_int,Marathon - Intermediate,Intermediate,11,6,Sun,Long run,30.3,197,"Weekend long run, steady effort"
-marathon_int,Marathon - Intermediate,Intermediate,12,0,Mon,Run - easy,4.6,30,Easy recovery pace
-marathon_int,Marathon - Intermediate,Intermediate,12,1,Tue,Run - speed/intervals,5.4,35,Intervals or hill repeats
-marathon_int,Marathon - Intermediate,Intermediate,12,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-marathon_int,Marathon - Intermediate,Intermediate,12,3,Thu,Run - tempo,6.5,42,"Comfortably hard, sustained effort"
-marathon_int,Marathon - Intermediate,Intermediate,12,4,Fri,Rest,,,
+marathon_int,Marathon - Intermediate,Intermediate,12,0,Mon,Run - easy,4.6,30,"Easy recovery pace, day after long run"
+marathon_int,Marathon - Intermediate,Intermediate,12,1,Tue,Run - easy,4.0,26,Second easy day - full recovery before Wednesday's quality session
+marathon_int,Marathon - Intermediate,Intermediate,12,2,Wed,Run - speed/intervals,5.4,35,Intervals or hill repeats
+marathon_int,Marathon - Intermediate,Intermediate,12,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+marathon_int,Marathon - Intermediate,Intermediate,12,4,Fri,Run - tempo,6.5,42,"Comfortably hard, sustained effort"
 marathon_int,Marathon - Intermediate,Intermediate,12,5,Sat,Run - easy,3.6,23,Easy pace
 marathon_int,Marathon - Intermediate,Intermediate,12,6,Sun,Long run,22.7,148,"Weekend long run, steady effort"
-marathon_int,Marathon - Intermediate,Intermediate,13,0,Mon,Run - easy,4.7,31,Easy recovery pace
-marathon_int,Marathon - Intermediate,Intermediate,13,1,Tue,Run - speed/intervals,5.4,35,Intervals or hill repeats
-marathon_int,Marathon - Intermediate,Intermediate,13,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-marathon_int,Marathon - Intermediate,Intermediate,13,3,Thu,Run - tempo,6.5,42,"Comfortably hard, sustained effort"
-marathon_int,Marathon - Intermediate,Intermediate,13,4,Fri,Rest,,,
+marathon_int,Marathon - Intermediate,Intermediate,13,0,Mon,Run - easy,4.7,31,"Easy recovery pace, day after long run"
+marathon_int,Marathon - Intermediate,Intermediate,13,1,Tue,Run - easy,4.0,26,Second easy day - full recovery before Wednesday's quality session
+marathon_int,Marathon - Intermediate,Intermediate,13,2,Wed,Run - speed/intervals,5.4,35,Intervals or hill repeats
+marathon_int,Marathon - Intermediate,Intermediate,13,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+marathon_int,Marathon - Intermediate,Intermediate,13,4,Fri,Run - tempo,6.5,42,"Comfortably hard, sustained effort"
 marathon_int,Marathon - Intermediate,Intermediate,13,5,Sat,Run - easy,3.6,23,Easy pace
 marathon_int,Marathon - Intermediate,Intermediate,13,6,Sun,Long run,34.0,221,"Weekend long run, steady effort"
-marathon_int,Marathon - Intermediate,Intermediate,14,0,Mon,Run - easy,4.7,31,Easy recovery pace
-marathon_int,Marathon - Intermediate,Intermediate,14,1,Tue,Run - speed/intervals,5.4,35,Intervals or hill repeats
-marathon_int,Marathon - Intermediate,Intermediate,14,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-marathon_int,Marathon - Intermediate,Intermediate,14,3,Thu,Run - tempo,6.6,43,"Comfortably hard, sustained effort"
-marathon_int,Marathon - Intermediate,Intermediate,14,4,Fri,Rest,,,
+marathon_int,Marathon - Intermediate,Intermediate,14,0,Mon,Run - easy,4.7,31,"Easy recovery pace, day after long run"
+marathon_int,Marathon - Intermediate,Intermediate,14,1,Tue,Run - easy,4.1,27,Second easy day - full recovery before Wednesday's quality session
+marathon_int,Marathon - Intermediate,Intermediate,14,2,Wed,Run - speed/intervals,5.4,35,Intervals or hill repeats
+marathon_int,Marathon - Intermediate,Intermediate,14,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+marathon_int,Marathon - Intermediate,Intermediate,14,4,Fri,Run - tempo,6.6,43,"Comfortably hard, sustained effort"
 marathon_int,Marathon - Intermediate,Intermediate,14,5,Sat,Run - easy,3.7,24,Easy pace
 marathon_int,Marathon - Intermediate,Intermediate,14,6,Sun,Long run,22.1,144,"Weekend long run, steady effort"
-marathon_int,Marathon - Intermediate,Intermediate,15,0,Mon,Run - easy,4.8,31,Easy recovery pace
-marathon_int,Marathon - Intermediate,Intermediate,15,1,Tue,Run - speed/intervals,5.5,36,Intervals or hill repeats
-marathon_int,Marathon - Intermediate,Intermediate,15,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-marathon_int,Marathon - Intermediate,Intermediate,15,3,Thu,Run - tempo,6.6,43,"Comfortably hard, sustained effort"
-marathon_int,Marathon - Intermediate,Intermediate,15,4,Fri,Rest,,,
+marathon_int,Marathon - Intermediate,Intermediate,15,0,Mon,Run - easy,4.8,31,"Easy recovery pace, day after long run"
+marathon_int,Marathon - Intermediate,Intermediate,15,1,Tue,Run - easy,4.1,27,Second easy day - full recovery before Wednesday's quality session
+marathon_int,Marathon - Intermediate,Intermediate,15,2,Wed,Run - speed/intervals,5.5,36,Intervals or hill repeats
+marathon_int,Marathon - Intermediate,Intermediate,15,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+marathon_int,Marathon - Intermediate,Intermediate,15,4,Fri,Run - tempo,6.6,43,"Comfortably hard, sustained effort"
 marathon_int,Marathon - Intermediate,Intermediate,15,5,Sat,Run - easy,3.8,25,Easy pace
 marathon_int,Marathon - Intermediate,Intermediate,15,6,Sun,Long run,15.3,99,"Weekend long run, steady effort"
-marathon_int,Marathon - Intermediate,Intermediate,16,0,Mon,Run - easy,4.8,31,Easy recovery pace
-marathon_int,Marathon - Intermediate,Intermediate,16,1,Tue,Run - speed/intervals,5.5,36,Intervals or hill repeats
-marathon_int,Marathon - Intermediate,Intermediate,16,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-marathon_int,Marathon - Intermediate,Intermediate,16,3,Thu,Run - tempo,6.6,43,"Comfortably hard, sustained effort"
-marathon_int,Marathon - Intermediate,Intermediate,16,4,Fri,Rest,,,
+marathon_int,Marathon - Intermediate,Intermediate,16,0,Mon,Run - easy,4.8,31,"Easy recovery pace, day after long run"
+marathon_int,Marathon - Intermediate,Intermediate,16,1,Tue,Run - easy,4.1,27,Second easy day - full recovery before Wednesday's quality session
+marathon_int,Marathon - Intermediate,Intermediate,16,2,Wed,Run - speed/intervals,5.5,36,Intervals or hill repeats
+marathon_int,Marathon - Intermediate,Intermediate,16,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+marathon_int,Marathon - Intermediate,Intermediate,16,4,Fri,Run - tempo,6.6,43,"Comfortably hard, sustained effort"
 marathon_int,Marathon - Intermediate,Intermediate,16,5,Sat,Run - easy,3.8,25,Easy pace
 marathon_int,Marathon - Intermediate,Intermediate,16,6,Sun,RACE DAY,42.2,240,Race day!
 50k_beg,50K - Beginner,Beginner,1,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,1,1,Tue,Run - easy,3.0,30,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,1,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,1,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,1,3,Thu,Run - easy,3.0,30,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,1,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,1,5,Sat,Run - easy,2.0,20,Short easy run
 50k_beg,50K - Beginner,Beginner,1,6,Sun,Long run,10.0,100,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,2,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,2,1,Tue,Run - easy,3.1,31,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,2,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,2,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,2,3,Thu,Run - easy,3.1,31,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,2,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,2,5,Sat,Run - easy,2.1,21,Short easy run
 50k_beg,50K - Beginner,Beginner,2,6,Sun,Long run,10.9,109,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,3,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,3,1,Tue,Run - easy,3.1,31,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,3,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,3,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,3,3,Thu,Run - easy,3.1,31,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,3,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,3,5,Sat,Run - easy (back-to-back),8.8,88,Back-to-back with Sunday long run
 50k_beg,50K - Beginner,Beginner,3,6,Sun,Long run,11.8,118,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,4,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,4,1,Tue,Run - easy,3.2,32,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,4,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,4,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,4,3,Thu,Run - easy,3.2,32,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,4,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,4,5,Sat,Run - easy,2.2,22,Short easy run
 50k_beg,50K - Beginner,Beginner,4,6,Sun,Long run,8.9,89,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,5,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,5,1,Tue,Run - easy,3.2,32,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,5,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,5,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,5,3,Thu,Run - easy,3.2,32,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,5,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,5,5,Sat,Run - easy,2.2,22,Short easy run
 50k_beg,50K - Beginner,Beginner,5,6,Sun,Long run,13.5,135,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,6,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,6,1,Tue,Run - easy,3.3,33,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,6,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,6,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,6,3,Thu,Run - easy,3.3,33,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,6,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,6,5,Sat,Run - easy (back-to-back),9.9,99,Back-to-back with Sunday long run
 50k_beg,50K - Beginner,Beginner,6,6,Sun,Long run,14.4,144,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,7,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,7,1,Tue,Run - easy,3.4,34,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,7,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,7,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,7,3,Thu,Run - easy,3.4,34,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,7,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,7,5,Sat,Run - easy,2.3,23,Short easy run
 50k_beg,50K - Beginner,Beginner,7,6,Sun,Long run,15.2,152,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,8,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,8,1,Tue,Run - easy,3.4,34,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,8,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,8,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,8,3,Thu,Run - easy,3.4,34,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,8,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,8,5,Sat,Run - easy,2.3,23,Short easy run
 50k_beg,50K - Beginner,Beginner,8,6,Sun,Long run,11.4,114,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,9,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,9,1,Tue,Run - easy,3.5,35,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,9,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,9,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,9,3,Thu,Run - easy,3.5,35,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,9,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,9,5,Sat,Run - easy (back-to-back),11.0,110,Back-to-back with Sunday long run
 50k_beg,50K - Beginner,Beginner,9,6,Sun,Long run,17.0,170,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,10,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,10,1,Tue,Run - easy,3.5,35,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,10,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,10,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,10,3,Thu,Run - easy,3.5,35,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,10,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,10,5,Sat,Run - easy,2.4,24,Short easy run
 50k_beg,50K - Beginner,Beginner,10,6,Sun,Long run,17.9,179,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,11,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,11,1,Tue,Run - easy,3.5,35,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,11,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,11,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,11,3,Thu,Run - easy,3.5,35,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,11,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,11,5,Sat,Run - easy,2.4,24,Short easy run
 50k_beg,50K - Beginner,Beginner,11,6,Sun,Long run,18.8,188,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,12,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,12,1,Tue,Run - easy,3.6,36,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,12,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,12,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,12,3,Thu,Run - easy,3.6,36,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,12,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,12,5,Sat,Run - easy (back-to-back),12.1,121,Back-to-back with Sunday long run
 50k_beg,50K - Beginner,Beginner,12,6,Sun,Long run,14.1,141,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,13,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,13,1,Tue,Run - easy,3.6,36,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,13,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,13,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,13,3,Thu,Run - easy,3.6,36,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,13,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,13,5,Sat,Run - easy,2.5,25,Short easy run
 50k_beg,50K - Beginner,Beginner,13,6,Sun,Long run,20.5,205,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,14,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,14,1,Tue,Run - easy,3.7,37,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,14,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,14,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,14,3,Thu,Run - easy,3.7,37,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,14,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,14,5,Sat,Run - easy,2.6,26,Short easy run
 50k_beg,50K - Beginner,Beginner,14,6,Sun,Long run,21.4,214,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,15,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,15,1,Tue,Run - easy,3.8,38,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,15,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,15,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,15,3,Thu,Run - easy,3.8,38,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,15,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,15,5,Sat,Run - easy (back-to-back),13.2,132,Back-to-back with Sunday long run
 50k_beg,50K - Beginner,Beginner,15,6,Sun,Long run,22.2,222,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,16,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,16,1,Tue,Run - easy,3.8,38,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,16,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,16,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,16,3,Thu,Run - easy,3.8,38,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,16,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,16,5,Sat,Run - easy,2.6,26,Short easy run
 50k_beg,50K - Beginner,Beginner,16,6,Sun,Long run,16.6,166,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,17,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,17,1,Tue,Run - easy,3.9,39,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,17,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,17,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,17,3,Thu,Run - easy,3.9,39,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,17,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,17,5,Sat,Run - easy,2.7,27,Short easy run
 50k_beg,50K - Beginner,Beginner,17,6,Sun,Long run,24.0,240,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,18,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,18,1,Tue,Run - easy,3.9,39,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,18,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,18,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,18,3,Thu,Run - easy,3.9,39,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,18,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,18,5,Sat,Run - easy,2.7,27,Short easy run
 50k_beg,50K - Beginner,Beginner,18,6,Sun,Long run,15.6,156,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,19,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,19,1,Tue,Run - easy,4.0,40,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,19,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,19,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,19,3,Thu,Run - easy,4.0,40,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,19,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,19,5,Sat,Run - easy,2.8,28,Short easy run
 50k_beg,50K - Beginner,Beginner,19,6,Sun,Long run,10.8,108,"Weekend long run - go slow, this builds endurance"
 50k_beg,50K - Beginner,Beginner,20,0,Mon,Rest,,,
 50k_beg,50K - Beginner,Beginner,20,1,Tue,Run - easy,4.0,40,Easy conversational pace
-50k_beg,50K - Beginner,Beginner,20,2,Wed,Cross-training / rest,,30,Optional light cross-training
+50k_beg,50K - Beginner,Beginner,20,2,Wed,Cross-training / rest,,,Optional light cross-training
 50k_beg,50K - Beginner,Beginner,20,3,Thu,Run - easy,4.0,40,Easy conversational pace
 50k_beg,50K - Beginner,Beginner,20,4,Fri,Rest,,,
 50k_beg,50K - Beginner,Beginner,20,5,Sat,Run - easy,2.8,28,Short easy run
 50k_beg,50K - Beginner,Beginner,20,6,Sun,RACE DAY,50,450,Race day!
-50k_int,50K - Intermediate,Intermediate,1,0,Mon,Run - easy,4.0,32,Easy recovery pace
-50k_int,50K - Intermediate,Intermediate,1,1,Tue,Run - speed/intervals,5.0,40,Intervals or hill repeats
-50k_int,50K - Intermediate,Intermediate,1,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-50k_int,50K - Intermediate,Intermediate,1,3,Thu,Run - tempo,6.0,48,"Comfortably hard, sustained effort"
-50k_int,50K - Intermediate,Intermediate,1,4,Fri,Rest,,,
+50k_int,50K - Intermediate,Intermediate,1,0,Mon,Run - easy,4.0,32,"Easy recovery pace, day after long run"
+50k_int,50K - Intermediate,Intermediate,1,1,Tue,Run - easy,3.5,28,Second easy day - full recovery before Wednesday's quality session
+50k_int,50K - Intermediate,Intermediate,1,2,Wed,Run - speed/intervals,5.0,40,Intervals or hill repeats
+50k_int,50K - Intermediate,Intermediate,1,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+50k_int,50K - Intermediate,Intermediate,1,4,Fri,Run - tempo,6.0,48,"Comfortably hard, sustained effort"
 50k_int,50K - Intermediate,Intermediate,1,5,Sat,Run - easy,3.0,24,Easy pace
 50k_int,50K - Intermediate,Intermediate,1,6,Sun,Long run,12.0,96,"Weekend long run, steady effort"
-50k_int,50K - Intermediate,Intermediate,2,0,Mon,Run - easy,4.1,33,Easy recovery pace
-50k_int,50K - Intermediate,Intermediate,2,1,Tue,Run - speed/intervals,5.1,41,Intervals or hill repeats
-50k_int,50K - Intermediate,Intermediate,2,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-50k_int,50K - Intermediate,Intermediate,2,3,Thu,Run - tempo,6.1,49,"Comfortably hard, sustained effort"
-50k_int,50K - Intermediate,Intermediate,2,4,Fri,Rest,,,
+50k_int,50K - Intermediate,Intermediate,2,0,Mon,Run - easy,4.1,33,"Easy recovery pace, day after long run"
+50k_int,50K - Intermediate,Intermediate,2,1,Tue,Run - easy,3.6,29,Second easy day - full recovery before Wednesday's quality session
+50k_int,50K - Intermediate,Intermediate,2,2,Wed,Run - speed/intervals,5.1,41,Intervals or hill repeats
+50k_int,50K - Intermediate,Intermediate,2,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+50k_int,50K - Intermediate,Intermediate,2,4,Fri,Run - tempo,6.1,49,"Comfortably hard, sustained effort"
 50k_int,50K - Intermediate,Intermediate,2,5,Sat,Run - easy,3.1,25,Easy pace
 50k_int,50K - Intermediate,Intermediate,2,6,Sun,Long run,13.2,106,"Weekend long run, steady effort"
-50k_int,50K - Intermediate,Intermediate,3,0,Mon,Run - easy,4.2,34,Easy recovery pace
-50k_int,50K - Intermediate,Intermediate,3,1,Tue,Run - speed/intervals,5.1,41,Intervals or hill repeats
-50k_int,50K - Intermediate,Intermediate,3,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-50k_int,50K - Intermediate,Intermediate,3,3,Thu,Run - tempo,6.1,49,"Comfortably hard, sustained effort"
-50k_int,50K - Intermediate,Intermediate,3,4,Fri,Rest,,,
+50k_int,50K - Intermediate,Intermediate,3,0,Mon,Run - easy,4.2,34,"Easy recovery pace, day after long run"
+50k_int,50K - Intermediate,Intermediate,3,1,Tue,Run - easy,3.6,29,Second easy day - full recovery before Wednesday's quality session
+50k_int,50K - Intermediate,Intermediate,3,2,Wed,Run - speed/intervals,5.1,41,Intervals or hill repeats
+50k_int,50K - Intermediate,Intermediate,3,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+50k_int,50K - Intermediate,Intermediate,3,4,Fri,Run - tempo,6.1,49,"Comfortably hard, sustained effort"
 50k_int,50K - Intermediate,Intermediate,3,5,Sat,Run - easy (back-to-back),11.0,88,Back-to-back with Sunday long run
 50k_int,50K - Intermediate,Intermediate,3,6,Sun,Long run,14.5,116,"Weekend long run, steady effort"
-50k_int,50K - Intermediate,Intermediate,4,0,Mon,Run - easy,4.2,34,Easy recovery pace
-50k_int,50K - Intermediate,Intermediate,4,1,Tue,Run - easy (recovery),5.1,41,Easy recovery pace - following last weekend's back-to-back long run
-50k_int,50K - Intermediate,Intermediate,4,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-50k_int,50K - Intermediate,Intermediate,4,3,Thu,Run - tempo,6.2,50,"Comfortably hard, sustained effort"
-50k_int,50K - Intermediate,Intermediate,4,4,Fri,Rest,,,
+50k_int,50K - Intermediate,Intermediate,4,0,Mon,Run - easy,4.2,34,"Easy recovery pace, day after long run"
+50k_int,50K - Intermediate,Intermediate,4,1,Tue,Run - easy,3.7,30,Second easy day - full recovery before Wednesday's quality session
+50k_int,50K - Intermediate,Intermediate,4,2,Wed,Run - easy (recovery),4.1,33,Easy recovery pace - extra caution following back-to-back weekend
+50k_int,50K - Intermediate,Intermediate,4,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+50k_int,50K - Intermediate,Intermediate,4,4,Fri,Run - tempo,6.2,50,"Comfortably hard, sustained effort"
 50k_int,50K - Intermediate,Intermediate,4,5,Sat,Run - easy,3.2,26,Easy pace
 50k_int,50K - Intermediate,Intermediate,4,6,Sun,Long run,10.9,87,"Weekend long run, steady effort"
-50k_int,50K - Intermediate,Intermediate,5,0,Mon,Run - easy,4.2,34,Easy recovery pace
-50k_int,50K - Intermediate,Intermediate,5,1,Tue,Run - speed/intervals,5.2,42,Intervals or hill repeats
-50k_int,50K - Intermediate,Intermediate,5,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-50k_int,50K - Intermediate,Intermediate,5,3,Thu,Run - tempo,6.2,50,"Comfortably hard, sustained effort"
-50k_int,50K - Intermediate,Intermediate,5,4,Fri,Rest,,,
+50k_int,50K - Intermediate,Intermediate,5,0,Mon,Run - easy,4.2,34,"Easy recovery pace, day after long run"
+50k_int,50K - Intermediate,Intermediate,5,1,Tue,Run - easy,3.7,30,Second easy day - full recovery before Wednesday's quality session
+50k_int,50K - Intermediate,Intermediate,5,2,Wed,Run - speed/intervals,5.2,42,Intervals or hill repeats
+50k_int,50K - Intermediate,Intermediate,5,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+50k_int,50K - Intermediate,Intermediate,5,4,Fri,Run - tempo,6.2,50,"Comfortably hard, sustained effort"
 50k_int,50K - Intermediate,Intermediate,5,5,Sat,Run - easy,3.2,26,Easy pace
 50k_int,50K - Intermediate,Intermediate,5,6,Sun,Long run,17.0,136,"Weekend long run, steady effort"
-50k_int,50K - Intermediate,Intermediate,6,0,Mon,Run - easy,4.3,34,Easy recovery pace
-50k_int,50K - Intermediate,Intermediate,6,1,Tue,Run - speed/intervals,5.2,42,Intervals or hill repeats
-50k_int,50K - Intermediate,Intermediate,6,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-50k_int,50K - Intermediate,Intermediate,6,3,Thu,Run - tempo,6.2,50,"Comfortably hard, sustained effort"
-50k_int,50K - Intermediate,Intermediate,6,4,Fri,Rest,,,
+50k_int,50K - Intermediate,Intermediate,6,0,Mon,Run - easy,4.3,34,"Easy recovery pace, day after long run"
+50k_int,50K - Intermediate,Intermediate,6,1,Tue,Run - easy,3.7,30,Second easy day - full recovery before Wednesday's quality session
+50k_int,50K - Intermediate,Intermediate,6,2,Wed,Run - speed/intervals,5.2,42,Intervals or hill repeats
+50k_int,50K - Intermediate,Intermediate,6,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+50k_int,50K - Intermediate,Intermediate,6,4,Fri,Run - tempo,6.2,50,"Comfortably hard, sustained effort"
 50k_int,50K - Intermediate,Intermediate,6,5,Sat,Run - easy (back-to-back),12.5,100,Back-to-back with Sunday long run
 50k_int,50K - Intermediate,Intermediate,6,6,Sun,Long run,18.2,146,"Weekend long run, steady effort"
-50k_int,50K - Intermediate,Intermediate,7,0,Mon,Run - easy,4.3,34,Easy recovery pace
-50k_int,50K - Intermediate,Intermediate,7,1,Tue,Run - easy (recovery),5.2,42,Easy recovery pace - following last weekend's back-to-back long run
-50k_int,50K - Intermediate,Intermediate,7,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-50k_int,50K - Intermediate,Intermediate,7,3,Thu,Run - tempo,6.3,50,"Comfortably hard, sustained effort"
-50k_int,50K - Intermediate,Intermediate,7,4,Fri,Rest,,,
+50k_int,50K - Intermediate,Intermediate,7,0,Mon,Run - easy,4.3,34,"Easy recovery pace, day after long run"
+50k_int,50K - Intermediate,Intermediate,7,1,Tue,Run - easy,3.8,30,Second easy day - full recovery before Wednesday's quality session
+50k_int,50K - Intermediate,Intermediate,7,2,Wed,Run - easy (recovery),4.2,34,Easy recovery pace - extra caution following back-to-back weekend
+50k_int,50K - Intermediate,Intermediate,7,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+50k_int,50K - Intermediate,Intermediate,7,4,Fri,Run - tempo,6.3,50,"Comfortably hard, sustained effort"
 50k_int,50K - Intermediate,Intermediate,7,5,Sat,Run - easy,3.4,27,Easy pace
 50k_int,50K - Intermediate,Intermediate,7,6,Sun,Long run,19.5,156,"Weekend long run, steady effort"
-50k_int,50K - Intermediate,Intermediate,8,0,Mon,Run - easy,4.4,35,Easy recovery pace
-50k_int,50K - Intermediate,Intermediate,8,1,Tue,Run - speed/intervals,5.2,42,Intervals or hill repeats
-50k_int,50K - Intermediate,Intermediate,8,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-50k_int,50K - Intermediate,Intermediate,8,3,Thu,Run - tempo,6.3,50,"Comfortably hard, sustained effort"
-50k_int,50K - Intermediate,Intermediate,8,4,Fri,Rest,,,
+50k_int,50K - Intermediate,Intermediate,8,0,Mon,Run - easy,4.4,35,"Easy recovery pace, day after long run"
+50k_int,50K - Intermediate,Intermediate,8,1,Tue,Run - easy,3.8,30,Second easy day - full recovery before Wednesday's quality session
+50k_int,50K - Intermediate,Intermediate,8,2,Wed,Run - speed/intervals,5.2,42,Intervals or hill repeats
+50k_int,50K - Intermediate,Intermediate,8,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+50k_int,50K - Intermediate,Intermediate,8,4,Fri,Run - tempo,6.3,50,"Comfortably hard, sustained effort"
 50k_int,50K - Intermediate,Intermediate,8,5,Sat,Run - easy,3.4,27,Easy pace
 50k_int,50K - Intermediate,Intermediate,8,6,Sun,Long run,14.6,117,"Weekend long run, steady effort"
-50k_int,50K - Intermediate,Intermediate,9,0,Mon,Run - easy,4.5,36,Easy recovery pace
-50k_int,50K - Intermediate,Intermediate,9,1,Tue,Run - speed/intervals,5.3,42,Intervals or hill repeats
-50k_int,50K - Intermediate,Intermediate,9,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-50k_int,50K - Intermediate,Intermediate,9,3,Thu,Run - tempo,6.4,51,"Comfortably hard, sustained effort"
-50k_int,50K - Intermediate,Intermediate,9,4,Fri,Rest,,,
+50k_int,50K - Intermediate,Intermediate,9,0,Mon,Run - easy,4.5,36,"Easy recovery pace, day after long run"
+50k_int,50K - Intermediate,Intermediate,9,1,Tue,Run - easy,3.9,31,Second easy day - full recovery before Wednesday's quality session
+50k_int,50K - Intermediate,Intermediate,9,2,Wed,Run - speed/intervals,5.3,42,Intervals or hill repeats
+50k_int,50K - Intermediate,Intermediate,9,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+50k_int,50K - Intermediate,Intermediate,9,4,Fri,Run - tempo,6.4,51,"Comfortably hard, sustained effort"
 50k_int,50K - Intermediate,Intermediate,9,5,Sat,Run - easy (back-to-back),14.0,112,Back-to-back with Sunday long run
 50k_int,50K - Intermediate,Intermediate,9,6,Sun,Long run,22.0,176,"Weekend long run, steady effort"
-50k_int,50K - Intermediate,Intermediate,10,0,Mon,Run - easy,4.5,36,Easy recovery pace
-50k_int,50K - Intermediate,Intermediate,10,1,Tue,Run - easy (recovery),5.3,42,Easy recovery pace - following last weekend's back-to-back long run
-50k_int,50K - Intermediate,Intermediate,10,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-50k_int,50K - Intermediate,Intermediate,10,3,Thu,Run - tempo,6.4,51,"Comfortably hard, sustained effort"
-50k_int,50K - Intermediate,Intermediate,10,4,Fri,Rest,,,
+50k_int,50K - Intermediate,Intermediate,10,0,Mon,Run - easy,4.5,36,"Easy recovery pace, day after long run"
+50k_int,50K - Intermediate,Intermediate,10,1,Tue,Run - easy,3.9,31,Second easy day - full recovery before Wednesday's quality session
+50k_int,50K - Intermediate,Intermediate,10,2,Wed,Run - easy (recovery),4.3,34,Easy recovery pace - extra caution following back-to-back weekend
+50k_int,50K - Intermediate,Intermediate,10,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+50k_int,50K - Intermediate,Intermediate,10,4,Fri,Run - tempo,6.4,51,"Comfortably hard, sustained effort"
 50k_int,50K - Intermediate,Intermediate,10,5,Sat,Run - easy,3.5,28,Easy pace
 50k_int,50K - Intermediate,Intermediate,10,6,Sun,Long run,23.2,186,"Weekend long run, steady effort"
-50k_int,50K - Intermediate,Intermediate,11,0,Mon,Run - easy,4.5,36,Easy recovery pace
-50k_int,50K - Intermediate,Intermediate,11,1,Tue,Run - speed/intervals,5.3,42,Intervals or hill repeats
-50k_int,50K - Intermediate,Intermediate,11,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-50k_int,50K - Intermediate,Intermediate,11,3,Thu,Run - tempo,6.4,51,"Comfortably hard, sustained effort"
-50k_int,50K - Intermediate,Intermediate,11,4,Fri,Rest,,,
+50k_int,50K - Intermediate,Intermediate,11,0,Mon,Run - easy,4.5,36,"Easy recovery pace, day after long run"
+50k_int,50K - Intermediate,Intermediate,11,1,Tue,Run - easy,3.9,31,Second easy day - full recovery before Wednesday's quality session
+50k_int,50K - Intermediate,Intermediate,11,2,Wed,Run - speed/intervals,5.3,42,Intervals or hill repeats
+50k_int,50K - Intermediate,Intermediate,11,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+50k_int,50K - Intermediate,Intermediate,11,4,Fri,Run - tempo,6.4,51,"Comfortably hard, sustained effort"
 50k_int,50K - Intermediate,Intermediate,11,5,Sat,Run - easy,3.5,28,Easy pace
 50k_int,50K - Intermediate,Intermediate,11,6,Sun,Long run,24.5,196,"Weekend long run, steady effort"
-50k_int,50K - Intermediate,Intermediate,12,0,Mon,Run - easy,4.6,37,Easy recovery pace
-50k_int,50K - Intermediate,Intermediate,12,1,Tue,Run - speed/intervals,5.4,43,Intervals or hill repeats
-50k_int,50K - Intermediate,Intermediate,12,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-50k_int,50K - Intermediate,Intermediate,12,3,Thu,Run - tempo,6.5,52,"Comfortably hard, sustained effort"
-50k_int,50K - Intermediate,Intermediate,12,4,Fri,Rest,,,
+50k_int,50K - Intermediate,Intermediate,12,0,Mon,Run - easy,4.6,37,"Easy recovery pace, day after long run"
+50k_int,50K - Intermediate,Intermediate,12,1,Tue,Run - easy,4.0,32,Second easy day - full recovery before Wednesday's quality session
+50k_int,50K - Intermediate,Intermediate,12,2,Wed,Run - speed/intervals,5.4,43,Intervals or hill repeats
+50k_int,50K - Intermediate,Intermediate,12,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+50k_int,50K - Intermediate,Intermediate,12,4,Fri,Run - tempo,6.5,52,"Comfortably hard, sustained effort"
 50k_int,50K - Intermediate,Intermediate,12,5,Sat,Run - easy (back-to-back),15.5,124,Back-to-back with Sunday long run
 50k_int,50K - Intermediate,Intermediate,12,6,Sun,Long run,18.4,147,"Weekend long run, steady effort"
-50k_int,50K - Intermediate,Intermediate,13,0,Mon,Run - easy,4.7,38,Easy recovery pace
-50k_int,50K - Intermediate,Intermediate,13,1,Tue,Run - easy (recovery),5.4,43,Easy recovery pace - following last weekend's back-to-back long run
-50k_int,50K - Intermediate,Intermediate,13,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-50k_int,50K - Intermediate,Intermediate,13,3,Thu,Run - tempo,6.5,52,"Comfortably hard, sustained effort"
-50k_int,50K - Intermediate,Intermediate,13,4,Fri,Rest,,,
+50k_int,50K - Intermediate,Intermediate,13,0,Mon,Run - easy,4.7,38,"Easy recovery pace, day after long run"
+50k_int,50K - Intermediate,Intermediate,13,1,Tue,Run - easy,4.0,32,Second easy day - full recovery before Wednesday's quality session
+50k_int,50K - Intermediate,Intermediate,13,2,Wed,Run - easy (recovery),4.4,35,Easy recovery pace - extra caution following back-to-back weekend
+50k_int,50K - Intermediate,Intermediate,13,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+50k_int,50K - Intermediate,Intermediate,13,4,Fri,Run - tempo,6.5,52,"Comfortably hard, sustained effort"
 50k_int,50K - Intermediate,Intermediate,13,5,Sat,Run - easy,3.6,29,Easy pace
 50k_int,50K - Intermediate,Intermediate,13,6,Sun,Long run,27.0,216,"Weekend long run, steady effort"
-50k_int,50K - Intermediate,Intermediate,14,0,Mon,Run - easy,4.7,38,Easy recovery pace
-50k_int,50K - Intermediate,Intermediate,14,1,Tue,Run - speed/intervals,5.4,43,Intervals or hill repeats
-50k_int,50K - Intermediate,Intermediate,14,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-50k_int,50K - Intermediate,Intermediate,14,3,Thu,Run - tempo,6.6,53,"Comfortably hard, sustained effort"
-50k_int,50K - Intermediate,Intermediate,14,4,Fri,Rest,,,
+50k_int,50K - Intermediate,Intermediate,14,0,Mon,Run - easy,4.7,38,"Easy recovery pace, day after long run"
+50k_int,50K - Intermediate,Intermediate,14,1,Tue,Run - easy,4.1,33,Second easy day - full recovery before Wednesday's quality session
+50k_int,50K - Intermediate,Intermediate,14,2,Wed,Run - speed/intervals,5.4,43,Intervals or hill repeats
+50k_int,50K - Intermediate,Intermediate,14,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+50k_int,50K - Intermediate,Intermediate,14,4,Fri,Run - tempo,6.6,53,"Comfortably hard, sustained effort"
 50k_int,50K - Intermediate,Intermediate,14,5,Sat,Run - easy,3.7,30,Easy pace
 50k_int,50K - Intermediate,Intermediate,14,6,Sun,Long run,17.6,141,"Weekend long run, steady effort"
-50k_int,50K - Intermediate,Intermediate,15,0,Mon,Run - easy,4.8,38,Easy recovery pace
-50k_int,50K - Intermediate,Intermediate,15,1,Tue,Run - speed/intervals,5.5,44,Intervals or hill repeats
-50k_int,50K - Intermediate,Intermediate,15,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-50k_int,50K - Intermediate,Intermediate,15,3,Thu,Run - tempo,6.6,53,"Comfortably hard, sustained effort"
-50k_int,50K - Intermediate,Intermediate,15,4,Fri,Rest,,,
+50k_int,50K - Intermediate,Intermediate,15,0,Mon,Run - easy,4.8,38,"Easy recovery pace, day after long run"
+50k_int,50K - Intermediate,Intermediate,15,1,Tue,Run - easy,4.1,33,Second easy day - full recovery before Wednesday's quality session
+50k_int,50K - Intermediate,Intermediate,15,2,Wed,Run - speed/intervals,5.5,44,Intervals or hill repeats
+50k_int,50K - Intermediate,Intermediate,15,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+50k_int,50K - Intermediate,Intermediate,15,4,Fri,Run - tempo,6.6,53,"Comfortably hard, sustained effort"
 50k_int,50K - Intermediate,Intermediate,15,5,Sat,Run - easy,3.8,30,Easy pace
 50k_int,50K - Intermediate,Intermediate,15,6,Sun,Long run,12.2,98,"Weekend long run, steady effort"
-50k_int,50K - Intermediate,Intermediate,16,0,Mon,Run - easy,4.8,38,Easy recovery pace
-50k_int,50K - Intermediate,Intermediate,16,1,Tue,Run - speed/intervals,5.5,44,Intervals or hill repeats
-50k_int,50K - Intermediate,Intermediate,16,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-50k_int,50K - Intermediate,Intermediate,16,3,Thu,Run - tempo,6.6,53,"Comfortably hard, sustained effort"
-50k_int,50K - Intermediate,Intermediate,16,4,Fri,Rest,,,
+50k_int,50K - Intermediate,Intermediate,16,0,Mon,Run - easy,4.8,38,"Easy recovery pace, day after long run"
+50k_int,50K - Intermediate,Intermediate,16,1,Tue,Run - easy,4.1,33,Second easy day - full recovery before Wednesday's quality session
+50k_int,50K - Intermediate,Intermediate,16,2,Wed,Run - speed/intervals,5.5,44,Intervals or hill repeats
+50k_int,50K - Intermediate,Intermediate,16,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+50k_int,50K - Intermediate,Intermediate,16,4,Fri,Run - tempo,6.6,53,"Comfortably hard, sustained effort"
 50k_int,50K - Intermediate,Intermediate,16,5,Sat,Run - easy,3.8,30,Easy pace
 50k_int,50K - Intermediate,Intermediate,16,6,Sun,RACE DAY,50,345,Race day!
 100k_beg,100K - Beginner,Beginner,1,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,1,1,Tue,Run - easy,3.0,28,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,1,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,1,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,1,3,Thu,Run - easy,3.0,28,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,1,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,1,5,Sat,Run - easy,2.0,19,Short easy run
 100k_beg,100K - Beginner,Beginner,1,6,Sun,Long run,12.0,114,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,2,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,2,1,Tue,Run - easy,3.1,29,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,2,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,2,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,2,3,Thu,Run - easy,3.1,29,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,2,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,2,5,Sat,Run - easy,2.1,20,Short easy run
 100k_beg,100K - Beginner,Beginner,2,6,Sun,Long run,12.9,123,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,3,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,3,1,Tue,Run - easy,3.1,29,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,3,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,3,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,3,3,Thu,Run - easy,3.1,29,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,3,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,3,5,Sat,Run - easy (back-to-back),10.8,103,Back-to-back with Sunday long run
 100k_beg,100K - Beginner,Beginner,3,6,Sun,Long run,13.8,131,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,4,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,4,1,Tue,Run - easy,3.2,30,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,4,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,4,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,4,3,Thu,Run - easy,3.2,30,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,4,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,4,5,Sat,Run - easy,2.2,21,Short easy run
 100k_beg,100K - Beginner,Beginner,4,6,Sun,Long run,10.4,99,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,5,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,5,1,Tue,Run - easy,3.2,30,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,5,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,5,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,5,3,Thu,Run - easy,3.2,30,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,5,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,5,5,Sat,Run - easy,2.2,21,Short easy run
 100k_beg,100K - Beginner,Beginner,5,6,Sun,Long run,15.6,148,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,6,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,6,1,Tue,Run - easy,3.3,31,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,6,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,6,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,6,3,Thu,Run - easy,3.3,31,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,6,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,6,5,Sat,Run - easy (back-to-back),12.0,114,Back-to-back with Sunday long run
 100k_beg,100K - Beginner,Beginner,6,6,Sun,Long run,16.5,157,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,7,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,7,1,Tue,Run - easy,3.4,32,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,7,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,7,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,7,3,Thu,Run - easy,3.4,32,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,7,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,7,5,Sat,Run - easy,2.3,22,Short easy run
 100k_beg,100K - Beginner,Beginner,7,6,Sun,Long run,17.4,165,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,8,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,8,1,Tue,Run - easy,3.4,32,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,8,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,8,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,8,3,Thu,Run - easy,3.4,32,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,8,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,8,5,Sat,Run - easy,2.3,22,Short easy run
 100k_beg,100K - Beginner,Beginner,8,6,Sun,Long run,13.0,124,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,9,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,9,1,Tue,Run - easy,3.5,33,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,9,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,9,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,9,3,Thu,Run - easy,3.5,33,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,9,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,9,5,Sat,Run - easy (back-to-back),13.2,125,Back-to-back with Sunday long run
 100k_beg,100K - Beginner,Beginner,9,6,Sun,Long run,19.2,182,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,10,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,10,1,Tue,Run - easy,3.5,33,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,10,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,10,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,10,3,Thu,Run - easy,3.5,33,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,10,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,10,5,Sat,Run - easy,2.4,23,Short easy run
 100k_beg,100K - Beginner,Beginner,10,6,Sun,Long run,20.1,191,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,11,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,11,1,Tue,Run - easy,3.5,33,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,11,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,11,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,11,3,Thu,Run - easy,3.5,33,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,11,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,11,5,Sat,Run - easy,2.4,23,Short easy run
 100k_beg,100K - Beginner,Beginner,11,6,Sun,Long run,21.0,200,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,12,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,12,1,Tue,Run - easy,3.6,34,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,12,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,12,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,12,3,Thu,Run - easy,3.6,34,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,12,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,12,5,Sat,Run - easy (back-to-back),14.4,137,Back-to-back with Sunday long run
 100k_beg,100K - Beginner,Beginner,12,6,Sun,Long run,15.8,150,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,13,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,13,1,Tue,Run - easy,3.6,34,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,13,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,13,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,13,3,Thu,Run - easy,3.6,34,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,13,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,13,5,Sat,Run - easy,2.5,24,Short easy run
 100k_beg,100K - Beginner,Beginner,13,6,Sun,Long run,22.8,217,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,14,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,14,1,Tue,Run - easy,3.7,35,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,14,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,14,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,14,3,Thu,Run - easy,3.7,35,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,14,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,14,5,Sat,Run - easy,2.6,25,Short easy run
 100k_beg,100K - Beginner,Beginner,14,6,Sun,Long run,23.7,225,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,15,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,15,1,Tue,Run - easy,3.8,36,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,15,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,15,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,15,3,Thu,Run - easy,3.8,36,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,15,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,15,5,Sat,Run - easy (back-to-back),15.6,148,Back-to-back with Sunday long run
 100k_beg,100K - Beginner,Beginner,15,6,Sun,Long run,24.6,234,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,16,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,16,1,Tue,Run - easy,3.8,36,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,16,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,16,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,16,3,Thu,Run - easy,3.8,36,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,16,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,16,5,Sat,Run - easy,2.6,25,Short easy run
 100k_beg,100K - Beginner,Beginner,16,6,Sun,Long run,18.5,176,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,17,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,17,1,Tue,Run - easy,3.9,37,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,17,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,17,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,17,3,Thu,Run - easy,3.9,37,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,17,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,17,5,Sat,Run - easy,2.7,26,Short easy run
 100k_beg,100K - Beginner,Beginner,17,6,Sun,Long run,26.4,251,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,18,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,18,1,Tue,Run - easy,3.9,37,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,18,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,18,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,18,3,Thu,Run - easy,3.9,37,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,18,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,18,5,Sat,Run - easy (back-to-back),16.8,160,Back-to-back with Sunday long run
 100k_beg,100K - Beginner,Beginner,18,6,Sun,Long run,27.3,259,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,19,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,19,1,Tue,Run - easy,4.0,38,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,19,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,19,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,19,3,Thu,Run - easy,4.0,38,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,19,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,19,5,Sat,Run - easy,2.8,27,Short easy run
 100k_beg,100K - Beginner,Beginner,19,6,Sun,Long run,28.2,268,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,20,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,20,1,Tue,Run - easy,4.0,38,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,20,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,20,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,20,3,Thu,Run - easy,4.0,38,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,20,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,20,5,Sat,Run - easy,2.8,27,Short easy run
 100k_beg,100K - Beginner,Beginner,20,6,Sun,Long run,21.1,200,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,21,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,21,1,Tue,Run - easy,4.0,38,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,21,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,21,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,21,3,Thu,Run - easy,4.0,38,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,21,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,21,5,Sat,Run - easy (back-to-back),18.0,171,Back-to-back with Sunday long run
 100k_beg,100K - Beginner,Beginner,21,6,Sun,Long run,30.0,285,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,22,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,22,1,Tue,Run - easy,4.1,39,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,22,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,22,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,22,3,Thu,Run - easy,4.1,39,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,22,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,22,5,Sat,Run - easy,2.9,28,Short easy run
 100k_beg,100K - Beginner,Beginner,22,6,Sun,Long run,19.5,185,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,23,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,23,1,Tue,Run - easy,4.2,40,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,23,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,23,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,23,3,Thu,Run - easy,4.2,40,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,23,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,23,5,Sat,Run - easy,2.9,28,Short easy run
 100k_beg,100K - Beginner,Beginner,23,6,Sun,Long run,13.5,128,"Weekend long run - go slow, this builds endurance"
 100k_beg,100K - Beginner,Beginner,24,0,Mon,Rest,,,
 100k_beg,100K - Beginner,Beginner,24,1,Tue,Run - easy,4.2,40,Easy conversational pace
-100k_beg,100K - Beginner,Beginner,24,2,Wed,Cross-training / rest,,30,Optional light cross-training
+100k_beg,100K - Beginner,Beginner,24,2,Wed,Cross-training / rest,,,Optional light cross-training
 100k_beg,100K - Beginner,Beginner,24,3,Thu,Run - easy,4.2,40,Easy conversational pace
 100k_beg,100K - Beginner,Beginner,24,4,Fri,Rest,,,
 100k_beg,100K - Beginner,Beginner,24,5,Sat,Run - easy,3.0,28,Short easy run
 100k_beg,100K - Beginner,Beginner,24,6,Sun,RACE DAY,100,840,Race day!
-100k_int,100K - Intermediate,Intermediate,1,0,Mon,Run - easy,4.0,30,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,1,1,Tue,Run - speed/intervals,5.0,38,Intervals or hill repeats
-100k_int,100K - Intermediate,Intermediate,1,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,1,3,Thu,Run - tempo,6.0,45,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,1,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,1,0,Mon,Run - easy,4.0,30,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,1,1,Tue,Run - easy,3.5,26,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,1,2,Wed,Run - speed/intervals,5.0,38,Intervals or hill repeats
+100k_int,100K - Intermediate,Intermediate,1,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,1,4,Fri,Run - tempo,6.0,45,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,1,5,Sat,Run - easy,3.0,22,Easy pace
 100k_int,100K - Intermediate,Intermediate,1,6,Sun,Long run,14.0,105,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,2,0,Mon,Run - easy,4.1,31,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,2,1,Tue,Run - speed/intervals,5.1,38,Intervals or hill repeats
-100k_int,100K - Intermediate,Intermediate,2,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,2,3,Thu,Run - tempo,6.1,46,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,2,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,2,0,Mon,Run - easy,4.1,31,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,2,1,Tue,Run - easy,3.6,27,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,2,2,Wed,Run - speed/intervals,5.1,38,Intervals or hill repeats
+100k_int,100K - Intermediate,Intermediate,2,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,2,4,Fri,Run - tempo,6.1,46,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,2,5,Sat,Run - easy,3.1,23,Easy pace
 100k_int,100K - Intermediate,Intermediate,2,6,Sun,Long run,15.2,114,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,3,0,Mon,Run - easy,4.2,32,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,3,1,Tue,Run - speed/intervals,5.1,38,Intervals or hill repeats
-100k_int,100K - Intermediate,Intermediate,3,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,3,3,Thu,Run - tempo,6.1,46,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,3,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,3,0,Mon,Run - easy,4.2,32,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,3,1,Tue,Run - easy,3.6,27,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,3,2,Wed,Run - speed/intervals,5.1,38,Intervals or hill repeats
+100k_int,100K - Intermediate,Intermediate,3,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,3,4,Fri,Run - tempo,6.1,46,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,3,5,Sat,Run - easy (back-to-back),13.0,98,Back-to-back with Sunday long run
 100k_int,100K - Intermediate,Intermediate,3,6,Sun,Long run,16.5,124,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,4,0,Mon,Run - easy,4.2,32,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,4,1,Tue,Run - easy (recovery),5.1,38,Easy recovery pace - following last weekend's back-to-back long run
-100k_int,100K - Intermediate,Intermediate,4,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,4,3,Thu,Run - tempo,6.2,46,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,4,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,4,0,Mon,Run - easy,4.2,32,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,4,1,Tue,Run - easy,3.7,28,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,4,2,Wed,Run - easy (recovery),4.1,31,Easy recovery pace - extra caution following back-to-back weekend
+100k_int,100K - Intermediate,Intermediate,4,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,4,4,Fri,Run - tempo,6.2,46,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,4,5,Sat,Run - easy,3.2,24,Easy pace
 100k_int,100K - Intermediate,Intermediate,4,6,Sun,Long run,12.4,93,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,5,0,Mon,Run - easy,4.2,32,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,5,1,Tue,Run - speed/intervals,5.2,39,Intervals or hill repeats
-100k_int,100K - Intermediate,Intermediate,5,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,5,3,Thu,Run - tempo,6.2,46,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,5,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,5,0,Mon,Run - easy,4.2,32,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,5,1,Tue,Run - easy,3.7,28,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,5,2,Wed,Run - speed/intervals,5.2,39,Intervals or hill repeats
+100k_int,100K - Intermediate,Intermediate,5,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,5,4,Fri,Run - tempo,6.2,46,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,5,5,Sat,Run - easy,3.2,24,Easy pace
 100k_int,100K - Intermediate,Intermediate,5,6,Sun,Long run,19.0,142,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,6,0,Mon,Run - easy,4.3,32,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,6,1,Tue,Run - speed/intervals,5.2,39,Intervals or hill repeats
-100k_int,100K - Intermediate,Intermediate,6,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,6,3,Thu,Run - tempo,6.2,46,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,6,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,6,0,Mon,Run - easy,4.3,32,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,6,1,Tue,Run - easy,3.7,28,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,6,2,Wed,Run - speed/intervals,5.2,39,Intervals or hill repeats
+100k_int,100K - Intermediate,Intermediate,6,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,6,4,Fri,Run - tempo,6.2,46,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,6,5,Sat,Run - easy (back-to-back),14.5,109,Back-to-back with Sunday long run
 100k_int,100K - Intermediate,Intermediate,6,6,Sun,Long run,20.2,152,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,7,0,Mon,Run - easy,4.3,32,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,7,1,Tue,Run - easy (recovery),5.2,39,Easy recovery pace - following last weekend's back-to-back long run
-100k_int,100K - Intermediate,Intermediate,7,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,7,3,Thu,Run - tempo,6.3,47,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,7,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,7,0,Mon,Run - easy,4.3,32,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,7,1,Tue,Run - easy,3.8,28,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,7,2,Wed,Run - easy (recovery),4.2,32,Easy recovery pace - extra caution following back-to-back weekend
+100k_int,100K - Intermediate,Intermediate,7,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,7,4,Fri,Run - tempo,6.3,47,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,7,5,Sat,Run - easy,3.4,26,Easy pace
 100k_int,100K - Intermediate,Intermediate,7,6,Sun,Long run,21.5,161,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,8,0,Mon,Run - easy,4.4,33,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,8,1,Tue,Run - speed/intervals,5.2,39,Intervals or hill repeats
-100k_int,100K - Intermediate,Intermediate,8,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,8,3,Thu,Run - tempo,6.3,47,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,8,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,8,0,Mon,Run - easy,4.4,33,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,8,1,Tue,Run - easy,3.8,28,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,8,2,Wed,Run - speed/intervals,5.2,39,Intervals or hill repeats
+100k_int,100K - Intermediate,Intermediate,8,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,8,4,Fri,Run - tempo,6.3,47,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,8,5,Sat,Run - easy,3.4,26,Easy pace
 100k_int,100K - Intermediate,Intermediate,8,6,Sun,Long run,16.1,121,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,9,0,Mon,Run - easy,4.5,34,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,9,1,Tue,Run - speed/intervals,5.3,40,Intervals or hill repeats
-100k_int,100K - Intermediate,Intermediate,9,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,9,3,Thu,Run - tempo,6.4,48,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,9,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,9,0,Mon,Run - easy,4.5,34,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,9,1,Tue,Run - easy,3.9,29,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,9,2,Wed,Run - speed/intervals,5.3,40,Intervals or hill repeats
+100k_int,100K - Intermediate,Intermediate,9,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,9,4,Fri,Run - tempo,6.4,48,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,9,5,Sat,Run - easy (back-to-back),16.0,120,Back-to-back with Sunday long run
 100k_int,100K - Intermediate,Intermediate,9,6,Sun,Long run,24.0,180,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,10,0,Mon,Run - easy,4.5,34,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,10,1,Tue,Run - easy (recovery),5.3,40,Easy recovery pace - following last weekend's back-to-back long run
-100k_int,100K - Intermediate,Intermediate,10,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,10,3,Thu,Run - tempo,6.4,48,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,10,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,10,0,Mon,Run - easy,4.5,34,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,10,1,Tue,Run - easy,3.9,29,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,10,2,Wed,Run - easy (recovery),4.3,32,Easy recovery pace - extra caution following back-to-back weekend
+100k_int,100K - Intermediate,Intermediate,10,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,10,4,Fri,Run - tempo,6.4,48,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,10,5,Sat,Run - easy,3.5,26,Easy pace
 100k_int,100K - Intermediate,Intermediate,10,6,Sun,Long run,25.2,189,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,11,0,Mon,Run - easy,4.5,34,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,11,1,Tue,Run - speed/intervals,5.3,40,Intervals or hill repeats
-100k_int,100K - Intermediate,Intermediate,11,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,11,3,Thu,Run - tempo,6.4,48,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,11,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,11,0,Mon,Run - easy,4.5,34,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,11,1,Tue,Run - easy,3.9,29,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,11,2,Wed,Run - speed/intervals,5.3,40,Intervals or hill repeats
+100k_int,100K - Intermediate,Intermediate,11,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,11,4,Fri,Run - tempo,6.4,48,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,11,5,Sat,Run - easy,3.5,26,Easy pace
 100k_int,100K - Intermediate,Intermediate,11,6,Sun,Long run,26.5,199,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,12,0,Mon,Run - easy,4.6,34,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,12,1,Tue,Run - speed/intervals,5.4,40,Intervals or hill repeats
-100k_int,100K - Intermediate,Intermediate,12,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,12,3,Thu,Run - tempo,6.5,49,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,12,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,12,0,Mon,Run - easy,4.6,34,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,12,1,Tue,Run - easy,4.0,30,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,12,2,Wed,Run - speed/intervals,5.4,40,Intervals or hill repeats
+100k_int,100K - Intermediate,Intermediate,12,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,12,4,Fri,Run - tempo,6.5,49,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,12,5,Sat,Run - easy (back-to-back),17.5,131,Back-to-back with Sunday long run
 100k_int,100K - Intermediate,Intermediate,12,6,Sun,Long run,19.9,149,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,13,0,Mon,Run - easy,4.7,35,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,13,1,Tue,Run - easy (recovery),5.4,40,Easy recovery pace - following last weekend's back-to-back long run
-100k_int,100K - Intermediate,Intermediate,13,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,13,3,Thu,Run - tempo,6.5,49,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,13,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,13,0,Mon,Run - easy,4.7,35,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,13,1,Tue,Run - easy,4.0,30,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,13,2,Wed,Run - easy (recovery),4.4,33,Easy recovery pace - extra caution following back-to-back weekend
+100k_int,100K - Intermediate,Intermediate,13,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,13,4,Fri,Run - tempo,6.5,49,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,13,5,Sat,Run - easy,3.6,27,Easy pace
 100k_int,100K - Intermediate,Intermediate,13,6,Sun,Long run,29.0,218,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,14,0,Mon,Run - easy,4.7,35,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,14,1,Tue,Run - speed/intervals,5.4,40,Intervals or hill repeats
-100k_int,100K - Intermediate,Intermediate,14,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,14,3,Thu,Run - tempo,6.6,50,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,14,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,14,0,Mon,Run - easy,4.7,35,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,14,1,Tue,Run - easy,4.1,31,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,14,2,Wed,Run - speed/intervals,5.4,40,Intervals or hill repeats
+100k_int,100K - Intermediate,Intermediate,14,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,14,4,Fri,Run - tempo,6.6,50,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,14,5,Sat,Run - easy,3.7,28,Easy pace
 100k_int,100K - Intermediate,Intermediate,14,6,Sun,Long run,30.2,226,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,15,0,Mon,Run - easy,4.8,36,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,15,1,Tue,Run - speed/intervals,5.5,41,Intervals or hill repeats
-100k_int,100K - Intermediate,Intermediate,15,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,15,3,Thu,Run - tempo,6.6,50,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,15,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,15,0,Mon,Run - easy,4.8,36,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,15,1,Tue,Run - easy,4.1,31,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,15,2,Wed,Run - speed/intervals,5.5,41,Intervals or hill repeats
+100k_int,100K - Intermediate,Intermediate,15,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,15,4,Fri,Run - tempo,6.6,50,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,15,5,Sat,Run - easy (back-to-back),19.0,142,Back-to-back with Sunday long run
 100k_int,100K - Intermediate,Intermediate,15,6,Sun,Long run,31.5,236,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,16,0,Mon,Run - easy,4.8,36,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,16,1,Tue,Run - easy (recovery),5.5,41,Easy recovery pace - following last weekend's back-to-back long run
-100k_int,100K - Intermediate,Intermediate,16,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,16,3,Thu,Run - tempo,6.6,50,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,16,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,16,0,Mon,Run - easy,4.8,36,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,16,1,Tue,Run - easy,4.1,31,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,16,2,Wed,Run - easy (recovery),4.5,34,Easy recovery pace - extra caution following back-to-back weekend
+100k_int,100K - Intermediate,Intermediate,16,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,16,4,Fri,Run - tempo,6.6,50,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,16,5,Sat,Run - easy,3.8,28,Easy pace
 100k_int,100K - Intermediate,Intermediate,16,6,Sun,Long run,23.6,177,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,17,0,Mon,Run - easy,4.8,36,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,17,1,Tue,Run - speed/intervals,5.5,41,Intervals or hill repeats
-100k_int,100K - Intermediate,Intermediate,17,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,17,3,Thu,Run - tempo,6.7,50,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,17,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,17,0,Mon,Run - easy,4.8,36,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,17,1,Tue,Run - easy,4.2,32,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,17,2,Wed,Run - speed/intervals,5.5,41,Intervals or hill repeats
+100k_int,100K - Intermediate,Intermediate,17,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,17,4,Fri,Run - tempo,6.7,50,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,17,5,Sat,Run - easy,3.9,29,Easy pace
 100k_int,100K - Intermediate,Intermediate,17,6,Sun,Long run,34.0,255,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,18,0,Mon,Run - easy,4.9,37,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,18,1,Tue,Run - speed/intervals,5.5,41,Intervals or hill repeats
-100k_int,100K - Intermediate,Intermediate,18,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,18,3,Thu,Run - tempo,6.7,50,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,18,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,18,0,Mon,Run - easy,4.9,37,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,18,1,Tue,Run - easy,4.2,32,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,18,2,Wed,Run - speed/intervals,5.5,41,Intervals or hill repeats
+100k_int,100K - Intermediate,Intermediate,18,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,18,4,Fri,Run - tempo,6.7,50,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,18,5,Sat,Run - easy,3.9,29,Easy pace
 100k_int,100K - Intermediate,Intermediate,18,6,Sun,Long run,22.1,166,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,19,0,Mon,Run - easy,5.0,38,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,19,1,Tue,Run - speed/intervals,5.6,42,Intervals or hill repeats
-100k_int,100K - Intermediate,Intermediate,19,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,19,3,Thu,Run - tempo,6.8,51,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,19,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,19,0,Mon,Run - easy,5.0,38,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,19,1,Tue,Run - easy,4.3,32,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,19,2,Wed,Run - speed/intervals,5.6,42,Intervals or hill repeats
+100k_int,100K - Intermediate,Intermediate,19,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,19,4,Fri,Run - tempo,6.8,51,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,19,5,Sat,Run - easy,4.0,30,Easy pace
 100k_int,100K - Intermediate,Intermediate,19,6,Sun,Long run,15.3,115,"Weekend long run, steady effort"
-100k_int,100K - Intermediate,Intermediate,20,0,Mon,Run - easy,5.0,38,Easy recovery pace
-100k_int,100K - Intermediate,Intermediate,20,1,Tue,Run - speed/intervals,5.6,42,Intervals or hill repeats
-100k_int,100K - Intermediate,Intermediate,20,2,Wed,Cross-training,,40,Bike/swim/strength - active recovery
-100k_int,100K - Intermediate,Intermediate,20,3,Thu,Run - tempo,6.8,51,"Comfortably hard, sustained effort"
-100k_int,100K - Intermediate,Intermediate,20,4,Fri,Rest,,,
+100k_int,100K - Intermediate,Intermediate,20,0,Mon,Run - easy,5.0,38,"Easy recovery pace, day after long run"
+100k_int,100K - Intermediate,Intermediate,20,1,Tue,Run - easy,4.3,32,Second easy day - full recovery before Wednesday's quality session
+100k_int,100K - Intermediate,Intermediate,20,2,Wed,Run - speed/intervals,5.6,42,Intervals or hill repeats
+100k_int,100K - Intermediate,Intermediate,20,3,Thu,Cross-training / rest,,,Active recovery between quality sessions
+100k_int,100K - Intermediate,Intermediate,20,4,Fri,Run - tempo,6.8,51,"Comfortably hard, sustained effort"
 100k_int,100K - Intermediate,Intermediate,20,5,Sat,Run - easy,4.0,30,Easy pace
 100k_int,100K - Intermediate,Intermediate,20,6,Sun,RACE DAY,100,660,Race day!
