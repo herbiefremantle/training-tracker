@@ -314,8 +314,8 @@ def test_short_app_password_leaves_no_partial_account(legacy_db, monkeypatch):
 
 
 def test_users_table_gains_profile_columns_on_an_existing_multiuser_database(tmp_path, monkeypatch):
-    """A database from before first/last name, email and last_login_at existed - the accounts table itself
-    predates those columns, not just the activities/plan/meta tables the rest of this file covers."""
+    """A database from before first/last name, email, last_login_at and last_active_at existed - the accounts
+    table itself predates those columns, not just the activities/plan/meta tables the rest of this file covers."""
     path = tmp_path / "no_profile_columns.db"
     conn = sqlite3.connect(path)
     conn.executescript("""
@@ -343,7 +343,7 @@ def test_users_table_gains_profile_columns_on_an_existing_multiuser_database(tmp
 
     with db.connect() as conn:
         cols = {r["name"] for r in conn.execute("PRAGMA table_info(users)")}
-        assert {"first_name", "last_name", "email", "last_login_at"} <= cols
+        assert {"first_name", "last_name", "email", "last_login_at", "last_active_at"} <= cols
         row = conn.execute("SELECT * FROM users WHERE username = 'pete'").fetchone()
         assert row["created_at"] == 12345.0 and row["first_name"] is None and row["email"] is None   # untouched
 

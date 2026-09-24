@@ -2,6 +2,7 @@
 guessing, and one account seeing another's data."""
 import re
 import time
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -267,7 +268,7 @@ def test_only_admin_can_create_or_list_invites(secured):
     assert len(listing["accounts"]) == 1 and len(listing["pending_invites"]) == 1
     pete = listing["accounts"][0]
     assert (pete["username"], pete["is_admin"], pete["first_name"]) == ("pete", True, None)   # bootstrap has no profile
-    assert pete["created_at"] and pete["last_login_at"]                                        # both set from the start
+    assert pete["created_at"] and pete["last_login_at"] and pete["last_active_at"]              # all set from the start
 
     secured.post("/logout")
     token = make_invite(secured)   # logs in as pete, creates one, logs out again
@@ -299,6 +300,144 @@ def test_full_invite_and_registration_flow(secured):
     again = TestClient(main.app, follow_redirects=False)
     r2 = register(again, token, username="someoneelse", password="another-password", email="someone@example.com")
     assert r2.status_code == 400 and "already been used" in r2.text
+
+
+# ---- "last active" (any day the app was opened) vs. "last login" (an actual credential event) ----
+
+def test_resolve_user_updates_last_active_at_most_once_a_day(secured, monkeypatch):
+    """Distinct from last_login_at: a 30-day session cookie means most authenticated requests never touch
+    /login again, so last_active_at has to come from ordinary requests instead - see app/auth.py:resolve_user.
+    Only clock.today() is mocked here (not time.time()) - real timestamps, just pinned to which calendar day
+    resolve_user thinks "today" is, so this doesn't care what the real wall-clock date happens to be."""
+    log_in(secured)
+    uid = admin_id(secured)
+    with db.connect() as conn:   # force "never recorded" regardless of whatever bootstrap already set
+        conn.execute("UPDATE users SET last_active_at = 0 WHERE id = ?", (uid,))
+
+    day1 = date(2026, 9, 24)
+    monkeypatch.setattr(auth.clock, "today", lambda: day1)
+    secured.get("/api/status")
+    with db.connect() as conn:
+        first = users.get_by_id(conn, uid)["last_active_at"]
+    assert first and first > 0                                    # got a fresh, real timestamp
+
+    secured.get("/api/status")                                    # a second request, same mocked day
+    with db.connect() as conn:
+        second = users.get_by_id(conn, uid)["last_active_at"]
+    assert second == first                                        # not rewritten - same calendar day
+
+    monkeypatch.setattr(auth.clock, "today", lambda: day1 + timedelta(days=1))
+    secured.get("/api/status")
+    with db.connect() as conn:
+        third = users.get_by_id(conn, uid)["last_active_at"]
+    assert third > first                                          # a new day - recorded again
+
+
+@pytest.mark.parametrize("last_active_at,today,expected", [
+    (None, date(2026, 9, 24), True),                                                    # never recorded
+    (datetime(2026, 9, 23, 23, 59).timestamp(), date(2026, 9, 24), True),                # yesterday
+    (datetime(2026, 9, 24, 0, 1).timestamp(), date(2026, 9, 24), False),                 # earlier today
+    (datetime(2026, 9, 24, 23, 0).timestamp(), date(2026, 9, 24), False),                # later today
+])
+def test_is_new_day(last_active_at, today, expected):
+    assert users.is_new_day(last_active_at, today) is expected
+
+
+# ---- admin-generated password reset links (no email sending yet - see app/auth.py docstring) -----
+
+def _register_alex(secured):
+    """pete invites and an anonymous client registers as alex - leaves `secured` logged back in as pete
+    when it returns, so callers can immediately do admin actions on it."""
+    log_in(secured)
+    token = secured.post("/api/invites").json()["token"]
+    secured.post("/logout")
+    friend = TestClient(main.app, follow_redirects=False)
+    register(friend, token, username="alex")
+    log_in(secured)
+    return friend
+
+
+def test_only_admin_can_create_a_reset_link(secured):
+    friend = _register_alex(secured)
+    friend.post("/login", data={"username": "alex", "password": "friend-password"})
+    assert friend.post("/api/accounts/pete/reset-link").status_code == 403
+    assert secured.post("/api/accounts/alex/reset-link").status_code == 200   # pete can, for any account incl. their own
+
+
+def test_reset_link_for_an_unknown_account_404s(secured):
+    log_in(secured)
+    assert secured.post("/api/accounts/nobody/reset-link").status_code == 404
+
+
+def test_full_password_reset_flow(secured):
+    _register_alex(secured)
+
+    r = secured.post("/api/accounts/alex/reset-link")
+    assert r.status_code == 200
+    reset_token = r.json()["token"]
+    assert r.json()["url"] == "/reset-password?token=%s" % reset_token
+    assert r.json()["expires_in_hours"] == 24
+
+    alex = TestClient(main.app, follow_redirects=False)
+    page = alex.get("/reset-password", params={"token": reset_token})
+    assert page.status_code == 200 and 'name="password"' in page.text
+
+    r2 = alex.post("/reset-password", data={"token": reset_token, "password": "brand-new-password",
+                                            "password2": "brand-new-password"})
+    assert r2.status_code == 303 and r2.headers["location"] == "/"
+    assert "set-cookie" in r2.headers                             # resetting logs them straight in, like registering
+    assert alex.get("/api/status").json()["username"] == "alex"
+
+    # the old password no longer works, the new one does
+    fresh = TestClient(main.app, follow_redirects=False)
+    assert fresh.post("/login", data={"username": "alex", "password": "friend-password"}).status_code == 401
+    assert fresh.post("/login", data={"username": "alex", "password": "brand-new-password"}).status_code == 303
+
+    # the same link can't be redeemed twice
+    again = TestClient(main.app, follow_redirects=False)
+    r3 = again.post("/reset-password", data={"token": reset_token, "password": "another-one-entirely",
+                                              "password2": "another-one-entirely"})
+    assert r3.status_code == 400 and "already been used" in r3.text
+
+
+def test_reset_link_rejects_mismatched_or_short_passwords(secured):
+    _register_alex(secured)
+    reset_token = secured.post("/api/accounts/alex/reset-link").json()["token"]
+
+    mismatched = TestClient(main.app, follow_redirects=False).post(
+        "/reset-password", data={"token": reset_token, "password": "one-password", "password2": "a-different-one"})
+    assert mismatched.status_code == 400 and "match" in mismatched.text
+
+    too_short = TestClient(main.app, follow_redirects=False).post(
+        "/reset-password", data={"token": reset_token, "password": "short", "password2": "short"})
+    assert too_short.status_code == 400 and "8 characters" in too_short.text
+
+
+def test_reset_link_rejects_an_unknown_token(secured):
+    log_in(secured)   # just to get an initialised database - this token was never issued by it
+    r = TestClient(main.app, follow_redirects=False).post(
+        "/reset-password", data={"token": "not-a-real-token", "password": "whatever-12345", "password2": "whatever-12345"})
+    assert r.status_code == 400 and "reset link isn" in r.text   # "isn't" - html.escape turns the apostrophe into &#x27;
+
+
+def test_reset_link_rejects_an_expired_token(secured):
+    _register_alex(secured)
+    reset_token = secured.post("/api/accounts/alex/reset-link").json()["token"]
+    with db.connect() as conn:
+        conn.execute("UPDATE password_resets SET expires_at = 1 WHERE token = ?", (reset_token,))
+
+    r = TestClient(main.app, follow_redirects=False).post(
+        "/reset-password", data={"token": reset_token, "password": "whatever-12345", "password2": "whatever-12345"})
+    assert r.status_code == 400 and "expired" in r.text
+
+
+def test_reset_password_page_is_public_but_redirects_once_already_logged_in(secured):
+    anon = TestClient(main.app, follow_redirects=False)
+    assert anon.get("/reset-password", params={"token": "x"}).status_code == 200   # public: no session needed
+
+    log_in(secured)
+    r = secured.get("/reset-password", params={"token": "x"})
+    assert r.status_code == 303 and r.headers["location"] == "/"                    # already signed in - nothing to do
 
 
 @pytest.mark.parametrize("field,value,message", [

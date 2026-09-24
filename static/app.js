@@ -892,7 +892,8 @@ function renderAdmin() {
   const cell = (text) => (text ? esc(text) : '<span class="muted">—</span>');
   const rows = a.accounts.map((u) => `<tr><td>${cell(dot([u.first_name, u.last_name]))}</td>
       <td>${esc(u.username)}${u.is_admin ? '<span class="badge-admin">Admin</span>' : ""}</td>
-      <td>${cell(u.email)}</td><td>${fmtDateTime(u.created_at)}</td><td>${fmtDateTime(u.last_login_at)}</td></tr>`).join("");
+      <td>${cell(u.email)}</td><td>${fmtDateTime(u.created_at)}</td><td>${fmtDateTime(u.last_active_at)}</td>
+      <td><button class="btn small" type="button" data-act="resetLink" data-username="${esc(u.username)}">Send reset link</button></td></tr>`).join("");
   const invites = a.pending_invites.length
     ? `<ul class="errors">${a.pending_invites.map((p) => `<li><code style="user-select:all">${esc(location.origin + p.url)}</code> <span class="muted small">(expires in ${p.expires_in_days} days)</span></li>`).join("")}</ul>`
     : '<p class="muted small" style="margin:6px 0 0">No pending invites.</p>';
@@ -907,10 +908,11 @@ function renderAdmin() {
       ${invites}
     </div>
     <div class="card">
-      <div class="card-head"><h2>Accounts</h2></div>
+      <div class="card-head"><h2>Accounts</h2><span class="sub">"Last active" is any day they opened the app, not just when they last typed a password</span></div>
       <div class="table-wrap"><table>
-        <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Signed up</th><th>Last login</th></tr></thead>
+        <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Signed up</th><th>Last active</th><th>Forgot password?</th></tr></thead>
         <tbody>${rows}</tbody></table></div>
+      <div id="reset-result"></div>
     </div>
   </div>`;
 }
@@ -990,6 +992,17 @@ const actions = {
       <code style="user-select:all;display:inline-block;margin-top:4px">${esc(url)}</code><br>
       <button class="btn small" type="button" id="copy-invite" style="margin-top:8px">Copy link</button></div>`;
     document.getElementById("copy-invite")?.addEventListener("click", (e) => {   // ...then show the banner, so the refresh can't wipe it
+      navigator.clipboard?.writeText(url);
+      e.target.textContent = "Copied";
+    });
+  },
+  async resetLink(d) {
+    const r = await api(`/api/accounts/${encodeURIComponent(d.username)}/reset-link`, { method: "POST" });
+    const url = location.origin + r.url;
+    $("#reset-result").innerHTML = `<div class="banner ok"><b>Password reset link for ${esc(d.username)}</b> (expires in ${r.expires_in_hours}h - one-time use):<br>
+      <code style="user-select:all;display:inline-block;margin-top:4px">${esc(url)}</code><br>
+      <button class="btn small" type="button" id="copy-reset" style="margin-top:8px">Copy link</button></div>`;
+    document.getElementById("copy-reset")?.addEventListener("click", (e) => {
       navigator.clipboard?.writeText(url);
       e.target.textContent = "Copied";
     });

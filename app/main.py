@@ -218,7 +218,7 @@ def sync(request: Request):
         lock.release()
 
 
-# ---- invites (admin only) --------------------------------------------------------------------
+# ---- invites & password resets (admin only) --------------------------------------------------
 
 def _require_admin(request):
     me = current_user(request)
@@ -250,11 +250,26 @@ def list_invites(request: Request):
         "max_users": users.max_users(),
         "accounts": [{"username": a["username"], "first_name": a["first_name"], "last_name": a["last_name"],
                       "email": a["email"], "is_admin": bool(a["is_admin"]), "created_at": a["created_at"],
-                      "last_login_at": a["last_login_at"]} for a in accounts],
+                      "last_login_at": a["last_login_at"], "last_active_at": a["last_active_at"]} for a in accounts],
         "pending_invites": [{"url": "/register?invite=%s" % p["token"],
                              "expires_in_days": max(0, round((p["expires_at"] - p["created_at"]) / 86400))}
                             for p in pending],
     }
+
+
+@app.post("/api/accounts/{username}/reset-link")
+def create_reset_link(username: str, request: Request):
+    """A one-time link that lets the account set a new password, same trust model as an invite - the admin
+    sends it however they like (text, email, in person). No self-service "forgot password" request yet
+    (that's an email-sending feature for later) - an admin always initiates this from the Admin page."""
+    me = _require_admin(request)
+    with connect() as conn:
+        target = users.get_by_username(conn, username)
+        if not target:
+            raise HTTPException(404, "No such account.")
+        token = users.create_reset_link(conn, target["id"], me["id"])
+    return {"token": token, "url": "/reset-password?token=%s" % token,
+            "expires_in_hours": users.RESET_TTL_SECONDS // 3600}
 
 
 # ---- plan -----------------------------------------------------------------------------------

@@ -8,11 +8,13 @@ import os
 import re
 import secrets
 import time
+from datetime import date
 
 from .db import ACTIVITIES_TABLE_SQL, LOCAL_USER_ID
 
 MIN_PASSWORD_LENGTH = 8
 INVITE_TTL_SECONDS = 7 * 24 * 3600
+RESET_TTL_SECONDS = 24 * 3600   # shorter than an invite: this one grants control of an *existing* account
 DEFAULT_MAX_USERS = 10          # matches Strava's self-serve "10 athletes" API app capacity - see README
 
 USERNAME_RE = re.compile(r"^[a-z0-9_-]{3,20}$")
@@ -71,22 +73,38 @@ def get_by_email(conn, email):
 
 
 def list_accounts(conn):
-    return conn.execute("SELECT username, first_name, last_name, email, is_admin, created_at, last_login_at "
-                        "FROM users ORDER BY created_at").fetchall()
+    return conn.execute("SELECT username, first_name, last_name, email, is_admin, created_at, last_login_at, "
+                        "last_active_at FROM users ORDER BY created_at").fetchall()
 
 
 def create(conn, username, password, is_admin=False, first_name=None, last_name=None, email=None):
     now = time.time()
-    # account creation logs you straight in (see app/auth.py), so "last login" starts out matching "signed up"
+    # account creation logs you straight in (see app/auth.py), so "last login"/"last active" start out matching "signed up"
     conn.execute("INSERT INTO users (username, password_hash, first_name, last_name, email, is_admin, "
-                "created_at, last_login_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                "created_at, last_login_at, last_active_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (username.strip().lower(), hash_password(password), (first_name or "").strip() or None,
-                 (last_name or "").strip() or None, (email or "").strip().lower() or None, int(is_admin), now, now))
+                 (last_name or "").strip() or None, (email or "").strip().lower() or None, int(is_admin), now, now, now))
     return conn.execute("SELECT id FROM users WHERE username = ? COLLATE NOCASE", (username,)).fetchone()["id"]
 
 
 def record_login(conn, user_id):
+    """An actual credential login: the /login form, or redeeming an invite/reset link."""
     conn.execute("UPDATE users SET last_login_at = ? WHERE id = ?", (time.time(), user_id))
+
+
+def record_activity(conn, user_id):
+    """Any authenticated request - see app/auth.py:resolve_user, which only calls this at most once a day per
+    account, so "last active" reflects someone actually opening the app (session cookies last 30 days, so most
+    days nobody hits /login at all - last_login_at alone would look stale even for a daily user)."""
+    conn.execute("UPDATE users SET last_active_at = ? WHERE id = ?", (time.time(), user_id))
+
+
+def is_new_day(last_active_at, today):
+    """Whether `today` (a date) is later than the local calendar date last_active_at (an epoch seconds, or
+    None) falls on - i.e. whether resolve_user should bother writing a fresh last_active_at."""
+    if last_active_at is None:
+        return True
+    return date.fromtimestamp(last_active_at) < today
 
 
 # ---- invites ------------------------------------------------------------------------------------
@@ -144,6 +162,43 @@ def redeem_invite(conn, token, username, password, first_name, last_name, email)
     return new_id
 
 
+# ---- password resets (admin-generated link; no email sending yet) -------------------------------
+
+def create_reset_link(conn, user_id, created_by_user_id):
+    token = secrets.token_urlsafe(20)
+    now = time.time()
+    conn.execute("INSERT INTO password_resets (token, user_id, created_by, created_at, expires_at) "
+                "VALUES (?, ?, ?, ?, ?)", (token, user_id, created_by_user_id, now, now + RESET_TTL_SECONDS))
+    return token
+
+
+def get_reset_link(conn, token):
+    return conn.execute("SELECT * FROM password_resets WHERE token = ?", (token,)).fetchone()
+
+
+class ResetError(ValueError):
+    """A user-facing reason a password reset link couldn't be redeemed."""
+
+
+def redeem_reset_link(conn, token, password, password2):
+    """Validate the link and set the new password. Returns the account's user id (the caller logs them
+    straight in with it, same as redeeming an invite does)."""
+    row = get_reset_link(conn, token)
+    if row is None:
+        raise ResetError("This password reset link isn't valid.")
+    if row["used_at"] is not None:
+        raise ResetError("This password reset link has already been used.")
+    if row["expires_at"] < time.time():
+        raise ResetError("This password reset link has expired - ask an admin to send a new one.")
+    if password != password2:
+        raise ResetError("Passwords don't match.")
+    if len(password or "") < MIN_PASSWORD_LENGTH:
+        raise ResetError("Password must be at least %d characters." % MIN_PASSWORD_LENGTH)
+    conn.execute("UPDATE users SET password_hash = ? WHERE id = ?", (hash_password(password), row["user_id"]))
+    conn.execute("UPDATE password_resets SET used_at = ? WHERE token = ?", (time.time(), token))
+    return row["user_id"]
+
+
 # ---- one-time migration from the pre-multi-user schema -------------------------------------------
 
 def bootstrap_and_migrate(conn):
@@ -196,11 +251,13 @@ def _table_columns(conn, table):
 
 
 def _add_profile_columns(conn):
-    """Add first_name/last_name/email/last_login_at to `users` for a database that predates them - unconditional,
-    every startup, same reasoning as _fix_activities_table. Unlike activities' primary key, none of these
-    participate in a key, so a plain ALTER TABLE ADD COLUMN is safe here - no table rebuild needed."""
+    """Add first_name/last_name/email/last_login_at/last_active_at to `users` for a database that predates
+    them - unconditional, every startup, same reasoning as _fix_activities_table. Unlike activities' primary
+    key, none of these participate in a key, so a plain ALTER TABLE ADD COLUMN is safe here - no table
+    rebuild needed."""
     cols = _table_columns(conn, "users")
-    for col, coltype in (("first_name", "TEXT"), ("last_name", "TEXT"), ("email", "TEXT"), ("last_login_at", "REAL")):
+    for col, coltype in (("first_name", "TEXT"), ("last_name", "TEXT"), ("email", "TEXT"),
+                          ("last_login_at", "REAL"), ("last_active_at", "REAL")):
         if col not in cols:
             conn.execute("ALTER TABLE users ADD COLUMN %s %s" % (col, coltype))
     conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email COLLATE NOCASE)")

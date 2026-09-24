@@ -73,7 +73,8 @@ real app rather than a browser tab - full screen, its own icon, no address bar.
 Each person gets their own account: their own username/password, their own Strava connection, their own plan and
 dashboard - completely separate from everyone else's. Set `APP_PASSWORD` and the app creates the **first** account
 (an admin) from it the next time it starts; every account after that comes from an **invite link** the admin creates.
-There's no public sign-up page and no "forgot password" - both by design, for a small, invite-only app.
+There's still no public sign-up page - that's by design, for a small, invite-only app - but there is now a
+"forgot password" path: see "Forgot passwords" below.
 
 - **Unset locally, there's no login at all** (the default) - the app behaves exactly as before, one shared local
   dataset. Set `APP_PASSWORD` in `.env` (and restart) to turn login on locally too, e.g. to protect Wi-Fi mode.
@@ -87,14 +88,29 @@ There's no public sign-up page and no "forgot password" - both by design, for a 
 - **Accounts fill up:** capped at `MAX_USERS` (default 10, matching Strava's self-serve "10 athletes" API app
   capacity - see "Deploy to Railway"). Past the cap, **Invite a friend** and redeeming an existing link both refuse.
 - **Who's signed up:** the **Admin** page lists every account - name, username, email, is-admin, when they signed
-  up, and when they last logged in - plus any invite links still waiting to be used. The bootstrap admin account
-  (created from `APP_PASSWORD`) has no name/email on record, since nothing ever asked for one; that's expected,
-  not a bug.
+  up, and when they were **last active** - plus any invite links still waiting to be used. The bootstrap admin
+  account (created from `APP_PASSWORD`) has no name/email on record, since nothing ever asked for one; that's
+  expected, not a bug.
+- **"Last active" vs. "last login":** sessions last 30 days, so most people never see the login form again once
+  they're in - a column that only tracked actual logins would look stale for someone opening the app daily. Last
+  active instead updates from any authenticated request (at most once a day per account, so it's not writing to
+  the database on every page load), so it reflects whether someone's actually using the app.
+- **Forgot passwords:** there's no self-service "forgot password" email yet (see below) - an admin sends the
+  reset instead. On the **Admin** page, **Send reset link** next to an account creates a one-time link, valid
+  for **24 hours**, shown with a **Copy link** button - send it however you like. They open it, set a new
+  password, and they're in - same as redeeming an invite. The link can't be reused once redeemed. This doesn't
+  help an admin who's locked out of their *own* account (they can't reach the Admin page to help themselves) -
+  that still falls back to `reset_password.py`, a direct database change.
 - **Sessions:** a signed cookie keeps you logged in for **30 days** (HttpOnly, SameSite=Lax, Secure over HTTPS).
   **Log out** is in the top bar. Set a new `SESSION_SECRET` to sign every device out at once (e.g. if you suspect
   a cookie leaked); changing your own password does not affect anyone else's session.
 - **Guessing:** after 10 wrong login attempts (any account) in 10 minutes, logins are refused until the window
   passes; sessions that already exist aren't affected.
+
+**Email sending is a later step.** Right now every invite and every password reset link is admin-generated and
+sent by hand (text, WhatsApp, email, whatever) - there's no outgoing email integration. Worth adding once this
+scales past a handful of invited people; until then, one admin action plus a copy-paste is simpler than standing
+up an email-sending service for a few users.
 
 ## Deploy to Railway
 
@@ -250,9 +266,10 @@ without `FITNESS_DB`, so it can't touch your real data.
 .venv/bin/python -m pytest -q tests
 ```
 Covers accounts and invites (registration, admin-only invites, the max-accounts cap, per-account data isolation),
-login (forged/expired cookies, open redirects, lockout, fail-closed startup), the one-time migration from the old
-single-user database (against a frozen copy of that schema, including a crash-and-retry case), deployment config,
-plan parsing, the ready-made plan templates (every template round-trips with no unrecognised or unmatched
-sports, Monday-snapping, the apply/replace modes), matching (incl. same-day multi-sport and the ±10 min rule),
-load/ratio/flags, the week / calendar / drill-down endpoints, token refresh and rotation, pagination, incremental
-sync/deletion, and the OAuth callback.
+login (forged/expired cookies, open redirects, lockout, fail-closed startup), admin-generated password resets
+(redeem/reuse/expiry, mismatched/short passwords, admin-only), "last active" tracking (updates from ordinary
+requests, at most once a day), the one-time migration from the old single-user database (against a frozen copy
+of that schema, including a crash-and-retry case), deployment config, plan parsing, the ready-made plan templates
+(every template round-trips with no unrecognised or unmatched sports, Monday-snapping, the apply/replace modes),
+matching (incl. same-day multi-sport and the ±10 min rule), load/ratio/flags, the week / calendar / drill-down
+endpoints, token refresh and rotation, pagination, incremental sync/deletion, and the OAuth callback.

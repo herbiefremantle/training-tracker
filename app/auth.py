@@ -1,11 +1,16 @@
-"""Multi-account login: a username/password form, an invite-only registration page, and a signed session cookie.
+"""Multi-account login: a username/password form, an invite-only registration page, a "forgot password" flow,
+and a signed session cookie.
 
 Off (no login at all) until there's at least one account. The Docker image sets REQUIRE_AUTH=1 and requires
 SESSION_SECRET, so it refuses to start rather than publish an app nobody can lock.
 
 The first account is created from APP_PASSWORD on first startup (see app/users.py:bootstrap_and_migrate) - after
-that, every further account comes from an invite link an existing account creates. There's no "forgot password";
-resetting one is a direct database change (ask - this is a small, invite-only app for now).
+that, every further account comes from an invite link an existing account creates. There's still no self-service
+"forgot password" (no email sending yet - that's a later step, once this scales past a handful of invited
+people): an admin generates a one-time reset link from the Admin page (app/users.py:create_reset_link) and sends
+it however they like, same as an invite link. /reset-password redeems it. An admin locked out of their own
+account is the one case this doesn't cover (they can't reach the Admin page to help themselves) - that still
+falls back to reset_password.py, a direct database change.
 
 The session cookie holds a user id, an expiry, and an HMAC of both, keyed by SESSION_SECRET - a secret separate
 from any one account's password, since changing your own password shouldn't sign out everyone else.
@@ -22,17 +27,18 @@ from urllib.parse import parse_qs
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from . import db, users
+from . import clock, db, users
 
 COOKIE = "tt_session"
 SESSION_SECONDS = 30 * 24 * 3600
 MIN_SESSION_SECRET_LENGTH = 20
 
-# Public paths: the health probe can't log in, /login and /register need to be reachable to log in or sign up at
-# all. Everything under /static/ is public too (see main.py's require_login) - style.css and app.js aren't
-# secret, and the PWA manifest/icons/service worker need to load before anyone has logged in (the "Add to Home
-# Screen" prompt can appear right on the login page). Everything else requires a session.
-PUBLIC_PATHS = {"/health", "/login", "/register"}
+# Public paths: the health probe can't log in, /login, /register and /reset-password need to be reachable
+# without a session to log in, sign up, or set a new password at all. Everything under /static/ is public too
+# (see main.py's require_login) - style.css and app.js aren't secret, and the PWA manifest/icons/service worker
+# need to load before anyone has logged in (the "Add to Home Screen" prompt can appear right on the login page).
+# Everything else requires a session.
+PUBLIC_PATHS = {"/health", "/login", "/register", "/reset-password"}
 
 # Brute-force brake: after MAX_FAILURES wrong guesses (any account) in FAILURE_WINDOW seconds, logins are refused
 # until they age out. In-memory and shared across accounts - this is a handful of invited people, not a public
@@ -105,12 +111,21 @@ def parse_token(token, now=None):
 
 def resolve_user(request):
     """The logged-in account's row, or None. Re-checks the account still exists, so a stale cookie from a wiped
-    or reseeded database - or a rotated SESSION_SECRET - can't grant access to a since-vanished id."""
+    or reseeded database - or a rotated SESSION_SECRET - can't grant access to a since-vanished id.
+
+    Also records "last active" here, at most once a day per account: this runs on every authenticated request
+    (via main.py's require_login middleware), which is exactly what "still using the app" means - unlike an
+    actual login, which a 30-day session cookie means most people never repeat day to day. Once/day keeps this
+    a read-mostly path (one UPDATE per account per calendar day, not per request) while still telling an admin
+    whether someone's actually opening the app, which last_login_at alone can't."""
     uid = parse_token(request.cookies.get(COOKIE))
     if uid is None:
         return None
     with db.connect() as conn:
-        return users.get_by_id(conn, uid)
+        row = users.get_by_id(conn, uid)
+        if row is not None and users.is_new_day(row["last_active_at"], clock.today()):
+            users.record_activity(conn, uid)
+        return row
 
 
 def request_authenticated(request):
@@ -169,6 +184,7 @@ def _login_html(next_path, error=""):
   <h1 style="font-size:20px;margin-bottom:14px">Training Tracker</h1>
   %s
 </form>
+<p class="muted small" style="text-align:center;margin-top:10px">Forgot your password? Ask an admin to send you a reset link.</p>
 %s
 </main></body></html>""" % (_HEAD_EXTRA, body, _INSTALL_SLOT)
 
@@ -205,6 +221,28 @@ def _register_html(invite, error="", first_name="", last_name="", username="", e
 %s
 </main></body></html>""" % (_HEAD_EXTRA, err, esc(invite), esc(first_name), esc(last_name), esc(email), esc(username),
                             users.MIN_PASSWORD_LENGTH, users.MIN_PASSWORD_LENGTH, _INSTALL_SLOT)
+
+
+def _reset_password_html(token, error=""):
+    err = '<div class="banner error" role="alert">%s</div>' % html.escape(error) if error else ""
+    return """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set a new password - Training Tracker</title>
+%s
+<link rel="stylesheet" href="/static/style.css"></head>
+<body><main class="login-wrap"><form class="card login-card" method="post" action="/reset-password">
+  <h1 style="font-size:20px;margin-bottom:14px">Set a new password</h1>
+  %s
+  <input type="hidden" name="token" value="%s">
+  <label class="muted small" for="pw">New password</label>
+  <input id="pw" type="password" name="password" autocomplete="new-password" required minlength="%d" autofocus>
+  <label class="muted small" for="pw2">Confirm new password</label>
+  <input id="pw2" type="password" name="password2" autocomplete="new-password" required minlength="%d">
+  <button class="btn primary" type="submit" style="width:100%%;margin-top:14px">Set password</button>
+</form>
+%s
+</main></body></html>""" % (_HEAD_EXTRA, err, html.escape(token, quote=True), users.MIN_PASSWORD_LENGTH,
+                            users.MIN_PASSWORD_LENGTH, _INSTALL_SLOT)
 
 
 def _page(html_text, status=200):
@@ -277,6 +315,34 @@ async def register_submit(request: Request):
         return redisplay(str(e))
     response = RedirectResponse("/", status_code=303)
     _set_cookie(response, request, new_id)
+    return response
+
+
+@router.get("/reset-password", include_in_schema=False)
+def reset_password_page(request: Request, token: str = Query("")):
+    if request_authenticated(request):
+        return RedirectResponse("/", status_code=303)
+    return _page(_reset_password_html(token))
+
+
+@router.post("/reset-password", include_in_schema=False)
+async def reset_password_submit(request: Request):
+    body = await request.body()
+    form = parse_qs(body[:4096].decode("utf-8", "replace"))
+    token = form.get("token", [""])[0]
+    password = form.get("password", [""])[0]
+    password2 = form.get("password2", [""])[0]
+
+    if len(body) > 4096:
+        return _page(_reset_password_html(token, "That's too much data."), 400)
+    try:
+        with db.connect() as conn:
+            user_id = users.redeem_reset_link(conn, token, password, password2)
+            users.record_login(conn, user_id)   # a new password is as much a fresh authentication as a login form
+    except users.ResetError as e:
+        return _page(_reset_password_html(token, str(e)), 400)
+    response = RedirectResponse("/", status_code=303)
+    _set_cookie(response, request, user_id)
     return response
 
 

@@ -207,9 +207,9 @@ def test_manifest_is_valid_and_matches_what_the_pages_reference():
 
 
 def test_login_and_register_pages_also_offer_the_manifest_and_install_button():
-    """Not just the main app - a brand new invited friend hits /register or /login first."""
+    """Not just the main app - a brand new invited friend hits /register, /login, or /reset-password first."""
     from app import auth
-    for html in (auth._login_html("/"), auth._register_html("token")):
+    for html in (auth._login_html("/"), auth._register_html("token"), auth._reset_password_html("token")):
         assert '<link rel="manifest" href="/static/manifest.json">' in html
         assert 'rel="apple-touch-icon"' in html
         assert 'id="install-slot"' in html and '/static/install.js' in html

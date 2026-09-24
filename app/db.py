@@ -63,9 +63,10 @@ CREATE TABLE IF NOT EXISTS users (
     first_name    TEXT,
     last_name     TEXT,
     email         TEXT,
-    is_admin      INTEGER NOT NULL DEFAULT 0,
-    created_at    REAL NOT NULL,
-    last_login_at REAL
+    is_admin       INTEGER NOT NULL DEFAULT 0,
+    created_at     REAL NOT NULL,
+    last_login_at  REAL,   -- an actual credential login (the /login form or redeeming an invite/reset link)
+    last_active_at REAL    -- any authenticated request, at most once/day - see app/auth.py:resolve_user
 );
 -- No CREATE INDEX for email here: on a database that predates this column, that index would run before
 -- users.py's migration adds the column (same class of bug _fix_activities_table exists to fix - see there).
@@ -77,6 +78,18 @@ CREATE TABLE IF NOT EXISTS invites (
     created_at  REAL NOT NULL,
     expires_at  REAL NOT NULL,
     used_by     INTEGER REFERENCES users(id),
+    used_at     REAL
+);
+
+-- An admin-generated link to set a new password for an *existing* account (no email sending yet - the admin
+-- creates the link and sends it however they like, same as an invite). Deliberately separate from `invites`:
+-- an invite creates a brand-new account, this only ever updates one that already exists.
+CREATE TABLE IF NOT EXISTS password_resets (
+    token       TEXT PRIMARY KEY,
+    user_id     INTEGER NOT NULL REFERENCES users(id),
+    created_by  INTEGER NOT NULL REFERENCES users(id),
+    created_at  REAL NOT NULL,
+    expires_at  REAL NOT NULL,
     used_at     REAL
 );
 
