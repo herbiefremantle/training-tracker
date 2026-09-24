@@ -222,13 +222,14 @@ def bootstrap_and_migrate(conn):
        whether or not APP_PASSWORD is set.
     3. If APP_PASSWORD is set and there are no accounts yet, create the first (admin) account from it, and - if
        this was a legacy database - move that LOCAL_USER_ID data (Strava tokens included) onto the new account.
-    4. If DEMO_ACCOUNT is set and there's no demo account yet, create the fixed demo/demo login - see
-       app/demo_data.py for what it's for and who's allowed to touch it. Deliberately *after* step 3 and never
-       gated on "no accounts yet" itself - creating the demo account must never be what makes step 3 above see
+    4. If DEMO_ACCOUNT is set, create the fixed demo/DEMO_PASSWORD (default "demo") login if it doesn't exist
+       yet, or update its password if DEMO_PASSWORD has changed since - see app/demo_data.py for what the
+       account's for and who's allowed to touch it. Deliberately *after* step 3 and never gated on "no
+       accounts yet" itself - creating the demo account must never be what makes step 3 above see
        count(conn) > 0 and skip bootstrapping the real admin account (that was a real bug here: the two were
        adjacent enough in an earlier version that this shipped broken - see tests/test_demo_account.py). Runs
-       on every startup, not just the first, so enabling DEMO_ACCOUNT later on an already-running deployment
-       still creates it on the next restart.
+       on every startup, not just the first, so enabling DEMO_ACCOUNT (or changing DEMO_PASSWORD) later, on an
+       already-running deployment, still takes effect on the next restart.
 
     Safe to interrupt and retry: every step here is guarded (an "already done?" check, or a WHERE clause that
     only matches what's left to do), so a crash partway through - however far it got - always converges to the
@@ -258,8 +259,19 @@ def bootstrap_and_migrate(conn):
             if is_legacy:
                 _reassign_legacy_data(conn, admin_id)
 
-    if os.environ.get("DEMO_ACCOUNT", "").strip().lower() in ("1", "true", "yes") and get_demo_account(conn) is None:
-        create(conn, "demo", "demo", is_demo=True, first_name="Demo", last_name="Account")
+    if os.environ.get("DEMO_ACCOUNT", "").strip().lower() in ("1", "true", "yes"):
+        # DEMO_PASSWORD defaults to "demo" (the point is a memorable, public credential), but browsers'
+        # breached-password checkers (e.g. Chrome's) flag "demo" itself on sight, since it's such a common
+        # password elsewhere - DEMO_PASSWORD lets that be swapped for something just as simple but less
+        # likely to trip that specific warning, without a code change or losing the account's data.
+        demo_password = os.environ.get("DEMO_PASSWORD", "").strip() or "demo"
+        demo = get_demo_account(conn)
+        if demo is None:
+            create(conn, "demo", demo_password, is_demo=True, first_name="Demo", last_name="Account")
+        elif not verify_password(demo_password, demo["password_hash"]):
+            # picks up a changed DEMO_PASSWORD on the next restart, rather than only ever mattering on the
+            # account's original creation - the same reasoning _add_profile_columns etc. already follow
+            conn.execute("UPDATE users SET password_hash = ? WHERE id = ?", (hash_password(demo_password), demo["id"]))
 
 
 def _table_columns(conn, table):

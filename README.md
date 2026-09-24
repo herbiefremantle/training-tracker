@@ -132,9 +132,10 @@ up an email-sending service for a few users.
 
 ## Demo account
 
-Set `DEMO_ACCOUNT=1` and the app creates a fixed, shared login - username and password both `demo` - so you can
-send people a link to try the app without an invite or their own Strava. It's read-only and self-updating, built
-for handing out in public.
+Set `DEMO_ACCOUNT=1` and the app creates a fixed, shared login - username `demo`, password `demo` by default
+(**see "Chrome's breached-password warning" below - most people should set `DEMO_PASSWORD`**) - so you can send
+people a link to try the app without an invite or their own Strava. It's read-only and self-updating, built for
+handing out in public.
 
 - **Looks lived-in, not empty.** It logs straight in with a populated dashboard: a 16-week marathon plan
   positioned so today always falls in week 6, the last 4 weeks mostly showing "Done" with a couple of "Missed"
@@ -160,6 +161,17 @@ for handing out in public.
 - **Counts toward `MAX_USERS`** like any other account (one fewer real invite slot) - raise the limit if that
   matters to you.
 
+### Chrome's breached-password warning
+
+Log in as `demo`/`demo` in Chrome and Password Manager will likely show **"Change your password - the password
+that you just used was found in a data breach."** That's Chrome checking the literal word "demo" against known
+leaked-password lists, not anything about this app - it's the browser's own nag, appears after the login already
+succeeded (dismissing it doesn't undo anything), and would happen on any site you typed that password into.
+
+If you'd rather not have people see it, set `DEMO_PASSWORD` to something else - still whatever's easy for you
+to share, just not the single dictionary word "demo". It takes effect on the next restart, updating the
+existing account's password rather than losing it.
+
 ### Testing it locally before sharing the link
 
 ```bash
@@ -169,9 +181,10 @@ DEMO_ACCOUNT=1 APP_PASSWORD=<a-password-for-you> SESSION_SECRET=$(python3 -c "im
 (Or add `DEMO_ACCOUNT=1` to your `.env` alongside the `APP_PASSWORD`/`SESSION_SECRET` you'd already need to test
 login locally at all - see "Login" above.)
 
-1. Open <http://localhost:8000/login> and sign in with **demo** / **demo**. You should land straight on a
-   populated dashboard - no "Connect with Strava" prompt, a load ratio around 1.0-1.2 marked "In range", and a
-   mix of done/missed/extra sessions in the last few weeks.
+1. Open <http://localhost:8000/login> and sign in with **demo** / **demo** (or your own `DEMO_PASSWORD`, if
+   you've set one). You should land straight on a populated dashboard - no "Connect with Strava" prompt, a load
+   ratio around 1.0-1.2 marked "In range", and a mix of done/missed/extra sessions in the last few weeks. Chrome
+   may flag the password as breached here - see above; it's expected and doesn't affect the login.
 2. Try to break it: click **Sync Strava** (greyed out, with a tooltip), open the **Plan** page and try **Import
    plan** / **Clear entire plan** / **Use this plan** on a ready-made template (all greyed out) - **Preview**
    should still work. Try visiting `/auth/login` directly in the address bar - it redirects home with an

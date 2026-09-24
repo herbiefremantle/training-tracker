@@ -59,6 +59,36 @@ def test_demo_account_bootstrap_is_idempotent_across_restarts(tmp_path, monkeypa
         assert conn.execute("SELECT COUNT(*) FROM users WHERE username = 'demo'").fetchone()[0] == 1
 
 
+def test_demo_password_defaults_to_demo_but_is_overridable(tmp_path, monkeypatch):
+    """DEMO_PASSWORD exists because browsers' breached-password checkers (Chrome's Password Manager, at
+    least) flag the literal word "demo" on sight - this is the escape hatch, without losing the account
+    or needing a code change."""
+    monkeypatch.setenv("FITNESS_DB", str(tmp_path / "custom_pw.db"))
+    monkeypatch.setenv("APP_PASSWORD", PASSWORD)
+    monkeypatch.setenv("SESSION_SECRET", SECRET)
+    monkeypatch.setenv("DEMO_ACCOUNT", "1")
+    monkeypatch.setenv("DEMO_PASSWORD", "a-less-common-demo-password")
+    with TestClient(main.app, follow_redirects=False) as c:
+        assert c.post("/login", data={"username": "demo", "password": "demo"}).status_code == 401
+        assert c.post("/login", data={"username": "demo", "password": "a-less-common-demo-password"}).status_code == 303
+
+
+def test_demo_password_change_takes_effect_on_the_next_restart(tmp_path, monkeypatch):
+    monkeypatch.setenv("FITNESS_DB", str(tmp_path / "rotate.db"))
+    monkeypatch.setenv("APP_PASSWORD", PASSWORD)
+    monkeypatch.setenv("SESSION_SECRET", SECRET)
+    monkeypatch.setenv("DEMO_ACCOUNT", "1")
+    with TestClient(main.app, follow_redirects=False) as c:
+        assert log_in_demo(c).status_code == 303   # the default "demo" password works on first boot
+
+    monkeypatch.setenv("DEMO_PASSWORD", "a-rotated-password")
+    with TestClient(main.app, follow_redirects=False) as c:
+        assert log_in_demo(c).status_code == 401   # the old password no longer works...
+        assert c.post("/login", data={"username": "demo", "password": "a-rotated-password"}).status_code == 303
+    with db.connect() as conn:
+        assert conn.execute("SELECT COUNT(*) FROM users WHERE username = 'demo'").fetchone()[0] == 1   # ...same account
+
+
 # ---- what logging in as demo looks like, straight from a cold start ---------------------------
 
 def test_demo_status_looks_connected_with_sample_data(demo_client):
