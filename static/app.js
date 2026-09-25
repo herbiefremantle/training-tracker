@@ -961,7 +961,7 @@ function renderAdmin() {
       <td>${esc(u.username)}${u.is_admin ? '<span class="badge-admin">Admin</span>' : ""}${u.is_demo ? '<span class="badge-admin badge-demo">Demo</span>' : ""}</td>
       <td>${cell(u.email)}</td><td>${fmtDateTime(u.created_at)}</td><td>${fmtDateTime(u.last_active_at)}</td>
       <td>${u.is_demo
-        ? '<button class="btn small" type="button" disabled title="The demo login is a fixed demo/demo password, on purpose">Send reset link</button>'
+        ? '<button class="btn small" type="button" disabled title="The demo login has a fixed password, on purpose">Send reset link</button>'
         : `<button class="btn small" type="button" data-act="resetLink" data-username="${esc(u.username)}">Send reset link</button>`}</td>
       <td>${u.is_demo || u.username === state.status.username
         ? `<button class="btn small danger" type="button" disabled title="${u.is_demo ? "The demo account is managed by DEMO_ACCOUNT" : "Use the Account page to delete your own account"}">Delete</button>`

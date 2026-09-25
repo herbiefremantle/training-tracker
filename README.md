@@ -132,7 +132,7 @@ up an email-sending service for a few users.
 
 ## Demo account
 
-Set `DEMO_ACCOUNT=1` and the app creates a fixed, shared login - username `demo`, password `demo` by default
+Set `DEMO_ACCOUNT=1` and the app creates a fixed, shared login - username `demotracker` (change with `DEMO_USERNAME`), password `demo` by default
 (**see "Chrome's breached-password warning" below - most people should set `DEMO_PASSWORD`**) - so you can send
 people a link to try the app without an invite or their own Strava. It's read-only and self-updating, built for
 handing out in public.
@@ -163,7 +163,7 @@ handing out in public.
 
 ### Chrome's breached-password warning
 
-Log in as `demo`/`demo` in Chrome and Password Manager will likely show **"Change your password - the password
+Log in as `demotracker`/`demo` in Chrome and Password Manager will likely show **"Change your password - the password
 that you just used was found in a data breach."** That's Chrome checking the literal word "demo" against known
 leaked-password lists, not anything about this app - it's the browser's own nag, appears after the login already
 succeeded (dismissing it doesn't undo anything), and would happen on any site you typed that password into.

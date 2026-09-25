@@ -13,6 +13,7 @@ from datetime import date
 from .db import ACTIVITIES_TABLE_SQL, LOCAL_USER_ID
 
 MIN_PASSWORD_LENGTH = 8
+DEFAULT_DEMO_USERNAME = "demotracker"
 INVITE_TTL_SECONDS = 7 * 24 * 3600
 RESET_TTL_SECONDS = 24 * 3600   # shorter than an invite: this one grants control of an *existing* account
 DEFAULT_MAX_USERS = 10          # matches Strava's self-serve "10 athletes" API app capacity - see README
@@ -240,7 +241,7 @@ def bootstrap_and_migrate(conn):
        whether or not APP_PASSWORD is set.
     3. If APP_PASSWORD is set and there are no accounts yet, create the first (admin) account from it, and - if
        this was a legacy database - move that LOCAL_USER_ID data (Strava tokens included) onto the new account.
-    4. If DEMO_ACCOUNT is set, create the fixed demo/DEMO_PASSWORD (default "demo") login if it doesn't exist
+    4. If DEMO_ACCOUNT is set, create the fixed DEMO_USERNAME/DEMO_PASSWORD (default "demotracker"/"demo") login if it doesn't exist
        yet, or update its password if DEMO_PASSWORD has changed since - see app/demo_data.py for what the
        account's for and who's allowed to touch it. Deliberately *after* step 3 and never gated on "no
        accounts yet" itself - creating the demo account must never be what makes step 3 above see
@@ -283,10 +284,17 @@ def bootstrap_and_migrate(conn):
         # password elsewhere - DEMO_PASSWORD lets that be swapped for something just as simple but less
         # likely to trip that specific warning, without a code change or losing the account's data.
         demo_password = os.environ.get("DEMO_PASSWORD", "").strip() or "demo"
+        demo_username = os.environ.get("DEMO_USERNAME", "").strip().lower() or DEFAULT_DEMO_USERNAME
+        if not valid_username(demo_username):
+            demo_username = DEFAULT_DEMO_USERNAME
         demo = get_demo_account(conn)
         if demo is None:
-            create(conn, "demo", demo_password, is_demo=True, first_name="Demo", last_name="Account")
-        elif not verify_password(demo_password, demo["password_hash"]):
+            create(conn, demo_username, demo_password, is_demo=True, first_name="Demo", last_name="Account")
+        elif demo["username"] != demo_username and get_by_username(conn, demo_username) is None:
+            # an account made under an older name (or a changed DEMO_USERNAME) is renamed in place, keeping its data
+            conn.execute("UPDATE users SET username = ? WHERE id = ?", (demo_username, demo["id"]))
+            demo = get_demo_account(conn)
+        if demo is not None and not verify_password(demo_password, demo["password_hash"]):
             # picks up a changed DEMO_PASSWORD on the next restart, rather than only ever mattering on the
             # account's original creation - the same reasoning _add_profile_columns etc. already follow
             conn.execute("UPDATE users SET password_hash = ? WHERE id = ?", (hash_password(demo_password), demo["id"]))

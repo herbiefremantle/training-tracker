@@ -273,8 +273,8 @@ def test_the_demo_account_cannot_be_deleted_or_used_to_delete(tmp_path, env):
     FakeStrava(env)
     with TestClient(main.app, follow_redirects=False) as c:
         admin = login(c)
-        assert admin.delete("/api/accounts/demo").status_code == 400
-        demo = login(TestClient(main.app, follow_redirects=False), "demo", "demo")
+        assert admin.delete("/api/accounts/demotracker").status_code == 400
+        demo = login(TestClient(main.app, follow_redirects=False), "demotracker", "demo")
         assert demo.post("/api/account/disconnect-strava").status_code == 403
         assert demo.post("/api/account/delete", json={"password": "demo"}).status_code == 403
         assert demo.get("/api/account/export").status_code == 200      # reading is fine

@@ -22,7 +22,7 @@ def demo_client(tmp_path, monkeypatch):
 
 
 def log_in_demo(client):
-    return client.post("/login", data={"username": "demo", "password": "demo"})
+    return client.post("/login", data={"username": "demotracker", "password": "demo"})
 
 
 def log_in_admin(client):
@@ -43,7 +43,7 @@ def test_demo_account_is_created_when_the_env_var_is_set(demo_client):
     r = log_in_demo(demo_client)
     assert r.status_code == 303   # /login's own redirect, always explicit 303
     me = demo_client.get("/api/status").json()
-    assert me["username"] == "demo" and me["is_demo"] is True and me["is_admin"] is False
+    assert me["username"] == "demotracker" and me["is_demo"] is True and me["is_admin"] is False
 
 
 def test_demo_account_bootstrap_is_idempotent_across_restarts(tmp_path, monkeypatch):
@@ -56,7 +56,7 @@ def test_demo_account_bootstrap_is_idempotent_across_restarts(tmp_path, monkeypa
     with TestClient(main.app, follow_redirects=False) as c:
         assert log_in_demo(c).status_code == 303   # second boot: still there, only the one
     with db.connect() as conn:
-        assert conn.execute("SELECT COUNT(*) FROM users WHERE username = 'demo'").fetchone()[0] == 1
+        assert conn.execute("SELECT COUNT(*) FROM users WHERE username = 'demotracker'").fetchone()[0] == 1
 
 
 def test_demo_password_defaults_to_demo_but_is_overridable(tmp_path, monkeypatch):
@@ -69,8 +69,8 @@ def test_demo_password_defaults_to_demo_but_is_overridable(tmp_path, monkeypatch
     monkeypatch.setenv("DEMO_ACCOUNT", "1")
     monkeypatch.setenv("DEMO_PASSWORD", "a-less-common-demo-password")
     with TestClient(main.app, follow_redirects=False) as c:
-        assert c.post("/login", data={"username": "demo", "password": "demo"}).status_code == 401
-        assert c.post("/login", data={"username": "demo", "password": "a-less-common-demo-password"}).status_code == 303
+        assert c.post("/login", data={"username": "demotracker", "password": "demo"}).status_code == 401
+        assert c.post("/login", data={"username": "demotracker", "password": "a-less-common-demo-password"}).status_code == 303
 
 
 def test_demo_password_change_takes_effect_on_the_next_restart(tmp_path, monkeypatch):
@@ -84,9 +84,31 @@ def test_demo_password_change_takes_effect_on_the_next_restart(tmp_path, monkeyp
     monkeypatch.setenv("DEMO_PASSWORD", "a-rotated-password")
     with TestClient(main.app, follow_redirects=False) as c:
         assert log_in_demo(c).status_code == 401   # the old password no longer works...
-        assert c.post("/login", data={"username": "demo", "password": "a-rotated-password"}).status_code == 303
+        assert c.post("/login", data={"username": "demotracker", "password": "a-rotated-password"}).status_code == 303
     with db.connect() as conn:
-        assert conn.execute("SELECT COUNT(*) FROM users WHERE username = 'demo'").fetchone()[0] == 1   # ...same account
+        assert conn.execute("SELECT COUNT(*) FROM users WHERE username = 'demotracker'").fetchone()[0] == 1   # ...same account
+
+
+def test_an_existing_demo_account_is_renamed_in_place_keeping_its_data(tmp_path, monkeypatch):
+    monkeypatch.setenv("FITNESS_DB", str(tmp_path / "rename.db"))
+    monkeypatch.setenv("APP_PASSWORD", PASSWORD)
+    monkeypatch.setenv("SESSION_SECRET", SECRET)
+    monkeypatch.setenv("DEMO_ACCOUNT", "1")
+    monkeypatch.setenv("DEMO_USERNAME", "olddemo")
+    with TestClient(main.app, follow_redirects=False) as c:
+        assert c.post("/login", data={"username": "olddemo", "password": "demo"}).status_code == 303
+    with db.connect() as conn:
+        before = conn.execute("SELECT id FROM users WHERE is_demo = 1").fetchone()["id"]
+        n = conn.execute("SELECT COUNT(*) FROM activities WHERE user_id = ?", (before,)).fetchone()[0]
+
+    monkeypatch.delenv("DEMO_USERNAME")               # falls back to the default, demotracker
+    with TestClient(main.app, follow_redirects=False) as c:
+        assert c.post("/login", data={"username": "olddemo", "password": "demo"}).status_code == 401
+        assert log_in_demo(c).status_code == 303
+    with db.connect() as conn:
+        rows = conn.execute("SELECT id FROM users WHERE is_demo = 1").fetchall()
+        assert [r["id"] for r in rows] == [before]    # same account, not a second one
+        assert conn.execute("SELECT COUNT(*) FROM activities WHERE user_id = ?", (before,)).fetchone()[0] == n > 0
 
 
 # ---- what logging in as demo looks like, straight from a cold start ---------------------------

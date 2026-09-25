@@ -12,7 +12,7 @@ def conn_and_demo_id(tmp_path, monkeypatch):
     monkeypatch.setenv("FITNESS_DB", str(tmp_path / "demo.db"))
     db.init_db()
     with db.connect() as conn:
-        demo_id = users.create(conn, "demo", "demo", is_demo=True)
+        demo_id = users.create(conn, "demotracker", "demo", is_demo=True)
     with db.connect() as conn:
         yield conn, demo_id
 
