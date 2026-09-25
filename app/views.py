@@ -35,6 +35,12 @@ def week_view(matched, monday, today):
         "minutes": round(sum(a["duration_min"] or 0 for a in done_acts), 1),
         "planned_distance_km": round(sum(s["planned_distance_km"] or 0 for s in sessions), 2),
         "planned_minutes": round(sum(s["planned_duration_min"] or 0 for s in sessions)),
+        # sessions still to come (today's not yet done, or later): what finishing the week as planned adds. Missed
+        # sessions aren't counted - they're gone - which is what makes this "on target for" real-life not just plan.
+        "remaining_distance_km": round(sum(s["planned_distance_km"] or 0 for s in sessions
+                                           if s["status"] in ("pending", "upcoming")), 2),
+        "remaining_minutes": round(sum(s["planned_duration_min"] or 0 for s in sessions
+                                       if s["status"] in ("pending", "upcoming"))),
     }
     return {
         "start": lo, "end": hi, "is_current": monday == metrics.week_start(today), "totals": totals,

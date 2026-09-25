@@ -145,7 +145,9 @@ def test_dashboard_end_to_end_with_same_day_double_session(client):
                                    "extra": 1, "planned": 5, "completed": 1}
     assert d["week"]["tolerance_min"] == 10 and d["week"]["is_current"]
     # planned: 10+6+20+8 km, 60+45+40+150+120 min.  done so far: the 10 km run and the 30 km ride (extra), 60 min each
-    assert d["week"]["totals"] == {"distance_km": 40.0, "minutes": 120.0, "planned_distance_km": 44.0, "planned_minutes": 415}
+    # still to come: today's pending 20 km / 150 min and Sunday's 8 km / 120 min; the two missed sessions are gone
+    assert d["week"]["totals"] == {"distance_km": 40.0, "minutes": 120.0, "planned_distance_km": 44.0, "planned_minutes": 415,
+                                   "remaining_distance_km": 28.0, "remaining_minutes": 270}
     assert [s["date"] for s in d["upcoming"]] == ["2026-09-26", "2026-09-27"]
     assert d["load"]["sources_28d"]["hr_fallback"] == 2 and len(d["load"]["series"]) == 90
     assert {o["value"] for o in d["sport_options"]} >= {"all", "run", "ride"} and d["default_sport"] == "run"
@@ -240,6 +242,9 @@ def test_week_totals_match_the_mid_week_example(client, monkeypatch):
     t = client.get("/api/dashboard").json()["week"]["totals"]
     assert round(t["distance_km"] / 1.609344, 1) == 10.0 and t["minutes"] == 100.0
     assert round(t["planned_distance_km"] / 1.609344, 1) == 35.0 and t["planned_minutes"] == 50 + 50 + 90 + 150 + 30
+    # to go after Tuesday: Wed core (30 min), Thu tempo (10 mi, 90), Sat long (15 mi, 150); the Sunday rest adds nothing
+    assert round(t["remaining_distance_km"] / 1.609344, 1) == 25.0 and t["remaining_minutes"] == 30 + 90 + 150
     # a week with no plan at all: totals are zero, not an error
     empty = client.get("/api/week?start=2026-08-03").json()["totals"]
-    assert empty == {"distance_km": 0, "minutes": 0, "planned_distance_km": 0, "planned_minutes": 0}
+    assert empty == {"distance_km": 0, "minutes": 0, "planned_distance_km": 0, "planned_minutes": 0,
+                     "remaining_distance_km": 0, "remaining_minutes": 0}

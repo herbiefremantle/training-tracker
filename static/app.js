@@ -246,6 +246,15 @@ function renderAll() {
 
 // ---------- dashboard: KPIs, week, calendar, upcoming, load ------------------------------------
 
+// "On target for": what's done so far plus what's still planned to come - the week's likely total, allowing for
+// sessions that were missed or swapped rather than assuming the plan is followed exactly.
+function onTarget(done, remaining, planned, fmt) {
+  if (!planned) return "";
+  const line = remaining ? `On target for: ${fmt(done + remaining)} (${fmt(done)} done + ${fmt(remaining)} to go)`
+                         : `On target for: ${fmt(done)} (nothing left planned)`;
+  return `<div class="foot">${esc(line)}</div>`;
+}
+
 function renderKpis() {
   const d = state.dashboard, L = d.load, c = d.week.counts, T = d.week.totals, ratio = L.ratio;
   const flag = { high: ["✕", "High load risk"], low: ["▼", "Low load"], ok: ["✓", "In range"] }[L.flag];
@@ -256,14 +265,17 @@ function renderKpis() {
       <div class="value">${ratio == null ? "–" : ratio.toFixed(2)}</div>
       <div class="foot">${flag ? `<span class="pill ${L.flag}"><i aria-hidden="true">${flag[0]}</i>${flag[1]}</span>` : "Not enough data yet"}</div>
       <div class="foot">7-day ÷ 28-day average. High above ${d.thresholds.high}, low below ${d.thresholds.low}</div></div>
+    <div class="card kpi"><div class="label">This week</div><div class="value">${c.completed}<span class="muted"> / ${c.planned}</span></div>
+      <div class="foot">${esc(weekFoot)}</div></div>
     <div class="card kpi"><div class="label">Distance this week</div>
       <div class="value">${+dist(T.distance_km).toFixed(1)}<span class="unit"> ${state.units}</span></div>
-      <div class="foot">${esc(T.planned_distance_km ? `Planned this week: ${fmtDist(T.planned_distance_km)}` : c.planned ? "No distance planned this week" : "No plan this week")}</div></div>
+      <div class="foot">${esc(T.planned_distance_km ? `Planned this week: ${fmtDist(T.planned_distance_km)}` : c.planned ? "No distance planned this week" : "No plan this week")}</div>
+      ${onTarget(T.distance_km, T.remaining_distance_km, T.planned_distance_km, fmtDist)}</div>
     <div class="card kpi"><div class="label">Time this week</div>
       <div class="value">${fmtMins(T.minutes)}</div>
-      <div class="foot">${esc(T.planned_minutes ? `Planned this week: ${fmtMins(T.planned_minutes)}` : c.planned ? "No duration planned this week" : "No plan this week")}</div></div>
-    <div class="card kpi"><div class="label">This week</div><div class="value">${c.completed}<span class="muted"> / ${c.planned}</span></div>
-      <div class="foot">${esc(weekFoot)}</div></div>`;
+      <div class="foot">${esc(T.planned_minutes ? `Planned this week: ${fmtMins(T.planned_minutes)}` : c.planned ? "No duration planned this week" : "No plan this week")}</div>
+      ${onTarget(T.minutes, T.remaining_minutes, T.planned_minutes, fmtMins)}</div>
+`;
 }
 
 function sessionItem(s) {
