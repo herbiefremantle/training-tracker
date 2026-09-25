@@ -59,6 +59,9 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setenv("STRAVA_CLIENT_ID", "12345")
     monkeypatch.setenv("STRAVA_CLIENT_SECRET", "shhh")
     monkeypatch.setenv("PRIVACY_CONTACT_EMAIL", "privacy@example.com")
+    # a developer's own .env may switch the webhook on; these tests start from "off"
+    monkeypatch.delenv("STRAVA_WEBHOOK_VERIFY_TOKEN", raising=False)
+    monkeypatch.delenv("STRAVA_WEBHOOK_SUBSCRIPTION_ID", raising=False)
     return monkeypatch
 
 

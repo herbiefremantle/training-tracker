@@ -136,7 +136,7 @@ function renderBanner() {
       </ol></div>`);
   } else if (s && !s.connected) {
     out.push(`<div class="banner info"><h3>Connect your Strava account</h3>
-      <p>Log in once so the app can read your activities. Your tokens stay in the local database.</p>
+      <p>Log in once so the app can read your activities. Your Strava access is stored only for your account, and you can disconnect and delete it any time from the Account page.</p>
       <p><a href="/auth/login" aria-label="Connect with Strava"><img src="/static/strava/btn_strava_connect_with_orange.svg" alt="Connect with Strava" width="237" height="48"></a></p></div>`);
   } else if (s && s.connected && s.activity_count === 0 && !state.flash) {
     out.push(`<div class="banner info"><p>Connected${s.athlete ? " as <b>" + esc(s.athlete) + "</b>" : ""}. Click <b>Sync Strava</b> to pull your activities.</p></div>`);
