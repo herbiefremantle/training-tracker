@@ -16,7 +16,9 @@ from .db import get_meta, set_meta
 
 AUTHORIZE_URL = "https://www.strava.com/oauth/authorize"
 TOKEN_URL = "https://www.strava.com/oauth/token"
+REVOKE_URL = "https://www.strava.com/oauth/revoke"
 API = "https://www.strava.com/api/v3"
+SUBSCRIPTIONS_URL = API + "/push_subscriptions"
 
 PAGE_SIZE = 200
 RESYNC_OVERLAP_S = 14 * 86400   # re-fetch the last 2 weeks each sync to pick up edits/deletes
@@ -24,7 +26,10 @@ ENRICH_PER_SYNC = 40            # detail lookups per sync (Strava allows ~100 re
 
 
 class StravaError(Exception):
-    pass
+    def __init__(self, message, status=None):
+        super().__init__(message)
+        self.status = status   # the HTTP status Strava answered with, when there was one - lets callers tell
+                               # "Strava says this access is gone" (400/401) from "Strava is having a bad day"
 
 
 def make_client():
@@ -71,7 +76,7 @@ def _token_request(http, payload):
     r = http.post(TOKEN_URL, data={"client_id": client_id(), "client_secret": client_secret(), **payload})
     if r.status_code != 200:
         raise StravaError("Strava rejected the token request (%s). If you revoked access, "
-                          "reconnect with Strava." % r.status_code)
+                          "reconnect with Strava." % r.status_code, status=r.status_code)
     return r.json()
 
 
@@ -121,12 +126,72 @@ def _get(conn, http, user_id, path, params=None):
         break
     if r.status_code == 429:
         raise StravaError("Strava rate limit hit (shared by everyone using this app - 200 requests / 15 min, "
-                          "2,000 / day). Try again later.")
+                          "2,000 / day). Try again later.", status=429)
     if r.status_code == 401:
-        raise StravaError("Strava refused the stored credentials. Reconnect with Strava.")
+        raise StravaError("Strava refused the stored credentials. Reconnect with Strava.", status=401)
     if r.status_code != 200:
-        raise StravaError("Strava API error %s on %s" % (r.status_code, path))
+        raise StravaError("Strava API error %s on %s" % (r.status_code, path), status=r.status_code)
     return r.json()
+
+
+# ---- disconnecting: revoke at Strava, delete what we synced ---------------------------------
+
+def revoke(conn, http, user_id):
+    """Ask Strava to invalidate this account's tokens (POST /oauth/revoke, HTTP Basic with the app's own
+    credentials - revoking the refresh token also kills its access tokens). Returns True once Strava confirms,
+    False if it couldn't be done (not configured, network trouble, Strava said no), None if there was nothing
+    to revoke. Never raises: callers use this on the way to deleting local data, which must go ahead either
+    way - the honest thing is to report the outcome, not to refuse to delete because Strava was unreachable."""
+    row = conn.execute("SELECT refresh_token FROM strava_auth WHERE user_id = ?", (user_id,)).fetchone()
+    if not row:
+        return None
+    if not is_configured():
+        return False
+    try:
+        r = http.post(REVOKE_URL, data={"token": row["refresh_token"]}, auth=(client_id(), client_secret()))
+    except httpx.HTTPError:
+        return False
+    return r.status_code == 200
+
+
+def delete_strava_data(conn, user_id):
+    """Everything we hold that came from Strava for this account: the synced activities, the stored tokens and
+    athlete link, and the last-sync marker. Their training plan is their own input, not Strava data, so it
+    stays. Returns how many activities were removed."""
+    n = conn.execute("DELETE FROM activities WHERE user_id = ?", (user_id,)).rowcount
+    conn.execute("DELETE FROM strava_auth WHERE user_id = ?", (user_id,))
+    conn.execute("DELETE FROM meta WHERE user_id = ? AND key = 'last_sync'", (user_id,))
+    return n
+
+
+# ---- webhook subscription (one per app; covers every athlete who has authorised it) --------------
+
+def _subscription_call(http, method, url, **kw):
+    try:
+        r = http.request(method, url, **kw)
+    except httpx.HTTPError as e:
+        raise StravaError("Couldn't reach Strava: %s" % e)
+    if r.status_code not in (200, 201, 204):
+        raise StravaError("Strava answered %s: %s" % (r.status_code, r.text[:300]), status=r.status_code)
+    return r.json() if r.content else None
+
+
+def create_subscription(http, callback_url, verify_token):
+    """Strava immediately GETs callback_url to validate it (see app/webhook.py), so the app must already be
+    deployed with the same verify token before this is called."""
+    return _subscription_call(http, "POST", SUBSCRIPTIONS_URL, data={
+        "client_id": client_id(), "client_secret": client_secret(),
+        "callback_url": callback_url, "verify_token": verify_token})
+
+
+def view_subscription(http):
+    return _subscription_call(http, "GET", SUBSCRIPTIONS_URL,
+                              params={"client_id": client_id(), "client_secret": client_secret()})
+
+
+def delete_subscription(http, subscription_id):
+    return _subscription_call(http, "DELETE", "%s/%s" % (SUBSCRIPTIONS_URL, subscription_id),
+                              params={"client_id": client_id(), "client_secret": client_secret()})
 
 
 # ---- activities -----------------------------------------------------------------------------

@@ -314,7 +314,8 @@ def test_resolve_user_updates_last_active_at_most_once_a_day(secured, monkeypatc
     with db.connect() as conn:   # force "never recorded" regardless of whatever bootstrap already set
         conn.execute("UPDATE users SET last_active_at = 0 WHERE id = ?", (uid,))
 
-    day1 = date(2026, 9, 24)
+    day1 = date.today()   # the stored timestamps are real time, so "day 1" must be the real today or the
+                          # "same day" step below would (wrongly) already look like a new day
     monkeypatch.setattr(auth.clock, "today", lambda: day1)
     secured.get("/api/status")
     with db.connect() as conn:

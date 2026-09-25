@@ -333,3 +333,12 @@ input[type=password]:focus-visible { outline: 2px solid var(--series-1); outline
 .install-modal { width: 100%; max-width: 360px; }
 .install-modal ol { margin: 0; padding-left: 20px; }
 .install-modal li { margin: 8px 0; }
+
+/* ---- privacy page, footer ---- */
+.legal { max-width: 720px; margin: 0 auto; padding: 24px 16px 60px; line-height: 1.55; }
+.legal h1 { font-size: 26px; margin: 8px 0 4px; }
+.legal h2 { font-size: 17px; margin: 26px 0 6px; }
+.legal ul { padding-left: 20px; }
+.legal li { margin: 6px 0; }
+.site-footer { max-width: 1200px; margin: 0 auto; padding: 8px 16px 40px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; font-size: 13px; }
+.site-footer img { display: block; height: 20px; width: auto; }

@@ -12,12 +12,12 @@ from urllib.parse import urlencode, urlsplit
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, RedirectResponse
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import auth, clock, demo_data, matching, metrics, plan_templates, planparse, sports, strava, users, views
+from . import auth, clock, demo_data, legal, matching, metrics, plan_templates, planparse, sports, strava, users, views, webhook
 from .db import LOCAL_USER_ID, ROOT, connect, db_path, get_meta, init_db, volume_warning
 
 # override=True: .env is the source of truth, even if the shell already exports (stale/empty) STRAVA_* vars
@@ -70,6 +70,9 @@ async def lifespan(_app):
     if volume_warning():
         log.warning(volume_warning())
     log.info("Login: %s", "required" if auth.enabled() else "OFF (no accounts yet)")
+    if auth.enabled() and not legal.contact_email():
+        log.warning("PRIVACY_CONTACT_EMAIL is not set - the privacy policy has no contact address. Strava's API "
+                    "policy and UK GDPR both expect one; set it before applying for production API access.")
     _regenerate_demo_if_stale()
     threading.Thread(target=_demo_scheduler_loop, daemon=True, name="demo-scheduler").start()
     yield
@@ -250,6 +253,7 @@ def status(request: Request):
             "display_name": (me["first_name"] or me["username"]) if me else None,
             "is_admin": bool(me["is_admin"]) if me else False,
             "is_demo": bool(me["is_demo"]) if me else False,
+            "email": me["email"] if me else None,
         }
 
 
@@ -273,6 +277,118 @@ def sync(request: Request):
         raise HTTPException(502, "Couldn't reach Strava - check your connection.")
     finally:
         lock.release()
+
+
+# ---- privacy, Strava webhook, and getting your data out / off ------------------------------------
+
+@app.get("/privacy", include_in_schema=False)
+def privacy():
+    return HTMLResponse(legal.privacy_html(), headers={"Cache-Control": "no-store"})
+
+
+@app.get("/strava/webhook", include_in_schema=False)
+def strava_webhook_validate(request: Request):
+    """Strava's one-off validation GET when a subscription is created (see strava_webhook.py)."""
+    q = request.query_params
+    answer = webhook.challenge_response(q.get("hub.mode"), q.get("hub.challenge"), q.get("hub.verify_token"))
+    if answer is None:
+        raise HTTPException(404, "Not found")   # indistinguishable from the route not existing
+    return answer
+
+
+@app.post("/strava/webhook", include_in_schema=False)
+async def strava_webhook_event(request: Request, background: BackgroundTasks):
+    if not webhook.enabled():
+        raise HTTPException(404, "Not found")
+    try:
+        event = await request.json()
+    except ValueError:
+        raise HTTPException(400, "Bad JSON")
+    background.add_task(webhook.process_event, event)   # Strava wants its 200 within 2s; the real work follows it
+    return {}
+
+
+def _disconnect_result(conn, uid):
+    """Revoke at Strava, then delete what we synced. Order matters: revoking needs the stored token."""
+    with strava.make_client() as http:
+        revoked = strava.revoke(conn, http, uid)
+    return {"strava_revoked": revoked, "activities_deleted": strava.delete_strava_data(conn, uid)}
+
+
+@app.post("/api/account/disconnect-strava")
+def account_disconnect_strava(request: Request):
+    _block_if_demo(request)
+    with connect() as conn:
+        return _disconnect_result(conn, current_user_id(request))
+
+
+class AccountDelete(BaseModel):
+    password: str = Field(max_length=1000)
+
+
+@app.post("/api/account/delete")
+def account_delete(body: AccountDelete, request: Request):
+    """Self-service erasure. Asks for the password again (a stolen session shouldn't be enough to destroy an
+    account), shares the login form's wrong-guess brake, and refuses to delete the only admin."""
+    _block_if_demo(request)
+    me = current_user(request)
+    if not me:
+        raise HTTPException(400, "There's no account to delete - login isn't switched on here.")
+    now = time.time()
+    if auth._locked(now):
+        raise HTTPException(429, "Too many wrong attempts. Wait a few minutes and try again.")
+    if not users.verify_password(body.password, me["password_hash"]):
+        auth._failures.append(now)
+        raise HTTPException(403, "That password isn't right.")
+    with connect() as conn:
+        if me["is_admin"] and not users.other_admin_exists(conn, me["id"]):
+            raise HTTPException(400, "This is the only admin account, so it can't be deleted from here.")
+        result = _disconnect_result(conn, me["id"])
+        users.delete_account(conn, me["id"])
+    response = JSONResponse({**result, "deleted": True})
+    response.delete_cookie(auth.COOKIE, path="/")
+    return response
+
+
+@app.delete("/api/accounts/{username}")
+def admin_delete_account(username: str, request: Request):
+    """An admin removing someone else's account (e.g. a person who's asked to be deleted). Same clean-up as
+    deleting your own, including revoking their Strava access."""
+    me = _require_admin(request)
+    with connect() as conn:
+        target = users.get_by_username(conn, username)
+        if not target:
+            raise HTTPException(404, "No such account.")
+        if target["id"] == me["id"]:
+            raise HTTPException(400, "Use the Account page to delete your own account.")
+        if target["is_demo"]:
+            raise HTTPException(400, "The demo account is managed by DEMO_ACCOUNT, not deleted here.")
+        result = _disconnect_result(conn, target["id"])
+        users.delete_account(conn, target["id"])
+    return {**result, "deleted": True}
+
+
+@app.get("/api/account/export")
+def account_export(request: Request):
+    """Everything we hold about the signed-in account, as a JSON download (right of access/portability). Tokens
+    and the password hash are deliberately left out - they're credentials, not the person's data."""
+    uid, me = current_user_id(request), current_user(request)
+    with connect() as conn:
+        link = conn.execute("SELECT athlete_id, athlete_name, scope FROM strava_auth WHERE user_id = ?", (uid,)).fetchone()
+        data = {
+            "exported_at": datetime.now().isoformat(timespec="seconds"),
+            "account": {k: me[k] for k in ("username", "first_name", "last_name", "email", "created_at",
+                                            "last_login_at", "last_active_at")} if me else None,
+            "strava": dict(link) if link else None,
+            "plan": [dict(r) for r in conn.execute(
+                "SELECT date, session_type, sport, planned_distance_km, planned_duration_min, notes FROM plan "
+                "WHERE user_id = ? ORDER BY date, position", (uid,))],
+            "activities": [dict(r) for r in conn.execute(
+                "SELECT id, date, name, sport_type, distance, moving_time, average_heartrate, max_heartrate, "
+                "average_speed, max_speed, total_elevation_gain, suffer_score, workout_type FROM activities "
+                "WHERE user_id = ? ORDER BY date, start_epoch", (uid,))],
+        }
+    return JSONResponse(data, headers={"Content-Disposition": 'attachment; filename="training-tracker-data.json"'})
 
 
 # ---- invites & password resets (admin only) --------------------------------------------------

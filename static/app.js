@@ -137,7 +137,7 @@ function renderBanner() {
   } else if (s && !s.connected) {
     out.push(`<div class="banner info"><h3>Connect your Strava account</h3>
       <p>Log in once so the app can read your activities. Your tokens stay in the local database.</p>
-      <p><a class="btn primary" style="text-decoration:none;display:inline-block" href="/auth/login">Connect with Strava</a></p></div>`);
+      <p><a href="/auth/login" aria-label="Connect with Strava"><img src="/static/strava/btn_strava_connect_with_orange.svg" alt="Connect with Strava" width="237" height="48"></a></p></div>`);
   } else if (s && s.connected && s.activity_count === 0 && !state.flash) {
     out.push(`<div class="banner info"><p>Connected${s.athlete ? " as <b>" + esc(s.athlete) + "</b>" : ""}. Click <b>Sync Strava</b> to pull your activities.</p></div>`);
   }
@@ -147,13 +147,16 @@ function renderBanner() {
 // ---------- router -----------------------------------------------------------------------------
 
 function route() {
-  const r = location.hash.startsWith("#/plan") ? "plan" : location.hash.startsWith("#/admin") ? "admin" : "dashboard";
+  const r = location.hash.startsWith("#/plan") ? "plan" : location.hash.startsWith("#/admin") ? "admin"
+    : location.hash.startsWith("#/account") ? "account" : "dashboard";
   document.querySelectorAll("nav a").forEach((a) => a.classList.toggle("active", a.dataset.route === r));
   $("#view-dashboard").hidden = r !== "dashboard";
   $("#view-plan").hidden = r !== "plan";
   $("#view-admin").hidden = r !== "admin";
+  $("#view-account").hidden = r !== "account";
   if (r === "plan") return loadPlan();
   if (r === "admin") return loadAdmin();
+  if (r === "account") return loadAccount();
   return loadDashboard();
 }
 
@@ -877,6 +880,50 @@ async function updateTplPreview(p) {
   }
 }
 
+// ---------- account: your data, disconnecting Strava, deleting the account ---------------------------
+
+async function loadAccount() {
+  await refreshStatus();   // fresh counts
+  renderAccount();
+}
+
+function disconnectNote(r) {
+  return `${r.activities_deleted} synced ${r.activities_deleted === 1 ? "activity" : "activities"} deleted.`
+    + (r.strava_revoked === false ? " We couldn't confirm the revocation with Strava - also remove this app under Strava > Settings > My Apps." : "");
+}
+
+function renderAccount() {
+  const s = state.status;
+  const demoTip = "Demo mode - try this on your own account";
+  const discBlocked = s.is_demo || !s.connected;
+  $("#view-account").innerHTML = `<div class="stack">
+    <div class="card">
+      <div class="card-head"><h2>Your account</h2></div>
+      <p style="margin:0">${s.username ? `Signed in as <b>${esc(s.username)}</b>${s.email ? ` (${esc(s.email)})` : ""}` : "Login isn't switched on here, so there's no account - just this device's data."}</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Your data</h2></div>
+      <p>We hold <b>${s.activity_count}</b> synced Strava ${s.activity_count === 1 ? "activity" : "activities"} and <b>${s.plan_count}</b> planned ${s.plan_count === 1 ? "session" : "sessions"} for you.
+        ${s.connected ? `Strava is connected${s.athlete ? " as <b>" + esc(s.athlete) + "</b>" : ""}.` : "Strava isn't connected."}
+        See the <a href="/privacy">privacy policy</a> for the full picture.</p>
+      <div class="row">
+        <a class="btn" href="/api/account/export" download>Download my data</a>
+        <button class="btn danger" type="button" data-act="acctDisconnect" ${discBlocked ? `disabled title="${s.is_demo ? demoTip : "Not connected to Strava"}"` : ""}>Disconnect Strava and delete synced activities</button>
+      </div>
+      <p class="muted small" style="margin-bottom:0">Disconnecting revokes this app's access at Strava and deletes every activity, token and athlete link
+        we synced. Your plan and account stay, and you can reconnect any time.</p>
+    </div>
+    ${s.username ? `<div class="card">
+      <div class="card-head"><h2>Delete my account</h2></div>
+      <p>This permanently deletes your account, your plan, and everything synced from Strava (and revokes Strava access first). It can't be undone.</p>
+      <div class="row">
+        <input id="acct-delete-pw" type="password" autocomplete="current-password" placeholder="Your password" aria-label="Your password">
+        <button class="btn danger" type="button" data-act="acctDelete" ${s.is_demo ? `disabled title="${demoTip}"` : ""}>Delete my account and all my data</button>
+      </div>
+    </div>` : ""}
+  </div>`;
+}
+
 // ---------- admin --------------------------------------------------------------------------------
 
 function fmtDateTime(epochSeconds) {
@@ -903,7 +950,10 @@ function renderAdmin() {
       <td>${cell(u.email)}</td><td>${fmtDateTime(u.created_at)}</td><td>${fmtDateTime(u.last_active_at)}</td>
       <td>${u.is_demo
         ? '<button class="btn small" type="button" disabled title="The demo login is a fixed demo/demo password, on purpose">Send reset link</button>'
-        : `<button class="btn small" type="button" data-act="resetLink" data-username="${esc(u.username)}">Send reset link</button>`}</td></tr>`).join("");
+        : `<button class="btn small" type="button" data-act="resetLink" data-username="${esc(u.username)}">Send reset link</button>`}</td>
+      <td>${u.is_demo || u.username === state.status.username
+        ? `<button class="btn small danger" type="button" disabled title="${u.is_demo ? "The demo account is managed by DEMO_ACCOUNT" : "Use the Account page to delete your own account"}">Delete</button>`
+        : `<button class="btn small danger" type="button" data-act="deleteAccount" data-username="${esc(u.username)}">Delete</button>`}</td></tr>`).join("");
   const invites = a.pending_invites.length
     ? `<ul class="errors">${a.pending_invites.map((p) => `<li><code style="user-select:all">${esc(location.origin + p.url)}</code> <span class="muted small">(expires in ${p.expires_in_days} days)</span></li>`).join("")}</ul>`
     : '<p class="muted small" style="margin:6px 0 0">No pending invites.</p>';
@@ -920,7 +970,7 @@ function renderAdmin() {
     <div class="card">
       <div class="card-head"><h2>Accounts</h2><span class="sub">"Last active" is any day they opened the app, not just when they last typed a password</span></div>
       <div class="table-wrap"><table>
-        <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Signed up</th><th>Last active</th><th>Forgot password?</th></tr></thead>
+        <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Signed up</th><th>Last active</th><th>Forgot password?</th><th>Remove</th></tr></thead>
         <tbody>${rows}</tbody></table></div>
       <div id="reset-result"></div>
     </div>
@@ -1022,6 +1072,26 @@ const actions = {
       navigator.clipboard?.writeText(url);
       e.target.textContent = "Copied";
     });
+  },
+  async acctDisconnect() {
+    if (!confirm("Disconnect Strava? This revokes this app's access at Strava and deletes every activity we've synced from it. Your plan and account stay, and you can reconnect later.")) return;
+    const r = await api("/api/account/disconnect-strava", { method: "POST" });
+    await refreshStatus();
+    setFlash("ok", `<b>Strava disconnected.</b> ${esc(disconnectNote(r))}`);
+    renderAccount();
+  },
+  async acctDelete() {
+    const pw = $("#acct-delete-pw").value;
+    if (!pw) { setFlash("warn", "Enter your password to confirm."); return; }
+    if (!confirm("Permanently delete your account and everything we hold about you? This can't be undone.")) return;
+    await api("/api/account/delete", { method: "POST", body: JSON.stringify({ password: pw }) });
+    location.assign("/login");
+  },
+  async deleteAccount(d) {
+    if (!confirm(`Permanently delete ${d.username}'s account and all their data (their Strava access is revoked too)? This can't be undone.`)) return;
+    const r = await api(`/api/accounts/${encodeURIComponent(d.username)}`, { method: "DELETE" });
+    await loadAdmin();
+    setFlash("ok", `<b>${esc(d.username)}</b> deleted. ${esc(disconnectNote(r))}`);
   },
   async resetLink(d) {
     const r = await api(`/api/accounts/${encodeURIComponent(d.username)}/reset-link`, { method: "POST" });

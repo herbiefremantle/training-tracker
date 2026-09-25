@@ -38,7 +38,10 @@ MIN_SESSION_SECRET_LENGTH = 20
 # (see main.py's require_login) - style.css and app.js aren't secret, and the PWA manifest/icons/service worker
 # need to load before anyone has logged in (the "Add to Home Screen" prompt can appear right on the login page).
 # Everything else requires a session.
-PUBLIC_PATHS = {"/health", "/login", "/register", "/reset-password"}
+# /privacy must be readable before you have an account (Strava's API policy wants it prominently linked), and
+# /strava/webhook is called by Strava's servers, which have no session - it is inert unless
+# STRAVA_WEBHOOK_VERIFY_TOKEN is set, and app/webhook.py treats every event as untrusted.
+PUBLIC_PATHS = {"/health", "/login", "/register", "/reset-password", "/privacy", "/strava/webhook"}
 
 # Brute-force brake: after MAX_FAILURES wrong guesses (any account) in FAILURE_WINDOW seconds, logins are refused
 # until they age out. In-memory and shared across accounts - this is a handful of invited people, not a public
@@ -165,7 +168,9 @@ _HEAD_EXTRA = """<link rel="manifest" href="/static/manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Training">
 <script>(function(){try{if(localStorage.getItem("colourMode")==="colourful")document.documentElement.setAttribute("data-theme","colourful");}catch(e){}})();</script>"""
-_INSTALL_SLOT = '<div id="install-slot" style="margin-top:14px;text-align:center"></div>\n<script src="/static/install.js"></script>'
+_INSTALL_SLOT = ('<div id="install-slot" style="margin-top:14px;text-align:center"></div>\n'
+                 '<script src="/static/install.js"></script>\n'
+                 '<p class="muted small" style="text-align:center;margin-top:14px"><a href="/privacy">Privacy policy</a></p>')
 _BRAND = ('<div class="brand" style="margin-bottom:14px">'
           '<img src="/static/icons/icon-192.png" alt="" width="28" height="28" class="brand-icon">'
           '<h1 style="font-size:20px"><span class="brand-training">Training</span><span class="brand-tracker">Tracker</span></h1>'

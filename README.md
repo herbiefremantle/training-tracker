@@ -251,6 +251,25 @@ straight after.
 above for how, and note that everyone connects through *your* Strava API app (one `STRAVA_CLIENT_ID`), so Strava's
 per-app rate limit and athlete-capacity cap are shared across every account, not per person.
 
+## Strava API compliance
+
+What Strava's production API review and UK GDPR ask for, and where it lives:
+
+- **Privacy policy** - public at `/privacy` (linked from every page and the login screen). It is a sensible draft, not legal advice: read it, and set `PRIVACY_CONTACT_EMAIL` (and optionally `PRIVACY_OPERATOR_NAME`) so it names a real contact.
+- **Account page** (`#/account`) - download all your data as JSON, disconnect Strava (revokes access at Strava, deletes your synced activities, keeps your plan), or delete the whole account (password required). Admins can also remove other accounts from the Admin page. The only admin can't delete themselves; the demo account can't be changed.
+- **Revoking on Strava's side** - a webhook (`POST /strava/webhook`) receives Strava's "athlete deauthorised" and activity-deleted/updated events. Events are unsigned, so before deleting anything the app checks with Strava that the event is true. It only exists when `STRAVA_WEBHOOK_VERIFY_TOKEN` is set.
+- **Brand** - the official "Connect with Strava" button and "Powered by Strava" logo are in `static/strava/`; nothing implies Strava endorses the app.
+
+Turning the webhook on (Strava allows one subscription per app):
+
+1. Set `STRAVA_WEBHOOK_VERIFY_TOKEN` on the deployment and redeploy, so the callback URL can answer Strava's validation.
+2. Locally, put the same token in `.env` along with the client id/secret.
+3. `python strava_webhook.py create https://YOUR-DOMAIN/strava/webhook` - Strava calls the URL back to validate, then prints the subscription id.
+4. Optionally set `STRAVA_WEBHOOK_SUBSCRIPTION_ID` to that id.
+5. `python strava_webhook.py view` / `delete <id>` to inspect or remove it.
+
+**Open question:** Strava's API agreement has a clause about caching data for a limited period, which may sit awkwardly with keeping activity history permanently. Ask Strava in the review form how they want that treated before relying on the current behaviour.
+
 ## Ready-made plans
 
 The **Plan** page's "Add or update your plan" card opens on **Choose a ready-made plan** by default: 10
