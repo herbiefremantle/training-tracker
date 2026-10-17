@@ -51,9 +51,9 @@ PRESETS = [
     {"key": "styrkr_mix60", "name": "Styrkr MIX60", "kind": "drink", "unit": "flask", "carbs_g": 60,
      "sodium_mg": 56, "caffeine_mg": 0, "fluid_ml": 500, "use_in_plan": True,
      "note": "Dual-carb (maltodextrin and fructose) with added electrolytes: one 65 g sachet in a 500 ml flask gives "
-             "60 g carbs. Styrkr doesn't publish how much sodium is in it - 56 mg a sachet comes from retailer "
-             "listings, so check your sachet. That's a small amount next to what a long run needs, which is why the "
-             "plan can still ask you to add salt."},
+             "60 g carbs and 256 kcal. Styrkr's label lists 0.14 g salt a sachet, which is 56 mg of sodium (salt is "
+             "about 40% sodium). That's a small amount next to what a long run needs, which is why the plan can "
+             "still ask you to add salt."},
     {"key": "gel", "name": "Energy gel", "kind": "gel", "unit": "gel", "carbs_g": 25,
      "sodium_mg": 0, "caffeine_mg": 0, "use_in_plan": False,
      "note": "A typical gel. Kept out of suggested mixes - it's here so you can log one if you take it. Check the packet."},
