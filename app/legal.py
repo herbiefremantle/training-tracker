@@ -13,7 +13,7 @@ import os
 
 from . import auth, webhook
 
-UPDATED = "17 October 2026"
+UPDATED = "18 October 2026"
 
 
 def contact_email():
@@ -67,8 +67,10 @@ the access tokens Strava gives us, so the app can fetch your activities on your 
 <li><b>Your training plan:</b> the sessions you type, paste, upload or choose from the ready-made plans (dates,
 sport, distance, duration, notes).</li>
 <li><b>Your fuelling log</b>, only if you use the Fuelling page: the race you set and the carbohydrate rate you
-are aiming for, the products you list (their carbohydrate, sodium and caffeine content), and for each long run what you
-record having - how many of each product - and how your stomach coped. This is information about your diet and how
+are aiming for, the products you list (their carbohydrate, sodium, caffeine and fluid content), and for each long run what you
+record having - how many of each product, including water - and how your stomach coped. If you choose to set where you
+run, we also keep that place name and its coordinates (rounded to about a kilometre), your usual start time and your
+usual fluid and sodium per hour. This is information about your diet and how
 your body copes, which can count as health data, so it is only ever created by you entering it.</li>
 <li><b>In your browser:</b> one essential session cookie that keeps you logged in (30 days), and two
 preferences (km or miles, and the colour theme) stored in your browser's local storage. Neither is used for
@@ -100,6 +102,9 @@ machine-learning system.</li>
 <li><b>Strava</b> - the source of your activity data, under your own agreement with Strava.</li>
 <li><b>Railway</b> - our hosting provider, which stores the database. Railway is a US company, so your data may
 be processed outside the UK and EEA.</li>
+<li><b>Open-Meteo</b> - a weather service, used only if you set where you run on the Fuelling page. It receives the
+place name you type to search for it, and later that place's rounded coordinates to fetch the forecast; nothing
+else about you is sent. Weather data by <a href="https://open-meteo.com">Open-Meteo.com</a> (CC BY 4.0).</li>
 <li><b>jsDelivr</b> - a content network that serves the charting library to your browser; it sees your IP
 address and browser details when you open the dashboard, but none of your account or training data.</li>
 </ul>

@@ -133,6 +133,20 @@ CREATE TABLE IF NOT EXISTS fuel_goal (
     start_date       TEXT NOT NULL       -- first long run that gets a target
 );
 
+-- Hydration and conditions: where the person runs (for the weather forecast), when they usually start, and their
+-- usual fluid and sodium per hour, which the advice scales up or down with the temperature. Optional - a row only
+-- exists once they've filled it in. Location is kept to ~1 km, the most the forecast needs.
+CREATE TABLE IF NOT EXISTS fuel_prefs (
+    user_id          INTEGER PRIMARY KEY REFERENCES users(id),
+    place            TEXT,
+    lat              REAL,
+    lon              REAL,
+    start_hour       INTEGER NOT NULL DEFAULT 8,
+    fluid_ml_per_hr  REAL NOT NULL DEFAULT 500,
+    sodium_mg_per_hr REAL NOT NULL DEFAULT 400,
+    race_temp_c      REAL                -- expected race-day temperature, used until a forecast reaches that far
+);
+
 CREATE TABLE IF NOT EXISTS fuel_products (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id     INTEGER NOT NULL REFERENCES users(id),
@@ -142,6 +156,7 @@ CREATE TABLE IF NOT EXISTS fuel_products (
     carbs_g     REAL NOT NULL,
     sodium_mg   REAL NOT NULL DEFAULT 0,
     caffeine_mg REAL NOT NULL DEFAULT 0,
+    fluid_ml    REAL NOT NULL DEFAULT 0,      -- fluid in one unit: a 500 ml flask is 500, a bar 0
     use_in_plan INTEGER NOT NULL DEFAULT 1,   -- may the planner put it in a suggested mix (else tracking only)
     position    INTEGER NOT NULL DEFAULT 0
 );
@@ -162,6 +177,7 @@ CREATE TABLE IF NOT EXISTS fuel_log_items (
     carbs_g      REAL NOT NULL,          -- per unit, as it was when logged
     sodium_mg    REAL NOT NULL,
     caffeine_mg  REAL NOT NULL,
+    fluid_ml     REAL NOT NULL DEFAULT 0,
     qty          REAL NOT NULL,          -- in halves
     PRIMARY KEY (user_id, date, product_name)
 );
@@ -184,8 +200,21 @@ def init_db():
     Path(db_path()).parent.mkdir(parents=True, exist_ok=True)
     with connect() as conn:
         conn.executescript(SCHEMA)
+        _add_fuel_fluid_columns(conn)
         users.bootstrap_and_migrate(conn)
         conn.executescript(INDEXES)
+
+
+def _add_fuel_fluid_columns(conn):
+    """Fuelling products and logs gained a fluid column after the first release. Added once to an existing
+    database; the Styrkr MIX60 preset (a sachet in a 500 ml flask) is given its 500 ml so a person who already
+    added it doesn't have to go back and edit it."""
+    for table in ("fuel_products", "fuel_log_items"):
+        cols = {r["name"] for r in conn.execute("PRAGMA table_info(%s)" % table)}
+        if "fluid_ml" not in cols:
+            conn.execute("ALTER TABLE %s ADD COLUMN fluid_ml REAL NOT NULL DEFAULT 0" % table)
+            if table == "fuel_products":
+                conn.execute("UPDATE fuel_products SET fluid_ml = 500 WHERE name = 'Styrkr MIX60' AND kind = 'drink'")
 
 
 @contextmanager

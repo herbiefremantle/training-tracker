@@ -17,7 +17,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTex
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import auth, clock, demo_data, legal, matching, metrics, nutrition, plan_templates, planparse, sports, strava, users, views, webhook
+from . import auth, clock, demo_data, hydration, legal, matching, metrics, nutrition, plan_templates, planparse, sports, strava, users, views, webhook, weather
 from .db import LOCAL_USER_ID, ROOT, connect, db_path, get_meta, init_db, volume_warning
 
 # override=True: .env is the source of truth, even if the shell already exports (stale/empty) STRAVA_* vars
@@ -400,11 +400,12 @@ def account_export(request: Request):
                 "WHERE user_id = ? ORDER BY date, start_epoch", (uid,))],
             "fuelling": {
                 "goal": nutrition.get_goal(conn, uid),
+                "hydration_settings": hydration.get_prefs(conn, uid),
                 "products": [dict(r) for r in conn.execute(
-                    "SELECT name, kind, unit, carbs_g, sodium_mg, caffeine_mg, use_in_plan FROM fuel_products "
+                    "SELECT name, kind, unit, carbs_g, sodium_mg, caffeine_mg, fluid_ml, use_in_plan FROM fuel_products "
                     "WHERE user_id = ? ORDER BY position, id", (uid,))],
                 "logs": [dict(r) for r in conn.execute(
-                    "SELECT l.date, l.gut, i.product_name, i.unit, i.qty, i.carbs_g, i.sodium_mg, i.caffeine_mg "
+                    "SELECT l.date, l.gut, i.product_name, i.unit, i.qty, i.carbs_g, i.sodium_mg, i.caffeine_mg, i.fluid_ml "
                     "FROM fuel_logs l LEFT JOIN fuel_log_items i ON i.user_id = l.user_id AND i.date = l.date "
                     "WHERE l.user_id = ? ORDER BY l.date, i.rowid", (uid,))],
             },
@@ -614,6 +615,40 @@ def fuel_goal_delete(request: Request):
     uid = current_user_id(request)
     with connect() as conn:
         nutrition.delete_goal(conn, uid)
+        return _fuel_overview(conn, uid)
+
+
+@app.get("/api/fuel/places")
+def fuel_places(request: Request, q: str = Query("", max_length=80)):
+    """Matches for a typed place name, so someone can say where they run and get that place's forecast. Only the
+    typed text goes to the geocoding service (Open-Meteo), and nothing is stored until they pick one."""
+    _block_if_demo(request)     # the shared demo login shouldn't be a free route to a third-party service
+    try:
+        return {"places": weather.places(q)}
+    except weather.WeatherError as e:
+        raise HTTPException(502, str(e))
+
+
+@app.put("/api/fuel/prefs")
+def fuel_prefs_save(body: dict, request: Request):
+    """Where they run, when they usually start, and their usual fluid and sodium per hour."""
+    _block_if_demo(request)
+    uid = current_user_id(request)
+    try:
+        clean = hydration.validate_prefs(body)
+    except ValueError as e:
+        raise _fuel_bad_request(e)
+    with connect() as conn:
+        hydration.save_prefs(conn, uid, clean)
+        return _fuel_overview(conn, uid)
+
+
+@app.delete("/api/fuel/prefs")
+def fuel_prefs_delete(request: Request):
+    _block_if_demo(request)
+    uid = current_user_id(request)
+    with connect() as conn:
+        hydration.delete_prefs(conn, uid)
         return _fuel_overview(conn, uid)
 
 

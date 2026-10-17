@@ -105,7 +105,7 @@ def delete_account(conn, user_id):
     gone there's nothing left to revoke with. Policy checks (not the last admin, not the demo account, not
     yourself-by-accident) live in the endpoints, not here."""
     for table in ("activities", "plan", "meta", "strava_auth", "fuel_goal", "fuel_products", "fuel_logs",
-                  "fuel_log_items"):
+                  "fuel_log_items", "fuel_prefs"):
         conn.execute("DELETE FROM %s WHERE user_id = ?" % table, (user_id,))
     conn.execute("DELETE FROM password_resets WHERE user_id = ? OR created_by = ?", (user_id, user_id))
     conn.execute("DELETE FROM invites WHERE created_by = ?", (user_id,))

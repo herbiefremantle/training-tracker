@@ -919,22 +919,50 @@ function fuelPlanLine(f) {
   return `<b>${rate}</b> for ${fmtMins(f.planned_minutes)} → ${mix}`;
 }
 
-function fuelActualLine(l) {
+const fmtMl = (ml) => (ml >= 1000 ? `${+(ml / 1000).toFixed(1)} L` : `${Math.round(ml)} ml`);
+
+// forecast (or your own estimate) and what to drink and take in salts for it
+function fuelConditionsLines(f) {
+  const a = f.advice;
+  if (!a) return "";
+  const c = f.conditions;
+  const where = c ? `${Math.round(c.temp_c)}°C${c.humidity_pct != null ? `, ${c.humidity_pct}% humidity` : ""} · ${a.band}`
+    : a.temp_c != null ? `${Math.round(a.temp_c)}°C (your estimate) · ${a.band}`
+    : "no forecast for this day yet - your usual rates";
+  const credit = c ? ` · <a href="https://open-meteo.com" target="_blank" rel="noopener">Weather by Open-Meteo.com</a>` : "";
+  const drink = `Drink about <b>${a.fluid_ml_per_hr} ml/h</b>${a.fluid_total_ml ? ` (${fmtMl(a.fluid_total_ml)})` : ""}`;
+  const salt = `sodium about <b>${a.sodium_mg_per_hr} mg/h</b>${a.sodium_total_mg ? ` (${a.sodium_total_mg.toLocaleString("en-GB")} mg)` : ""}`;
+  return `<div class="fuel-plan">${drink} · ${salt}</div><div class="muted small">${c ? "Forecast: " : ""}${esc(where)}${credit}</div>`;
+}
+
+// green = within the tolerance, red = outside it - always with a symbol, never colour alone
+const statusSpan = (status, text, symbol, title) => (status
+  ? `<span class="delta-${status}" title="${esc(title)}"><i aria-hidden="true">${status === "ok" ? "✓" : symbol}</i> ${esc(text)}</span>` : esc(text));
+
+function fuelActualLine(l, advice) {
   if (!l) return "";
   const had = l.items.length ? `${esc(l.text)} = <b>${l.carbs_g} g</b>` : "<i>nothing logged</i>";
   let rate = "";
   if (l.carbs_g_per_hr != null) {
     const d = l.vs_target_g_per_hr;
-    rate = ` (<b>${l.carbs_g_per_hr} g/h</b>${d == null ? "" : d === 0 ? ", on target" : `, ${d > 0 ? "+" : "−"}${Math.abs(d)} vs target`})`;
+    const vs = d == null ? "" : d === 0 ? "on target" : `${d > 0 ? "+" : "−"}${Math.abs(d)} vs target`;
+    rate = ` (<b>${l.carbs_g_per_hr} g/h</b>${vs ? ", " + statusSpan(l.carb_status, vs, d > 0 ? "▲" : "▼", "Green: within 10 g/h of the target. Red: more than 10 g/h either side.") : ""})`;
   } else if (l.items.length) {
     rate = ` <span class="muted">(g/h appears once the run has synced from Strava)</span>`;
   }
-  const extras = dot([
-    l.sodium_mg ? `Sodium ${l.sodium_mg} mg${l.sodium_mg_per_hr ? ` (${l.sodium_mg_per_hr} mg/h)` : ""}` : "",
-    l.caffeine_mg ? `Caffeine ${l.caffeine_mg} mg` : "",
-  ]);
+  const bits = [];
+  if (l.fluid_ml) {
+    const txt = `Fluid ${fmtMl(l.fluid_ml)}${l.fluid_ml_per_hr ? ` (${l.fluid_ml_per_hr} ml/h)` : ""}`;
+    bits.push(statusSpan(l.fluid_status, txt, advice && l.fluid_ml_per_hr > advice.fluid_ml_per_hr ? "▲" : "▼", `Green: within 20% of your fluid advice${advice ? ` (about ${advice.fluid_ml_per_hr} ml/h)` : ""}. Red: outside it.`));
+  }
+  if (l.sodium_mg) {
+    const txt = `Sodium ${l.sodium_mg.toLocaleString("en-GB")} mg${l.sodium_mg_per_hr ? ` (${l.sodium_mg_per_hr} mg/h)` : ""}`;
+    bits.push(statusSpan(l.sodium_status, txt, advice && l.sodium_mg_per_hr > advice.sodium_mg_per_hr ? "▲" : "▼", `Green: within 25% of your sodium advice${advice ? ` (about ${advice.sodium_mg_per_hr} mg/h)` : ""}. Red: outside it.`));
+  }
+  if (l.caffeine_mg) bits.push(esc(`Caffeine ${l.caffeine_mg} mg`));
   const gut = l.gut ? `<span class="pill gut-${l.gut}"><i aria-hidden="true">${{ fine: "✓", some: "▲", bad: "✕" }[l.gut]}</i>Stomach: ${esc(l.gut_label.toLowerCase())}</span>` : "";
-  return `<div>Had: ${had}${rate}</div>${extras ? `<div class="muted">${esc(extras)}</div>` : ""}${gut ? `<div>${gut}</div>` : ""}`;
+  const alerts = (l.alerts || []).map((a) => `<div class="fuel-alert ${a.level}"><i aria-hidden="true">${a.level === "warn" ? "⚠" : "ℹ"}</i> ${esc(a.text)}</div>`).join("");
+  return `<div>Had: ${had}${rate}</div>${bits.length ? `<div class="fuel-bits">${bits.join(" · ")}</div>` : ""}${gut ? `<div>${gut}</div>` : ""}${alerts}`;
 }
 
 const GUT_WORDS = {
@@ -958,7 +986,7 @@ function fuelProductSelect(ctx, selected) {
 
 function fuelRow(ctx, item) {
   const sel = item && item.product_id ? `p:${item.product_id}` : "";
-  const kinds = ["bar", "drink", "gel", "other"].map((k) => `<option value="${k}">${{ bar: "Bar / solid food", drink: "Drink", gel: "Gel", other: "Other" }[k]}</option>`).join("");
+  const kinds = ["bar", "drink", "gel", "water", "other"].map((k) => `<option value="${k}">${{ bar: "Bar / solid food", drink: "Drink with carbs", gel: "Gel", water: "Water", other: "Other (salt tablet, caffeine…)" }[k]}</option>`).join("");
   return `<div class="fuel-row">
     <div class="fuel-row-main">${fuelProductSelect(ctx, sel)}
       <select data-fuel-qty aria-label="How many">${qtyOptions(item ? item.qty : 1, 0.5)}</select>
@@ -967,7 +995,8 @@ function fuelRow(ctx, item) {
       <div class="fuel-grid">
         <label class="fuel-field"><span>Name *</span><input class="field" data-new="name" maxlength="40" placeholder="e.g. Rice cake"></label>
         <label class="fuel-field"><span>Type</span><select data-new="kind">${kinds}</select></label>
-        <label class="fuel-field"><span>Carbs in one (g) *</span><input class="field" data-new="carbs_g" inputmode="decimal" placeholder="e.g. 30"></label>
+        <label class="fuel-field"><span>Carbs in one (g)</span><input class="field" data-new="carbs_g" inputmode="decimal" placeholder="e.g. 30 (blank for water)"></label>
+        <label class="fuel-field"><span>Fluid in one (ml)</span><input class="field" data-new="fluid_ml" inputmode="decimal" placeholder="e.g. 500 (water, drinks)"></label>
         <label class="fuel-field"><span>Sodium in one (mg)</span><input class="field" data-new="sodium_mg" inputmode="decimal" placeholder="optional"></label>
         <label class="fuel-field"><span>Caffeine in one (mg)</span><input class="field" data-new="caffeine_mg" inputmode="decimal" placeholder="optional"></label>
       </div>
@@ -1009,7 +1038,7 @@ function fuelItemsFromForm(box) {
     if (!pick) continue;                                   // a row left on "Choose what you had…" is just ignored
     if (pick === "new") {
       const v = (n) => row.querySelector(`[data-new="${n}"]`).value;
-      items.push({ qty, new_product: { name: v("name"), kind: v("kind"), carbs_g: fuelText(v("carbs_g")),
+      items.push({ qty, new_product: { name: v("name"), kind: v("kind"), carbs_g: fuelText(v("carbs_g")), fluid_ml: fuelText(v("fluid_ml")),
         sodium_mg: fuelText(v("sodium_mg")), caffeine_mg: fuelText(v("caffeine_mg")) } });
     } else if (pick.startsWith("s:")) items.push({ qty, preset: pick.slice(2) });
     else items.push({ qty, product_id: Number(pick.slice(2)) });
@@ -1024,13 +1053,15 @@ function fuelBlock(f, ctx) {
     ? `<div class="muted small">Want a carb target for this run? <a href="#/fuel">Set a race goal</a>.</div>` : "";
   return `<div class="fuel" data-date="${f.date}">
     ${plan ? `<div class="fuel-plan">Fuel plan: ${plan}</div>` : setup}
-    ${fuelActualLine(f.log)}
+    ${fuelConditionsLines(f)}
+    ${fuelActualLine(f.log, f.advice)}
     ${logUi}</div>`;
 }
 
 async function loadFuel() {
   try {
     state.fuel = await api("/api/fuel");
+    resetFuelPlace();
     renderFuel();
   } catch (e) {
     $("#view-fuel").innerHTML = `<div class="banner error">Couldn't load fuelling: ${esc(e.message)}</div>`;
@@ -1043,18 +1074,19 @@ function fuelField(label, name, value, attrs = "") {
 
 function productForm(p, f) {
   const id = p ? p.id : "new";
-  const kinds = ["bar", "drink", "gel", "other"].map((k) => `<option value="${k}" ${p && p.kind === k ? "selected" : ""}>${{ bar: "Bar / solid food", drink: "Drink", gel: "Gel", other: "Other (e.g. salt tablets)" }[k]}</option>`).join("");
+  const kinds = ["bar", "drink", "gel", "water", "other"].map((k) => `<option value="${k}" ${p && p.kind === k ? "selected" : ""}>${{ bar: "Bar / solid food", drink: "Drink with carbs", gel: "Gel", water: "Water", other: "Other (salt tablet, caffeine…)" }[k]}</option>`).join("");
   const demo = _demoAttrs();
   return `<div class="fuel-product" data-id="${id}">
     <div class="fuel-grid">
       ${fuelField("Name *", "name", p ? p.name : "", 'maxlength="40" placeholder="e.g. Styrkr BAR50"')}
       <label class="fuel-field"><span>Type</span><select name="kind">${kinds}</select></label>
       ${fuelField("One unit is a…", "unit", p ? p.unit : "", 'maxlength="12" placeholder="bar, flask, gel"')}
-      ${fuelField("Carbs per unit (g) *", "carbs_g", p ? p.carbs_g : "", 'inputmode="decimal" placeholder="e.g. 60"')}
+      ${fuelField("Carbs per unit (g)", "carbs_g", p ? p.carbs_g : "", 'inputmode="decimal" placeholder="e.g. 60 (blank for water)"')}
+      ${fuelField("Fluid per unit (ml)", "fluid_ml", p ? p.fluid_ml || "" : "", 'inputmode="decimal" placeholder="e.g. 500 for a flask"')}
       ${fuelField("Sodium per unit (mg)", "sodium_mg", p ? p.sodium_mg || "" : "", 'inputmode="decimal" placeholder="optional"')}
       ${fuelField("Caffeine per unit (mg)", "caffeine_mg", p ? p.caffeine_mg || "" : "", 'inputmode="decimal" placeholder="optional"')}
     </div>
-    <p class="muted small" style="margin:0">* needed. Carbs are per <b>one</b> unit - one bar, one flask, one gel.</p>
+    <p class="muted small" style="margin:0">* needed. Everything is per <b>one</b> unit - one bar, one flask, one gel. A 500 ml flask of drink mix holds 500 ml of fluid as well as its carbs.</p>
     <label class="fuel-check"><input type="checkbox" name="use_in_plan" ${p ? (p.use_in_plan ? "checked" : "") : "checked"}> Use in suggested mixes
       <span class="muted">(up to ${f.limits.max_in_plan}; untick for things you only want to log, like gels or salt tablets)</span></label>
     <div class="row">
@@ -1094,7 +1126,7 @@ function renderFuel() {
       ${demo || have.has(p.name.toLowerCase()) || f.products.length >= f.limits.max_products ? "disabled" : ""}>+ ${esc(p.name)}</button>`).join("");
   const productsCard = `<div class="card">
     <div class="card-head"><h2>My fuel</h2><span class="sub">${f.products.length} of ${f.limits.max_products} products</span></div>
-    <p class="muted" style="margin-top:0">The carbs, sodium and caffeine in <b>one</b> bar, flask, gel and so on - copy them from the packet. Keep it short: what you actually use.</p>
+    <p class="muted" style="margin-top:0">The carbs, fluid, sodium and caffeine in <b>one</b> bar, flask, gel and so on - copy them from the packet. Add <b>water</b> too, so your fluid total adds up. Keep it short: what you actually use.</p>
     <div class="chips"><span class="muted small">Quick add:</span> ${presets}</div>
     ${f.products.map((p) => productForm(p, f)).join("")}
     ${f.products.length < f.limits.max_products ? `<details class="fuel-add" ${f.products.length ? "" : "open"}><summary>Add a product of your own</summary>${productForm(null, f)}</details>` : ""}
@@ -1111,6 +1143,7 @@ function renderFuel() {
     const race = f.race;
     const raceRow = race ? `<div class="fuel-run race"><div class="fuel-run-head"><b>${esc(day(race.date))}</b> <span class="muted">· ${esc(race.name || "race day")}</span></div>
       <div class="fuel"><div class="fuel-plan">Fuel plan: <b>${Math.round(race.target_g_per_hr)} g/h</b>${race.hours ? ` for ${fmtMins(race.hours * 60)}` : ""}${race.total_g ? ` = <b>${race.total_g} g</b>${race.mix ? ` → ${esc(race.mix.text)} = ${race.mix.total_g} g` : ""}` : ""}</div>
+      ${fuelConditionsLines(race)}
       ${race.hours ? "" : `<div class="muted small">Add an expected race time above to see the total to carry.</div>`}</div></div>` : "";
     runsCard = `<div class="card"><div class="card-head"><h2>Long-run fuelling plan</h2><span class="sub">Long runs in your plan, up to race day</span></div>
       ${f.runs.length ? rows : `<div class="empty">No long runs found in your plan before the race. Long runs are sessions whose type includes the word "long" - for example "Long run". <a href="#/plan">Check your plan</a>.</div>`}
@@ -1119,12 +1152,60 @@ function renderFuel() {
         after <b>some discomfort</b> it stays the same; after a <b>bad gut</b> it steps back one step. A past run you haven't reported on also holds - so log how it went.
         Runs still to come assume each goes well, so you can see the road to race day.</div></div>`;
   }
-  $("#view-fuel").innerHTML = `<div class="stack">${goalCard}${runsCard}${productsCard}</div>`;
+  $("#view-fuel").innerHTML = `<div class="stack">${goalCard}${runsCard}${conditionsCard(f)}${productsCard}</div>`;
 }
 
 // numbers go to the server as typed (commas allowed as the decimal mark) so it can say "must be a number" rather
 // than the form silently sending nothing for something like "60g"
 const fuelText = (v) => String(v ?? "").trim().replace(",", ".");
+
+// the place picked for the forecast: starts as the saved one, and changes only when something else is chosen
+function resetFuelPlace() {
+  const pr = state.fuel.prefs;
+  state.fuelPlace = pr && pr.place ? { place: pr.place, lat: pr.lat, lon: pr.lon } : null;
+  state.fuelPlaces = null;
+}
+
+function placeResultsHtml() {
+  const list = state.fuelPlaces;
+  if (!list) return "";
+  if (!list.length) return `<p class="muted small" style="margin:0">No match - try the nearest town.</p>`;
+  return `<div class="chips">${list.map((p, i) => `<button type="button" class="chip" data-act="fuelPlacePick" data-i="${i}">${esc(p.label)}</button>`).join("")}</div>`;
+}
+
+function placeSelectedHtml() {
+  const p = state.fuelPlace;
+  return p ? `<span>📍 <b>${esc(p.place)}</b></span> <button type="button" class="linkbtn" data-act="fuelPlaceClear">Remove</button>`
+    : `<span class="muted">No location set - you'll get your usual rates, with no forecast.</span>`;
+}
+
+function conditionsCard(f) {
+  const pr = f.prefs || {}, demo = _demoAttrs();
+  const hours = Array.from({ length: 24 }, (_, h) => `<option value="${h}" ${(pr.start_hour ?? 8) === h ? "selected" : ""}>${String(h).padStart(2, "0")}:00</option>`).join("");
+  return `<div class="card" id="fuel-conditions">
+    <div class="card-head"><h2>Conditions &amp; hydration</h2></div>
+    <p class="muted" style="margin-top:0">Say where you run and your long runs inside the next two weeks get a weather forecast, and your fluid and sodium advice is scaled to it:
+      a bit less when it's cold, more when it's hot. The starting rates below are only a guide - sweat rates vary hugely (weigh yourself before and after a run to find yours),
+      and drinking more than you sweat is as risky as too little. Not medical advice.</p>
+    <div class="fuel-field wide"><span>Where do you usually run?</span>
+      <div class="row"><input class="field" id="fp-q" placeholder="Town or place, e.g. Newquay" maxlength="80" style="flex:1 1 200px;width:auto;margin-top:0">
+        <button class="btn" type="button" data-act="fuelPlaceSearch" ${demo}>Find</button></div>
+      <div id="fp-results">${placeResultsHtml()}</div>
+      <div id="fp-selected" class="row" style="margin-top:6px">${placeSelectedHtml()}</div></div>
+    <div class="fuel-grid" style="margin-top:12px">
+      <label class="fuel-field"><span>You usually start at</span><select id="fp-hour">${hours}</select></label>
+      <label class="fuel-field"><span>Usual fluid per hour (ml)</span><input class="field" id="fp-fluid" inputmode="decimal" value="${esc(pr.fluid_ml_per_hr ?? 500)}"></label>
+      <label class="fuel-field"><span>Usual sodium per hour (mg)</span><input class="field" id="fp-sodium" inputmode="decimal" value="${esc(pr.sodium_mg_per_hr ?? 400)}"></label>
+      <label class="fuel-field"><span>Expected race-day temperature (°C, optional)</span><input class="field" id="fp-race" inputmode="decimal" value="${esc(pr.race_temp_c ?? "")}" placeholder="used until a forecast reaches race day"></label>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn primary" type="button" data-act="fuelPrefsSave" ${demo}>${f.prefs ? "Update" : "Save"} conditions</button>
+      ${f.prefs ? `<button class="btn danger" type="button" data-act="fuelPrefsDelete" ${demo}>Remove</button>` : ""}
+    </div>
+    <p class="muted small" style="margin:10px 0 0">Weather data by <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo.com</a> (CC BY 4.0). Only the place you type, then its coordinates rounded to about 1 km, are sent.</p>
+  </div>`;
+}
+
 const fuelNum = (el) => fuelText(el.value);
 
 // errors from the fuelling forms appear right beside the button that was pressed - not in the banner at the top
@@ -1144,7 +1225,7 @@ function showFuelError(el, message) {
 function fuelProductBody(form) {
   const q = (n) => form.querySelector(`[name="${n}"]`);
   return {
-    name: q("name").value, kind: q("kind").value, unit: q("unit").value, carbs_g: fuelNum(q("carbs_g")),
+    name: q("name").value, kind: q("kind").value, unit: q("unit").value, carbs_g: fuelNum(q("carbs_g")), fluid_ml: fuelNum(q("fluid_ml")),
     sodium_mg: fuelNum(q("sodium_mg")), caffeine_mg: fuelNum(q("caffeine_mg")), use_in_plan: q("use_in_plan").checked,
   };
 }
@@ -1347,6 +1428,39 @@ const actions = {
       navigator.clipboard?.writeText(url);
       e.target.textContent = "Copied";
     });
+  },
+  async fuelPlaceSearch(d, el) {
+    const r = await api(`/api/fuel/places?q=${encodeURIComponent($("#fp-q").value)}`);
+    state.fuelPlaces = r.places;
+    $("#fp-results").innerHTML = placeResultsHtml();
+  },
+  fuelPlacePick(d) {
+    const p = state.fuelPlaces[Number(d.i)];
+    state.fuelPlace = { place: p.label, lat: p.lat, lon: p.lon };
+    state.fuelPlaces = null;
+    $("#fp-results").innerHTML = "";
+    $("#fp-selected").innerHTML = placeSelectedHtml();
+  },
+  fuelPlaceClear() {
+    state.fuelPlace = null;
+    $("#fp-selected").innerHTML = placeSelectedHtml();
+  },
+  async fuelPrefsSave() {
+    const p = state.fuelPlace || {};
+    state.fuel = await api("/api/fuel/prefs", { method: "PUT", body: JSON.stringify({
+      place: p.place || "", lat: p.lat ?? "", lon: p.lon ?? "", start_hour: $("#fp-hour").value,
+      fluid_ml_per_hr: fuelText($("#fp-fluid").value), sodium_mg_per_hr: fuelText($("#fp-sodium").value),
+      race_temp_c: fuelText($("#fp-race").value) }) });
+    resetFuelPlace();
+    renderFuel();
+    setFlash("ok", "<b>Conditions saved.</b> Long runs in the next two weeks now show the forecast and your fluid and sodium advice.");
+  },
+  async fuelPrefsDelete() {
+    if (!confirm("Remove your location and hydration settings?")) return;
+    state.fuel = await api("/api/fuel/prefs", { method: "DELETE" });
+    resetFuelPlace();
+    renderFuel();
+    setFlash("ok", "Conditions removed.");
   },
   async fuelGoalSave() {
     const v = (id) => $(id).value;

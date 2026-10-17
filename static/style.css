@@ -371,3 +371,11 @@ input[type=password]:focus-visible { outline: 2px solid var(--series-1); outline
 .fuel-row-main [data-fuel-qty] { flex: 0 0 auto; width: 5em; }
 .fuel-new { margin-top: 8px; padding: 10px; border: 1px dashed var(--border); border-radius: 8px; }
 .fuel-new[hidden] { display: none; }
+.delta-ok { color: var(--good); font-weight: 600; }
+.delta-off { color: var(--critical); font-weight: 600; }
+.delta-ok i, .delta-off i { font-style: normal; }
+.fuel-bits { color: var(--ink-2); }
+.fuel-alert { border-left: 3px solid var(--neutral); padding: 3px 10px; margin: 2px 0; background: var(--surface-2); border-radius: 0 6px 6px 0; }
+.fuel-alert.warn { border-left-color: var(--warning); }
+.fuel-alert i { font-style: normal; }
+.fuel-field.wide { grid-column: 1 / -1; }
