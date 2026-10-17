@@ -130,6 +130,17 @@ async def require_login(request, call_next):
 
 
 @app.middleware("http")
+async def revalidate_app_files(request, call_next):
+    """The page, script and styles change with every deploy, and browsers will otherwise keep serving a stale copy
+    of app.js for a while - so a new version of the page can run against old script (or the reverse). "no-cache"
+    isn't "don't cache": the browser keeps its copy but checks with the server (a cheap 304) before using it."""
+    response = await call_next(request)
+    if request.url.path.startswith("/static/") and request.url.path.endswith((".js", ".css", ".html")):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
+@app.middleware("http")
 async def check_host(request, call_next):
     if not host_allowed(request.headers.get("host")):
         return PlainTextResponse("Invalid host header", status_code=400)

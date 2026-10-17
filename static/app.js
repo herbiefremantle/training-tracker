@@ -995,13 +995,14 @@ function productForm(p, f) {
   const demo = _demoAttrs();
   return `<div class="fuel-product" data-id="${id}">
     <div class="fuel-grid">
-      ${fuelField("Name", "name", p ? p.name : "", 'maxlength="40" placeholder="e.g. Styrkr BAR50"')}
+      ${fuelField("Name *", "name", p ? p.name : "", 'maxlength="40" placeholder="e.g. Styrkr BAR50"')}
       <label class="fuel-field"><span>Type</span><select name="kind">${kinds}</select></label>
       ${fuelField("One unit is a…", "unit", p ? p.unit : "", 'maxlength="12" placeholder="bar, flask, gel"')}
-      ${fuelField("Carbs per unit (g)", "carbs_g", p ? p.carbs_g : "", 'inputmode="decimal"')}
+      ${fuelField("Carbs per unit (g) *", "carbs_g", p ? p.carbs_g : "", 'inputmode="decimal" placeholder="e.g. 60"')}
       ${fuelField("Sodium per unit (mg)", "sodium_mg", p ? p.sodium_mg || "" : "", 'inputmode="decimal" placeholder="optional"')}
       ${fuelField("Caffeine per unit (mg)", "caffeine_mg", p ? p.caffeine_mg || "" : "", 'inputmode="decimal" placeholder="optional"')}
     </div>
+    <p class="muted small" style="margin:0">* needed. Carbs are per <b>one</b> unit - one bar, one flask, one gel.</p>
     <label class="fuel-check"><input type="checkbox" name="use_in_plan" ${p ? (p.use_in_plan ? "checked" : "") : "checked"}> Use in suggested mixes
       <span class="muted">(up to ${f.limits.max_in_plan}; untick for things you only want to log, like gels or salt tablets)</span></label>
     <div class="row">
@@ -1069,7 +1070,24 @@ function renderFuel() {
   $("#view-fuel").innerHTML = `<div class="stack">${goalCard}${runsCard}${productsCard}</div>`;
 }
 
-const fuelNum = (el) => { const v = (el.value || "").trim(); return v === "" ? "" : Number(v); };
+// numbers go to the server as typed (commas allowed as the decimal mark) so it can say "must be a number" rather
+// than the form silently sending nothing for something like "60g"
+const fuelText = (v) => String(v ?? "").trim().replace(",", ".");
+const fuelNum = (el) => fuelText(el.value);
+
+// errors from the fuelling forms appear right beside the button that was pressed - not in the banner at the top
+// of a long page, where nobody would see them
+function clearFuelError(el) {
+  const row = el.closest(".row");
+  const prev = row && row.previousElementSibling;
+  if (prev && prev.classList.contains("fuel-error")) prev.remove();
+}
+function showFuelError(el, message) {
+  clearFuelError(el);
+  const row = el.closest(".row");
+  if (!row) { setFlash("error", esc(message)); return; }
+  row.insertAdjacentHTML("beforebegin", `<div class="fuel-error" role="alert">${esc(message)}</div>`);
+}
 
 function fuelProductBody(form) {
   const q = (n) => form.querySelector(`[name="${n}"]`);
@@ -1280,7 +1298,7 @@ const actions = {
   },
   async fuelGoalSave() {
     const v = (id) => $(id).value;
-    const num = (id) => { const t = v(id).trim(); return t === "" ? "" : Number(t); };
+    const num = (id) => fuelText(v(id));
     state.fuel = await api("/api/fuel/goal", { method: "PUT", body: JSON.stringify({
       race_name: v("#fg-name"), race_date: v("#fg-date"), race_hours: num("#fg-hours"),
       target_g_per_hr: num("#fg-target"), current_g_per_hr: num("#fg-current"), ramp_g_per_hr: num("#fg-ramp") }) });
@@ -1365,10 +1383,9 @@ document.addEventListener("click", (ev) => {
   const el = ev.target.closest("[data-act]");
   if (!el || el.disabled) return;
   const fn = actions[el.dataset.act];
-  if (fn) Promise.resolve(fn(el.dataset, el)).catch((e) => {
-    setFlash("error", esc(e.message));
-    if (el.dataset.act.startsWith("fuel")) window.scrollTo({ top: 0, behavior: "smooth" });   // the message sits at the top
-  });
+  const fuelling = el.dataset.act.startsWith("fuel");
+  if (fuelling) clearFuelError(el);
+  if (fn) Promise.resolve(fn(el.dataset, el)).catch((e) => (fuelling ? showFuelError(el, e.message) : setFlash("error", esc(e.message))));
 });
 
 document.addEventListener("change", (e) => {
