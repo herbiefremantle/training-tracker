@@ -450,7 +450,7 @@ def test_demo_account_shows_fuelling_but_cannot_change_it(tmp_path, monkeypatch)
     with TestClient(main.app, follow_redirects=False) as c:
         assert c.post("/login", data={"username": "demotracker", "password": "demo"}).status_code == 303
         d = c.get("/api/fuel").json()
-        assert d["goal"]["race_name"] == "Demo marathon" and len(d["products"]) == 4
+        assert d["goal"]["race_name"] == "Demo marathon" and len(d["products"]) == 5
         logged = [r for r in d["runs"] if r["log"]]
         assert logged and all(r["date"] < TODAY for r in logged)
         assert any(r["log"]["gut"] == "some" for r in logged)
@@ -472,7 +472,7 @@ def test_demo_regeneration_rebuilds_fuelling_without_piling_up(tmp_path, monkeyp
         for _ in range(2):
             demo_data.regenerate(conn, demo, date(2026, 10, 17))
         assert conn.execute("SELECT COUNT(*) FROM fuel_goal WHERE user_id = ?", (demo,)).fetchone()[0] == 1
-        assert conn.execute("SELECT COUNT(*) FROM fuel_products WHERE user_id = ?", (demo,)).fetchone()[0] == 4
+        assert conn.execute("SELECT COUNT(*) FROM fuel_products WHERE user_id = ?", (demo,)).fetchone()[0] == 5
 
 
 # ---- the policy and the page ------------------------------------------------------------------
@@ -584,7 +584,7 @@ def test_the_same_product_in_two_rows_is_added_up(client):
 def test_the_week_view_offers_the_quick_add_list_to_the_log_dropdown(client):
     setup(client, products=())
     week = client.get("/api/week", params={"start": "2026-10-12"}).json()
-    assert [p["key"] for p in week["fuel"]["presets"]] == ["styrkr_bar50", "styrkr_mix60", "gel", "water"]
+    assert [p["key"] for p in week["fuel"]["presets"]] == ["styrkr_bar50", "styrkr_mix60", "gel", "electrolyte", "water"]
 
 
 # ============================ colour coding, over-doing it, water, hydration and the weather ============================
@@ -779,10 +779,12 @@ def test_prefs_roundtrip_and_validation(client):
     assert client.delete("/api/fuel/prefs").json()["prefs"] is None
 
 
-def test_no_settings_means_no_hydration_advice_and_no_weather_calls(client, fake_weather):
+def test_with_no_settings_drink_and_salt_are_still_in_the_plan_at_the_usual_rates_and_nothing_is_fetched(client, fake_weather):
     setup(client)
     f = week_item(client)[1][0]["fuel"]
-    assert f["advice"] is None and f["conditions"] is None and fake_weather["forecast"] == 0
+    assert f["conditions"] is None and f["weather_state"] == "no_location" and fake_weather["forecast"] == 0
+    a = f["advice"]
+    assert (a["band"], a["fluid_ml_per_hr"], a["sodium_mg_per_hr"], a["fluid_total_ml"]) == ("usual", 500, 400, 1750)
 
 
 def test_the_forecast_scales_fluid_and_sodium_to_the_temperature(client, fake_weather):
@@ -928,3 +930,111 @@ def test_sodium_below_advice_is_flagged_once_sodium_was_logged(client, fake_weat
     fuel = run_with_log(client, [("Styrkr MIX60", 4)], "fine")           # 4 x 56 mg over 3.5 h = 64 mg/h vs about 500
     assert fuel["log"]["sodium_status"] == "off"
     assert any("Sodium was well below" in a["text"] for a in fuel["log"]["alerts"])
+
+
+# ---- drink in all, salt, and weather as part of the plan -------------------------------------------
+
+ELECTROLYTE = {"name": "Electrolyte tablet", "kind": "other", "unit": "tablet", "sodium_mg": 250}
+
+
+def test_the_plan_says_how_much_to_drink_in_all_and_how_much_of_it_is_water(client):
+    setup(client)
+    client.post("/api/fuel/products", json=WATER)
+    a = client.get("/api/fuel").json()["runs"][0]["advice"]
+    d = a["drink"]
+    assert d["total_ml"] == 1750 and d["from_mix_ml"] == 1000                  # 2 flasks of drink mix = 1 L of it
+    assert d["water_ml"] == 750 and d["water_text"] == "1½ flasks"             # the rest, in the person's own flasks
+
+
+def test_with_no_water_product_the_remainder_is_still_given_in_ml(client):
+    setup(client)
+    d = client.get("/api/fuel").json()["runs"][0]["advice"]["drink"]
+    assert d["water_ml"] == 750 and d["water_text"] is None
+
+
+def test_when_the_drinks_already_cover_it_no_extra_water_is_asked_for(client):
+    setup(client, products=(BAR, {**MIX, "fluid_ml": 1200}))
+    d = client.get("/api/fuel").json()["runs"][0]["advice"]["drink"]
+    assert d["from_mix_ml"] >= d["total_ml"] and d["water_ml"] == 0
+
+
+def test_the_plan_says_how_much_salt_to_add_after_what_the_mix_already_holds(client):
+    setup(client)
+    client.post("/api/fuel/products", json=ELECTROLYTE)
+    salt = client.get("/api/fuel").json()["runs"][0]["advice"]["salt"]
+    assert salt["verdict"] == "yes" and salt["total_mg"] == 1400 and salt["from_mix_mg"] == 112   # 2 flasks x 56 mg
+    assert salt["add_mg"] == 1290 and salt["product_text"] == "5½ tablets"
+    assert "3h30" in salt["why"] and "usual" not in salt["why"]
+
+
+def test_without_an_electrolyte_product_it_still_says_how_many_mg_to_add(client):
+    setup(client)
+    salt = client.get("/api/fuel").json()["runs"][0]["advice"]["salt"]
+    assert salt["add_mg"] == 1290 and salt["product_text"] is None
+
+
+@pytest.mark.parametrize("minutes,band,verdict", [
+    (45, "hot", "no"), (59, "usual", "no"),
+    (90, "mild", "optional"), (90, "cold", "optional"), (90, "usual", "optional"),
+    (90, "warm", "yes"), (90, "hot", "yes"), (125, "mild", "yes"), (215, "usual", "yes"),
+    (None, "hot", "yes"), (None, "mild", "optional"),
+])
+def test_salt_verdict(minutes, band, verdict):
+    assert hydration.salt_verdict(minutes, band)[0] == verdict
+
+
+def test_a_run_too_short_to_need_salt_says_so_and_asks_for_none(client):
+    client.post("/api/plan/import", json={"text": "date,session type,sport,distance,duration\n2026-10-17,Long run,Run,8,50\n"})
+    setup(client, with_plan=False)
+    salt = client.get("/api/fuel").json()["runs"][0]["advice"]["salt"]
+    assert salt["verdict"] == "no" and salt["add_mg"] == 0 and "under an hour" in salt["why"]
+
+
+def test_the_race_day_plan_carries_drink_and_salt_too(client):
+    setup(client)
+    race = client.get("/api/fuel").json()["race"]
+    assert race["advice"]["drink"]["total_ml"] == 3000 and race["advice"]["salt"]["verdict"] == "yes"   # 6 h at the usual 500 ml/h
+    assert race["weather_state"] == "no_location"
+
+
+def test_weather_state_says_why_there_is_no_forecast(client, fake_weather):
+    setup(client)
+    assert client.get("/api/fuel").json()["runs"][0]["weather_state"] == "no_location"
+    client.put("/api/fuel/prefs", json=PREFS)
+    runs = {r["date"]: r["weather_state"] for r in client.get("/api/fuel").json()["runs"]}
+    assert runs["2026-10-17"] == "forecast" and runs["2026-11-07"] == "out_of_range"
+    weather._cache.clear()
+    fake_weather["fail"] = True
+    assert client.get("/api/fuel").json()["runs"][0]["weather_state"] == "unavailable"
+
+
+def test_picking_a_place_on_a_run_keeps_the_other_hydration_settings(client, fake_weather):
+    setup(client)
+    client.put("/api/fuel/prefs", json={**PREFS, "place": "", "fluid_ml_per_hr": 650, "sodium_mg_per_hr": 700, "race_temp_c": 7})
+    out = client.put("/api/fuel/place", json={"place": "Newquay, England", "lat": 50.41, "lon": -5.07}).json()
+    assert out["prefs"]["place"] == "Newquay, England" and out["prefs"]["fluid_ml_per_hr"] == 650
+    assert out["prefs"]["sodium_mg_per_hr"] == 700 and out["prefs"]["race_temp_c"] == 7
+
+
+def test_picking_a_place_with_no_settings_yet_starts_from_the_defaults(client, fake_weather):
+    out = client.put("/api/fuel/place", json={"place": "Newquay, England", "lat": 50.41, "lon": -5.07}).json()
+    assert out["prefs"]["fluid_ml_per_hr"] == 500 and out["prefs"]["sodium_mg_per_hr"] == 400 and out["prefs"]["start_hour"] == 8
+
+
+def test_place_endpoint_rejects_nonsense_and_the_demo(client, tmp_path, monkeypatch):
+    assert client.put("/api/fuel/place", json={"place": "x", "lat": 999, "lon": 0}).status_code == 422
+    assert client.put("/api/fuel/place", json={"place": "x"}).status_code == 422
+    monkeypatch.setenv("FITNESS_DB", str(tmp_path / "demo3.db"))
+    monkeypatch.setenv("APP_PASSWORD", PASSWORD)
+    monkeypatch.setenv("SESSION_SECRET", SECRET)
+    monkeypatch.setenv("DEMO_ACCOUNT", "1")
+    with TestClient(main.app, follow_redirects=False) as c:
+        c.post("/login", data={"username": "demotracker", "password": "demo"})
+        assert c.put("/api/fuel/place", json={"place": "x", "lat": 50.4, "lon": -5.0}).status_code == 403
+
+
+def test_not_logging_water_or_salt_is_not_scolded(client):
+    setup(client)
+    lg = run_with_log(client, [("Styrkr BAR50", 4)], "fine")["log"]
+    assert lg["fluid_status"] is None and lg["sodium_status"] is None and lg["fluid_ml_per_hr"] is None
+    assert not any("odium" in a["text"] or "drank" in a["text"] for a in lg["alerts"])

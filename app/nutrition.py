@@ -55,6 +55,10 @@ PRESETS = [
     {"key": "gel", "name": "Energy gel", "kind": "gel", "unit": "gel", "carbs_g": 25,
      "sodium_mg": 0, "caffeine_mg": 0, "use_in_plan": False,
      "note": "A typical gel. Kept out of suggested mixes - it's here so you can log one if you take it. Check the packet."},
+    {"key": "electrolyte", "name": "Electrolyte tablet", "kind": "other", "unit": "tablet", "carbs_g": 0,
+     "sodium_mg": 250, "caffeine_mg": 0, "fluid_ml": 0, "use_in_plan": False,
+     "note": "A typical electrolyte tablet or capsule. Products range from about 200 to 1,000 mg of sodium each, so "
+             "check your packet and edit this."},
     {"key": "water", "name": "Water", "kind": "water", "unit": "flask", "carbs_g": 0,
      "sodium_mg": 0, "caffeine_mg": 0, "fluid_ml": 500, "use_in_plan": False,
      "note": "Plain water in a 500 ml flask. It counts towards your fluid total, not your carbs."},
@@ -405,7 +409,8 @@ def _log_view(log, minutes, target, advice=None):
     carbs, sodium, caffeine, fluid = total("carbs_g"), total("sodium_mg"), total("caffeine_mg"), total("fluid_ml")
     hours = minutes / 60.0 if minutes else None
     per = lambda x: round(x / hours) if hours and items else None
-    per_hr, fluid_hr, sodium_hr = per(carbs), per(fluid), per(sodium)
+    # nothing logged for fluid or sodium means "not tracked", not "had none" - so no red mark and no scolding for it
+    per_hr, fluid_hr, sodium_hr = per(carbs), per(fluid) if fluid else None, per(sodium) if sodium else None
     delta = per_hr - target if per_hr is not None and target else None
     gut = log["gut"]
     alerts = []
@@ -460,39 +465,76 @@ def _long_runs(conn, user_id, lo, hi):
 
 class _Conditions:
     """Forecast conditions and fluid/sodium advice for runs, fetched lazily: nothing is requested unless the person
-    has set a location and a run falls inside the forecast window."""
+    has set a location and a run falls inside the forecast window. Advice is always given - from their own usual
+    rates if they've set them, else the defaults - because drink and salt are part of the plan, not an opt-in."""
 
     def __init__(self, prefs, today):
-        self.prefs, self.today, self._table = prefs, today, None
+        self.prefs, self.today, self._table = prefs or hydration.default_prefs(), today, None
 
     def _forecast(self):
         if self._table is None:
             p = self.prefs
-            self._table = weather.hourly_table(p["lat"], p["lon"]) if p and p["lat"] is not None else {}
+            self._table = weather.hourly_table(p["lat"], p["lon"]) if p["lat"] is not None else {}
         return self._table
 
     def for_run(self, day_iso, minutes, manual_temp=None):
-        """(conditions or None, advice or None). No hydration settings means no advice at all - it's opt-in."""
+        """(conditions or None, advice, weather_state) - the state says why there's no forecast when there isn't one:
+        "no_location", "out_of_range" (further ahead than forecasts reach) or "unavailable" (the service didn't answer)."""
         p = self.prefs
-        if not p:
-            return None, None
-        cond = None
+        if p["lat"] is None:
+            return None, hydration.advice(p, manual_temp, minutes, "manual"), "no_location"
         day = _date.fromisoformat(day_iso)
-        if p["lat"] is not None and self.today - timedelta(days=weather.PAST_DAYS) <= day <= self.today + timedelta(days=weather.FORECAST_DAYS - 1):
-            found = weather.conditions(self._forecast(), day_iso, p["start_hour"], minutes / 60.0 if minutes else None)
-            cond = {**found, "source": "forecast"} if found else None
-        if cond:
-            return cond, hydration.advice(p, cond["temp_c"], minutes, "forecast")
-        return None, hydration.advice(p, manual_temp, minutes, "manual")
+        if not (self.today - timedelta(days=weather.PAST_DAYS) <= day <= self.today + timedelta(days=weather.FORECAST_DAYS - 1)):
+            return None, hydration.advice(p, manual_temp, minutes, "manual"), "out_of_range"
+        found = weather.conditions(self._forecast(), day_iso, p["start_hour"], minutes / 60.0 if minutes else None)
+        if not found:
+            return None, hydration.advice(p, manual_temp, minutes, "manual"), "unavailable"
+        return {**found, "source": "forecast"}, hydration.advice(p, found["temp_c"], minutes, "forecast"), "forecast"
+
+
+def _plan_extras(advice, mix, products, minutes):
+    """Put the drink total and the salt answer into the run's advice: how much to drink in all and how much of that
+    the planned drinks already supply (the rest is water), and whether to take salt - how much sodium the run
+    calls for, how much the planned mix already holds, and so how much to add (as the person's own electrolyte
+    product, if they've listed one)."""
+    by_id = {p["id"]: p for p in products}
+    items = mix["items"] if mix else []
+    mix_fluid = sum(i["qty"] * by_id[i["product_id"]]["fluid_ml"] for i in items if i["product_id"] in by_id)
+    mix_sodium = sum(i["qty"] * by_id[i["product_id"]]["sodium_mg"] for i in items if i["product_id"] in by_id)
+    total_fluid, total_sodium = advice["fluid_total_ml"], advice["sodium_total_mg"]
+
+    water_ml = max(0, total_fluid - mix_fluid) if total_fluid else None
+    water = next((p for p in products if p["kind"] == "water" and p["fluid_ml"] > 0), None)
+    flasks = None
+    if water and water_ml and water_ml >= 100:
+        q = max(0.5, round(water_ml / water["fluid_ml"] * 2) / 2)
+        flasks = describe([{"unit": water["unit"], "qty": q, "name": water["name"]}])
+    verdict, why = hydration.salt_verdict(minutes, advice["band"])
+    add_mg = None
+    if verdict != "no" and total_sodium:
+        add_mg = max(0, total_sodium - mix_sodium)
+    elif verdict == "no":
+        add_mg = 0
+    tablet_text = None
+    salt_product = next((p for p in products if p["sodium_mg"] >= 100 and p["carbs_g"] <= 5 and p["kind"] != "water"), None)
+    if salt_product and add_mg and add_mg >= 50:
+        q = max(0.5, math.ceil(add_mg / salt_product["sodium_mg"] * 2) / 2)
+        tablet_text = describe([{"unit": salt_product["unit"], "qty": q, "name": salt_product["name"]}])
+    return {**advice,
+            "drink": {"total_ml": total_fluid, "from_mix_ml": round(mix_fluid), "water_ml": round(water_ml, -1) if water_ml is not None else None,
+                      "water_text": flasks},
+            "salt": {"verdict": verdict, "why": why, "total_mg": total_sodium, "from_mix_mg": round(mix_sodium),
+                     "add_mg": round(add_mg, -1) if add_mg is not None else None, "product_text": tablet_text}}
 
 
 def _entry(day_iso, planned_min, target, products, logs, minutes, today_iso, conditions):
     planned_g = round(target * planned_min / 60.0) if target and planned_min else None
-    cond, advice = conditions.for_run(day_iso, planned_min)
+    mix = suggest_mix(products, planned_g) if planned_g else None
+    cond, advice, weather_state = conditions.for_run(day_iso, planned_min)
+    advice = _plan_extras(advice, mix, products, planned_min)
     return {
         "date": day_iso, "planned_minutes": planned_min, "target_g_per_hr": target, "planned_g": planned_g,
-        "mix": suggest_mix(products, planned_g) if planned_g else None,
-        "conditions": cond, "advice": advice,
+        "mix": mix, "conditions": cond, "advice": advice, "weather_state": weather_state,
         "log": _log_view(logs[day_iso], minutes.get(day_iso), target, advice) if day_iso in logs else None,
         "can_log": day_iso <= today_iso,
     }
@@ -525,12 +567,14 @@ def overview(conn, user_id, today):
         r["is_next"] = r is upcoming
     hours = goal["race_hours"]
     race_g = round(goal["target_g_per_hr"] * hours) if hours else None
-    race_cond, race_advice = conditions.for_run(goal["race_date"], hours * 60 if hours else None,
-                                                prefs["race_temp_c"] if prefs else None)
+    race_cond, race_advice, race_state = conditions.for_run(goal["race_date"], hours * 60 if hours else None,
+                                                            prefs["race_temp_c"] if prefs else None)
+    race_mix = suggest_mix(products, race_g) if race_g else None
+    race_advice = _plan_extras(race_advice, race_mix, products, hours * 60 if hours else None)
     out["race"] = {
         "date": goal["race_date"], "name": goal["race_name"], "days_to_go": (_date.fromisoformat(goal["race_date"]) - today).days,
         "target_g_per_hr": goal["target_g_per_hr"], "hours": hours, "total_g": race_g,
-        "mix": suggest_mix(products, race_g) if race_g else None, "conditions": race_cond, "advice": race_advice,
+        "mix": race_mix, "conditions": race_cond, "advice": race_advice, "weather_state": race_state,
     }
     return out
 

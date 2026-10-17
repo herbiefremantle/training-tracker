@@ -19,6 +19,19 @@ SODIUM_TOLERANCE = 0.25
 START_HOUR_DEFAULT, FLUID_DEFAULT, SODIUM_DEFAULT = 8, 500, 400
 
 
+def default_prefs():
+    """What the plan uses until someone sets their own: the usual rates, and no location (so no forecast)."""
+    return {"place": None, "lat": None, "lon": None, "start_hour": START_HOUR_DEFAULT, "fluid_ml_per_hr": FLUID_DEFAULT,
+            "sodium_mg_per_hr": SODIUM_DEFAULT, "race_temp_c": None}
+
+
+def set_place(conn, user_id, place, lat, lon):
+    """Change only where they run - from the quick "add where you run" step on a run - keeping any other settings
+    they've made (or the defaults, if they've made none yet)."""
+    current = get_prefs(conn, user_id) or default_prefs()
+    save_prefs(conn, user_id, validate_prefs({**current, "place": place, "lat": lat, "lon": lon}))
+
+
 def get_prefs(conn, user_id):
     row = conn.execute("SELECT * FROM fuel_prefs WHERE user_id = ?", (user_id,)).fetchone()
     return {k: row[k] for k in row.keys() if k != "user_id"} if row else None
@@ -98,3 +111,23 @@ def status(actual, target, tolerance):
     if actual is None or not target:
         return None
     return "ok" if abs(actual - target) <= target * tolerance else "off"
+
+
+def salt_verdict(minutes, band_label):
+    """("yes" | "optional" | "no", why) - should extra salt be part of this run's plan? Under an hour: no. Up to two
+    hours in cool or mild weather: optional, drink and food usually cover it. Anything longer, or warm and hotter:
+    yes, because that's when real sodium goes out in sweat. A rough guide, not medical advice."""
+    if minutes is not None and minutes < 60:
+        return "no", "it's under an hour."
+    if minutes is not None and minutes < 120 and band_label in ("cold", "mild", "usual"):
+        return "optional", "under two hours in cool or mild weather, your drink and food usually cover it."
+    if minutes is None:
+        return ("yes", "it's hot enough that you'll lose real sodium in sweat.") if band_label in ("hot", "very hot") \
+            else ("optional", "add a planned duration to this session for a firmer answer.")
+    why = ("it's %s and %s" % (band_label, _hm(minutes))) if band_label != "usual" else ("it's %s long" % _hm(minutes))
+    return "yes", why + " - long or warm enough that you'll lose real sodium in sweat."
+
+
+def _hm(minutes):
+    h, m = divmod(int(round(minutes)), 60)
+    return "%dh%02d" % (h, m) if h else "%d min" % m

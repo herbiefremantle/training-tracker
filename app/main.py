@@ -629,6 +629,22 @@ def fuel_places(request: Request, q: str = Query("", max_length=80)):
         raise HTTPException(502, str(e))
 
 
+class FuelPlace(BaseModel):
+    place: str = Field(max_length=100)
+    lat: float = Field(ge=-90, le=90)
+    lon: float = Field(ge=-180, le=180)
+
+
+@app.put("/api/fuel/place")
+def fuel_place_save(body: FuelPlace, request: Request):
+    """Just where they run (picked from the search on a run), leaving their other hydration settings alone."""
+    _block_if_demo(request)
+    uid = current_user_id(request)
+    with connect() as conn:
+        hydration.set_place(conn, uid, body.place, body.lat, body.lon)
+        return _fuel_overview(conn, uid)
+
+
 @app.put("/api/fuel/prefs")
 def fuel_prefs_save(body: dict, request: Request):
     """Where they run, when they usually start, and their usual fluid and sodium per hour."""

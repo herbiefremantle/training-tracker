@@ -379,3 +379,6 @@ input[type=password]:focus-visible { outline: 2px solid var(--series-1); outline
 .fuel-alert.warn { border-left-color: var(--warning); }
 .fuel-alert i { font-style: normal; }
 .fuel-field.wide { grid-column: 1 / -1; }
+.fuel-quickplace summary { cursor: pointer; color: var(--series-1); font-weight: 600; }
+.fuel-quickplace .row { margin: 6px 0; gap: 6px; }
+.fuel-weather { margin-top: 2px; }

@@ -921,18 +921,63 @@ function fuelPlanLine(f) {
 
 const fmtMl = (ml) => (ml >= 1000 ? `${+(ml / 1000).toFixed(1)} L` : `${Math.round(ml)} ml`);
 
-// forecast (or your own estimate) and what to drink and take in salts for it
-function fuelConditionsLines(f) {
+// the three things a long run's plan says beyond carbs: how much to drink in all, whether to take salt (and how
+// much), and the weather they're based on - always shown, using the usual rates until a place is set
+const mg = (n) => `${Math.round(n).toLocaleString("en-GB")} mg`;
+
+function fuelDrinkLine(a) {
+  const d = a.drink;
+  if (!d || !d.total_ml) return `Drink about <b>${a.fluid_ml_per_hr} ml/h</b>`;
+  let line = `Drink: <b>${fmtMl(d.total_ml)}</b> in all (about ${a.fluid_ml_per_hr} ml/h)`;
+  if (d.from_mix_ml) {
+    line += d.water_ml >= 100
+      ? ` → ${fmtMl(d.from_mix_ml)} from your drinks + <b>${fmtMl(d.water_ml)}</b> water${d.water_text ? ` (${esc(d.water_text)})` : ""}`
+      : " - your drinks already cover it";
+  }
+  return line;
+}
+
+function fuelSaltLines(a) {
+  const s = a.salt;
+  if (!s) return "";
+  if (s.verdict === "no") return `<div class="fuel-plan">Salt: <b>not needed</b> - ${esc(s.why)}</div>`;
+  if (s.verdict === "optional") return `<div class="fuel-plan">Salt: <b>optional</b> - ${esc(s.why)}</div>`;
+  let line = `Salt: <b>yes</b> - `;
+  if (s.total_mg) {
+    line += `about <b>${mg(s.total_mg)}</b> sodium in all (${a.sodium_mg_per_hr} mg/h)`;
+    line += s.add_mg > 0
+      ? ` → your plan already has ${mg(s.from_mix_mg)}, so add about <b>${mg(s.add_mg)}</b> ${s.product_text ? `(${esc(s.product_text)})` : "(electrolyte tablets or capsules)"}`
+      : " - your drinks already cover it";
+  } else {
+    line += `about ${a.sodium_mg_per_hr} mg/h (${esc(s.why)})`;
+  }
+  return `<div class="fuel-plan">${line}</div>
+    <div class="muted small">Not for everyone: check with a doctor first if you have high blood pressure or a heart or kidney condition.</div>`;
+}
+
+function fuelWeatherLine(f, quick) {
+  const c = f.conditions, a = f.advice, st = f.weather_state;
+  if (c) {
+    return `<div class="fuel-weather">Weather: <b>${Math.round(c.temp_c)}°C</b>${c.humidity_pct != null ? `, ${c.humidity_pct}% humidity` : ""} · ${esc(a.band)}
+      <span class="muted">(forecast · <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo.com</a>)</span></div>`;
+  }
+  if (a && a.temp_c != null) return `<div class="fuel-weather">Weather: <b>${Math.round(a.temp_c)}°C</b> (your estimate) · ${esc(a.band)}</div>`;
+  if (st === "no_location" && quick) {
+    return `<details class="fuel-quickplace"><summary>Weather: add where you run to see the forecast</summary>
+      <div class="row"><input class="field" data-quick-q placeholder="Town or place, e.g. Newquay" maxlength="80" style="flex:1 1 140px;width:auto;margin-top:0">
+        <button class="btn small" type="button" data-act="fuelQuickFind" ${_demoAttrs()}>Find</button></div>
+      <div data-quick-results></div>
+      <div class="muted small">Only the town you type, then its coordinates rounded to about 1 km, go to the weather service.</div></details>`;
+  }
+  if (st === "out_of_range") return `<div class="fuel-weather muted">Weather: forecasts reach about two weeks ahead - your usual rates for now.</div>`;
+  if (st === "unavailable") return `<div class="fuel-weather muted">Weather: forecast unavailable just now - your usual rates for now.</div>`;
+  return st === "no_location" ? `<div class="fuel-weather muted">Weather: no location set - your usual rates.</div>` : "";
+}
+
+function fuelConditionsLines(f, quick = true) {
   const a = f.advice;
   if (!a) return "";
-  const c = f.conditions;
-  const where = c ? `${Math.round(c.temp_c)}°C${c.humidity_pct != null ? `, ${c.humidity_pct}% humidity` : ""} · ${a.band}`
-    : a.temp_c != null ? `${Math.round(a.temp_c)}°C (your estimate) · ${a.band}`
-    : "no forecast for this day yet - your usual rates";
-  const credit = c ? ` · <a href="https://open-meteo.com" target="_blank" rel="noopener">Weather by Open-Meteo.com</a>` : "";
-  const drink = `Drink about <b>${a.fluid_ml_per_hr} ml/h</b>${a.fluid_total_ml ? ` (${fmtMl(a.fluid_total_ml)})` : ""}`;
-  const salt = `sodium about <b>${a.sodium_mg_per_hr} mg/h</b>${a.sodium_total_mg ? ` (${a.sodium_total_mg.toLocaleString("en-GB")} mg)` : ""}`;
-  return `<div class="fuel-plan">${drink} · ${salt}</div><div class="muted small">${c ? "Forecast: " : ""}${esc(where)}${credit}</div>`;
+  return `<div class="fuel-plan">${fuelDrinkLine(a)}</div>${fuelSaltLines(a)}${fuelWeatherLine(f, quick)}`;
 }
 
 // green = within the tolerance, red = outside it - always with a symbol, never colour alone
@@ -1143,7 +1188,7 @@ function renderFuel() {
     const race = f.race;
     const raceRow = race ? `<div class="fuel-run race"><div class="fuel-run-head"><b>${esc(day(race.date))}</b> <span class="muted">· ${esc(race.name || "race day")}</span></div>
       <div class="fuel"><div class="fuel-plan">Fuel plan: <b>${Math.round(race.target_g_per_hr)} g/h</b>${race.hours ? ` for ${fmtMins(race.hours * 60)}` : ""}${race.total_g ? ` = <b>${race.total_g} g</b>${race.mix ? ` → ${esc(race.mix.text)} = ${race.mix.total_g} g` : ""}` : ""}</div>
-      ${fuelConditionsLines(race)}
+      ${fuelConditionsLines(race, false)}
       ${race.hours ? "" : `<div class="muted small">Add an expected race time above to see the total to carry.</div>`}</div></div>` : "";
     runsCard = `<div class="card"><div class="card-head"><h2>Long-run fuelling plan</h2><span class="sub">Long runs in your plan, up to race day</span></div>
       ${f.runs.length ? rows : `<div class="empty">No long runs found in your plan before the race. Long runs are sessions whose type includes the word "long" - for example "Long run". <a href="#/plan">Check your plan</a>.</div>`}
@@ -1428,6 +1473,20 @@ const actions = {
       navigator.clipboard?.writeText(url);
       e.target.textContent = "Copied";
     });
+  },
+  async fuelQuickFind(d, el) {
+    const box = el.closest(".fuel-quickplace");
+    const r = await api(`/api/fuel/places?q=${encodeURIComponent(box.querySelector("[data-quick-q]").value)}`);
+    state.quickPlaces = r.places;
+    box.querySelector("[data-quick-results]").innerHTML = r.places.length
+      ? `<div class="chips">${r.places.map((p, i) => `<button type="button" class="chip" data-act="fuelQuickPick" data-i="${i}">${esc(p.label)}</button>`).join("")}</div>`
+      : `<p class="muted small" style="margin:4px 0">No match - try the nearest town.</p>`;
+  },
+  async fuelQuickPick(d) {
+    const p = state.quickPlaces[Number(d.i)];
+    await api("/api/fuel/place", { method: "PUT", body: JSON.stringify({ place: p.label, lat: p.lat, lon: p.lon }) });
+    await fuelRefresh();
+    setFlash("ok", `<b>${esc(p.label)}</b> saved - your long runs now show the forecast and drink and salt advice for it.`);
   },
   async fuelPlaceSearch(d, el) {
     const r = await api(`/api/fuel/places?q=${encodeURIComponent($("#fp-q").value)}`);
