@@ -251,6 +251,19 @@ straight after.
 above for how, and note that everyone connects through *your* Strava API app (one `STRAVA_CLIENT_ID`), so Strava's
 per-app rate limit and athlete-capacity cap are shared across every account, not per person.
 
+## Fuelling (carbs for long runs)
+
+For training your gut to take the carbs per hour a race needs. Open **Fuelling** in the top bar:
+
+1. **Race goal** - the race, its date, the carbs per hour you want on the day, what you take comfortably now, and (optionally) your expected race time.
+2. **My fuel** - the bars, drinks, gels and so on you actually use, with the carbs, sodium and caffeine in **one** unit (copy them off the packet). Up to 8 products; up to 3 of them can be combined in suggested mixes, the rest are for logging only (e.g. gels, salt tablets). Quick-add buttons offer Styrkr BAR50, Styrkr MIX60 and a generic gel - check the numbers against your own packet.
+3. Every **long run** in your plan (a session whose type includes the word "long") then shows a target on the dashboard week view and on the Fuelling page: grams per hour, a total for the planned time, and a mix of your products such as "2 bars + 2 flasks = 220 g".
+4. After the run, **Log what I had**: halves are allowed, so leftovers are easy to record. You also say how your stomach coped (no problems / some discomfort / bad gut). The app shows grams per hour against the target (using the run's time from Strava), plus sodium and caffeine.
+
+How targets move (plain rules, no guessing): the first long run is one step (default 5 g/h) above what you take comfortably now. After a run logged **no problems** the next target steps up; after **some discomfort** it holds; after a **bad gut** it steps back one step (never below where you started). A past run with no gut report holds, and runs still to come assume each goes well so the whole road to race day is visible. Targets stop at the race rate.
+
+Everything here is yours, not Strava's - disconnecting Strava leaves it alone - and it's included in **Download my data** and removed by **Delete my account**. The shared demo account shows an example set-up, read-only. It's a training aid built from your own numbers, not medical or dietitian advice.
+
 ## Strava API compliance
 
 What Strava's production API review and UK GDPR ask for, and where it lives:

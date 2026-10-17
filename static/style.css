@@ -342,3 +342,25 @@ input[type=password]:focus-visible { outline: 2px solid var(--series-1); outline
 .legal li { margin: 6px 0; }
 .site-footer { max-width: 1200px; margin: 0 auto; padding: 8px 16px 40px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; font-size: 13px; }
 .site-footer img { display: block; height: 20px; width: auto; }
+
+/* ---- fuelling ---- */
+.pill.gut-fine { --c: var(--good); } .pill.gut-some { --c: var(--serious); } .pill.gut-bad { --c: var(--critical); }
+.fuel { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); font-size: 13px; display: grid; gap: 4px; }
+.fuel-plan { color: var(--ink); }
+.fuel-log summary { cursor: pointer; color: var(--series-1); font-weight: 600; }
+.fuel-form { display: grid; gap: 8px; margin-top: 8px; }
+.fuel-field { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+.fuel-field select { width: 100%; }
+.fuel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.fuel-product { border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-top: 12px; display: grid; gap: 10px; }
+.fuel-check { font-size: 13px; display: block; }
+.fuel-check input { margin-right: 6px; }
+.fuel-add { margin-top: 14px; }
+.fuel-add summary { cursor: pointer; font-weight: 600; }
+.fuel-status { margin: 0 0 12px; font-weight: 600; }
+.fuel-run { padding: 10px 0; border-top: 1px solid var(--border); }
+.fuel-run:first-of-type { border-top: 0; }
+.fuel-run.next { background: var(--surface-2); margin: 0 -12px; padding: 10px 12px; border-radius: 8px; }
+.fuel-run.race { border-top: 2px solid var(--border); }
+.fuel-run .fuel { border-top: 0; margin-top: 2px; padding-top: 0; font-size: 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 4px; }

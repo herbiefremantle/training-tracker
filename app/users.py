@@ -100,11 +100,12 @@ def other_admin_exists(conn, user_id):
 
 def delete_account(conn, user_id):
     """Permanently remove an account and everything that belongs to it, across every table: activities, plan,
-    meta, the Strava link, password-reset links it received or issued, invites it issued (and the "used by"
+    meta, the fuelling goal/products/logs, the Strava link, password-reset links it received or issued, invites it issued (and the "used by"
     marker on the one it redeemed). Callers revoke the Strava tokens *first* (strava.revoke) - once the row is
     gone there's nothing left to revoke with. Policy checks (not the last admin, not the demo account, not
     yourself-by-accident) live in the endpoints, not here."""
-    for table in ("activities", "plan", "meta", "strava_auth"):
+    for table in ("activities", "plan", "meta", "strava_auth", "fuel_goal", "fuel_products", "fuel_logs",
+                  "fuel_log_items"):
         conn.execute("DELETE FROM %s WHERE user_id = ?" % table, (user_id,))
     conn.execute("DELETE FROM password_resets WHERE user_id = ? OR created_by = ?", (user_id, user_id))
     conn.execute("DELETE FROM invites WHERE created_by = ?", (user_id,))

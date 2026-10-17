@@ -17,7 +17,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTex
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import auth, clock, demo_data, legal, matching, metrics, plan_templates, planparse, sports, strava, users, views, webhook
+from . import auth, clock, demo_data, legal, matching, metrics, nutrition, plan_templates, planparse, sports, strava, users, views, webhook
 from .db import LOCAL_USER_ID, ROOT, connect, db_path, get_meta, init_db, volume_warning
 
 # override=True: .env is the source of truth, even if the shell already exports (stale/empty) STRAVA_* vars
@@ -387,7 +387,19 @@ def account_export(request: Request):
                 "SELECT id, date, name, sport_type, distance, moving_time, average_heartrate, max_heartrate, "
                 "average_speed, max_speed, total_elevation_gain, suffer_score, workout_type FROM activities "
                 "WHERE user_id = ? ORDER BY date, start_epoch", (uid,))],
+            "fuelling": {
+                "goal": nutrition.get_goal(conn, uid),
+                "products": [dict(r) for r in conn.execute(
+                    "SELECT name, kind, unit, carbs_g, sodium_mg, caffeine_mg, use_in_plan FROM fuel_products "
+                    "WHERE user_id = ? ORDER BY position, id", (uid,))],
+                "logs": [dict(r) for r in conn.execute(
+                    "SELECT l.date, l.gut, i.product_name, i.unit, i.qty, i.carbs_g, i.sodium_mg, i.caffeine_mg "
+                    "FROM fuel_logs l LEFT JOIN fuel_log_items i ON i.user_id = l.user_id AND i.date = l.date "
+                    "WHERE l.user_id = ? ORDER BY l.date, i.rowid", (uid,))],
+            },
         }
+        if data["fuelling"]["goal"]:
+            data["fuelling"]["goal"].pop("user_id", None)
     return JSONResponse(data, headers={"Content-Disposition": 'attachment; filename="training-tracker-data.json"'})
 
 
@@ -556,6 +568,117 @@ def plan_list(request: Request):
     return {"sessions": matching.match(plans, acts, today)["sessions"]}
 
 
+# ---- fuelling (carb training for long runs) -----------------------------------------------------
+
+def _fuel_overview(conn, uid):
+    return nutrition.overview(conn, uid, clock.today())
+
+
+def _fuel_bad_request(exc):
+    return HTTPException(400, str(exc))
+
+
+@app.get("/api/fuel")
+def fuel_get(request: Request):
+    with connect() as conn:
+        return _fuel_overview(conn, current_user_id(request))
+
+
+@app.put("/api/fuel/goal")
+def fuel_goal_save(body: dict, request: Request):
+    _block_if_demo(request)
+    uid = current_user_id(request)
+    try:
+        clean = nutrition.validate_goal(body, clock.today())
+    except ValueError as e:
+        raise _fuel_bad_request(e)
+    with connect() as conn:
+        nutrition.save_goal(conn, uid, clean, clock.today())
+        return _fuel_overview(conn, uid)
+
+
+@app.delete("/api/fuel/goal")
+def fuel_goal_delete(request: Request):
+    _block_if_demo(request)
+    uid = current_user_id(request)
+    with connect() as conn:
+        nutrition.delete_goal(conn, uid)
+        return _fuel_overview(conn, uid)
+
+
+@app.post("/api/fuel/products")
+def fuel_product_add(body: dict, request: Request):
+    _block_if_demo(request)
+    uid = current_user_id(request)
+    try:
+        clean = nutrition.validate_product(body)
+        with connect() as conn:
+            nutrition.add_product(conn, uid, clean)
+            return _fuel_overview(conn, uid)
+    except ValueError as e:
+        raise _fuel_bad_request(e)
+
+
+@app.put("/api/fuel/products/{product_id}")
+def fuel_product_update(product_id: int, body: dict, request: Request):
+    _block_if_demo(request)
+    uid = current_user_id(request)
+    try:
+        clean = nutrition.validate_product(body)
+        with connect() as conn:
+            if not nutrition.update_product(conn, uid, product_id, clean):
+                raise HTTPException(404, "No such product.")
+            return _fuel_overview(conn, uid)
+    except ValueError as e:
+        raise _fuel_bad_request(e)
+
+
+@app.delete("/api/fuel/products/{product_id}")
+def fuel_product_delete(product_id: int, request: Request):
+    _block_if_demo(request)
+    uid = current_user_id(request)
+    with connect() as conn:
+        if not nutrition.delete_product(conn, uid, product_id):
+            raise HTTPException(404, "No such product.")
+        return _fuel_overview(conn, uid)
+
+
+def _log_date(day):
+    try:
+        d = date.fromisoformat(day)
+    except ValueError:
+        raise HTTPException(400, "The date must be YYYY-MM-DD.")
+    if d > clock.today():
+        raise HTTPException(400, "You can log what you had once the run has happened.")
+    return d.isoformat()
+
+
+@app.put("/api/fuel/log/{day}")
+def fuel_log_save(day: str, body: dict, request: Request):
+    """Replace the log for one day: how many of each product was had, and how the stomach coped."""
+    _block_if_demo(request)
+    uid = current_user_id(request)
+    iso = _log_date(day)
+    try:
+        items, gut = nutrition.validate_log(body, clock.today())
+    except ValueError as e:
+        raise _fuel_bad_request(e)
+    with connect() as conn:
+        if not nutrition.save_log(conn, uid, iso, items, gut):
+            raise HTTPException(400, "One of those products isn't in your list any more - refresh and try again.")
+    return {"saved": True}
+
+
+@app.delete("/api/fuel/log/{day}")
+def fuel_log_delete(day: str, request: Request):
+    _block_if_demo(request)
+    uid = current_user_id(request)
+    iso = _log_date(day)
+    with connect() as conn:
+        nutrition.save_log(conn, uid, iso, [], None)
+    return {"saved": True}
+
+
 # ---- dashboard ------------------------------------------------------------------------------
 
 def _groups_for(sport):
@@ -582,6 +705,8 @@ def dashboard(request: Request):
     horizon = max(monday + timedelta(days=6), today + timedelta(days=6))
     with connect() as conn:
         matched = _matched(conn, uid, monday, horizon, today)
+        week_data = views.week_view(matched, monday, today)
+        nutrition.annotate_week(conn, uid, week_data, today)
         # 90-day chart + the 28-day window behind its first point
         recent = conn.execute("SELECT * FROM activities WHERE user_id = ? AND date >= ?",
                               (uid, (today - timedelta(days=120)).isoformat())).fetchall()
@@ -594,7 +719,7 @@ def dashboard(request: Request):
     options += [{"value": g, "label": sports.label(g)} for g in present]
     return {
         "today": today.isoformat(),
-        "week": views.week_view(matched, monday, today),
+        "week": week_data,
         "upcoming": [s for s in matched["sessions"] if today.isoformat() <= s["date"] <= end and s["status"] != "rest"],
         "load": metrics.load_summary(recent, today),
         "thresholds": {"high": metrics.HIGH_RATIO, "low": metrics.LOW_RATIO},
@@ -612,7 +737,9 @@ def week(request: Request, start: Optional[date] = None):
     monday = metrics.week_start(start or today)
     with connect() as conn:
         matched = _matched(conn, uid, monday, monday + timedelta(days=6), today)
-    return views.week_view(matched, monday, today)
+        week_data = views.week_view(matched, monday, today)
+        nutrition.annotate_week(conn, uid, week_data, today)
+    return week_data
 
 
 @app.get("/api/calendar")

@@ -148,13 +148,15 @@ function renderBanner() {
 
 function route() {
   const r = location.hash.startsWith("#/plan") ? "plan" : location.hash.startsWith("#/admin") ? "admin"
-    : location.hash.startsWith("#/account") ? "account" : "dashboard";
+    : location.hash.startsWith("#/account") ? "account" : location.hash.startsWith("#/fuel") ? "fuel" : "dashboard";
   document.querySelectorAll("nav a").forEach((a) => a.classList.toggle("active", a.dataset.route === r));
   $("#view-dashboard").hidden = r !== "dashboard";
   $("#view-plan").hidden = r !== "plan";
   $("#view-admin").hidden = r !== "admin";
   $("#view-account").hidden = r !== "account";
+  $("#view-fuel").hidden = r !== "fuel";
   if (r === "plan") return loadPlan();
+  if (r === "fuel") return loadFuel();
   if (r === "admin") return loadAdmin();
   if (r === "account") return loadAccount();
   return loadDashboard();
@@ -290,7 +292,7 @@ function sessionItem(s) {
   const sameLabel = (s.session_type || "").toLowerCase() === s.sport_label.toLowerCase();
   return `<div class="item ${s.status}">
     <div class="top"><span class="title">${esc(s.session_type || s.sport_label)}${sameLabel ? "" : ` <span class="muted">· ${esc(s.sport_label)}</span>`}</span>${pill(s.status, s.duration_diff_min)}</div>
-    ${meta ? `<div class="meta">${meta}</div>` : ""}</div>`;
+    ${meta ? `<div class="meta">${meta}</div>` : ""}${s.fuel ? fuelBlock(s.fuel, fuelCtx()) : ""}</div>`;
 }
 
 function extraItem(a) {
@@ -892,6 +894,197 @@ async function updateTplPreview(p) {
   }
 }
 
+
+// ---------- fuelling: carb targets for long runs, what you had, and your products --------------------
+
+// the product list and gut options the log dropdowns are built from: the week view carries its own copy, the
+// Fuelling page uses its own
+const fuelCtx = () => (state.weekData && state.weekData.fuel) || { products: [], gut_options: [], has_goal: false };
+
+const qtyLabel = (q) => (q === 0 ? "0" : q < 1 ? "½" : Number.isInteger(q) ? String(q) : `${Math.floor(q)}½`);
+const pluralUnit = (unit, q) => (q <= 1 ? unit : /(ch|sh|s|x)$/.test(unit) ? unit + "es" : unit + "s");
+
+function qtyOptions(selected) {
+  const top = Math.max(10, selected || 0);
+  let html = "";
+  for (let q = 0; q <= top; q += 0.5) html += `<option value="${q}" ${q === selected ? "selected" : ""}>${qtyLabel(q)}</option>`;
+  return html;
+}
+
+function fuelPlanLine(f) {
+  if (!f.target_g_per_hr) return "";
+  const rate = `${Math.round(f.target_g_per_hr)} g/h`;
+  if (!f.planned_g) return `${rate}<span class="muted"> - add a duration to this session to get a total</span>`;
+  const mix = f.mix ? `${esc(f.mix.text)} = <b>${f.mix.total_g} g</b>` : `<b>${f.planned_g} g</b>`;
+  return `<b>${rate}</b> for ${fmtMins(f.planned_minutes)} → ${mix}`;
+}
+
+function fuelActualLine(l) {
+  if (!l) return "";
+  const had = l.items.length ? `${esc(l.text)} = <b>${l.carbs_g} g</b>` : "<i>nothing logged</i>";
+  let rate = "";
+  if (l.carbs_g_per_hr != null) {
+    const d = l.vs_target_g_per_hr;
+    rate = ` (<b>${l.carbs_g_per_hr} g/h</b>${d == null ? "" : d === 0 ? ", on target" : `, ${d > 0 ? "+" : "−"}${Math.abs(d)} vs target`})`;
+  } else if (l.items.length) {
+    rate = ` <span class="muted">(g/h appears once the run has synced from Strava)</span>`;
+  }
+  const extras = dot([
+    l.sodium_mg ? `Sodium ${l.sodium_mg} mg${l.sodium_mg_per_hr ? ` (${l.sodium_mg_per_hr} mg/h)` : ""}` : "",
+    l.caffeine_mg ? `Caffeine ${l.caffeine_mg} mg` : "",
+  ]);
+  const gut = l.gut ? `<span class="pill gut-${l.gut}"><i aria-hidden="true">${{ fine: "✓", some: "▲", bad: "✕" }[l.gut]}</i>Stomach: ${esc(l.gut_label.toLowerCase())}</span>` : "";
+  return `<div>Had: ${had}${rate}</div>${extras ? `<div class="muted">${esc(extras)}</div>` : ""}${gut ? `<div>${gut}</div>` : ""}`;
+}
+
+const GUT_WORDS = {
+  fine: "No problems - stomach felt fine",
+  some: "Some discomfort - bloated, queasy or stitchy",
+  bad: "Bad gut - cramps, nausea or had to back off",
+};
+
+function fuelLogForm(f, ctx) {
+  const have = {};
+  if (f.log) f.log.items.forEach((i) => { have[i.name] = i.qty; });
+  const fields = ctx.products.map((p) => `<label class="fuel-field"><span>${esc(p.name)} <span class="muted">(${esc(pluralUnit(p.unit, 2))})</span></span>
+    <select data-fuel-product="${p.id}" aria-label="${esc(p.name)}, number of ${esc(pluralUnit(p.unit, 2))}">${qtyOptions(have[p.name] || 0)}</select></label>`).join("");
+  const gutOpts = `<option value="">Not recorded</option>` + ctx.gut_options.map((g) =>
+    `<option value="${g.value}" ${f.log && f.log.gut === g.value ? "selected" : ""}>${esc(GUT_WORDS[g.value] || g.label)}</option>`).join("");
+  return `<details class="fuel-log"><summary>${f.log ? "Edit what I had" : "Log what I had"}</summary>
+    <div class="fuel-form">${fields}
+      <label class="fuel-field wide"><span>How did your stomach cope?</span><select data-fuel-gut>${gutOpts}</select></label>
+      <div class="row">
+        <button class="btn primary small" type="button" data-act="fuelSave" data-date="${f.date}" ${_demoAttrs()}>Save</button>
+        ${f.log ? `<button class="btn small" type="button" data-act="fuelClear" data-date="${f.date}" ${_demoAttrs()}>Clear this log</button>` : ""}
+      </div>
+      <p class="muted small" style="margin:0">Halves are fine - if you came back with some left over, log what you actually had.</p>
+    </div></details>`;
+}
+
+function fuelBlock(f, ctx) {
+  if (f.available === false) {
+    return `<div class="fuel muted small">Fuelling: <a href="#/fuel">set a race goal and your products</a> to get a carb target for long runs.</div>`;
+  }
+  const plan = fuelPlanLine(f);
+  let logUi;
+  if (!f.can_log) logUi = `<div class="muted small">You can log what you had once the run has happened.</div>`;
+  else if (!ctx.products.length) logUi = `<div class="muted small"><a href="#/fuel">Add your fuel products</a> to log what you had.</div>`;
+  else logUi = fuelLogForm(f, ctx);
+  return `<div class="fuel" data-date="${f.date}">
+    ${plan ? `<div class="fuel-plan">Fuel plan: ${plan}</div>` : ""}
+    ${fuelActualLine(f.log)}
+    ${logUi}</div>`;
+}
+
+async function loadFuel() {
+  try {
+    state.fuel = await api("/api/fuel");
+    renderFuel();
+  } catch (e) {
+    $("#view-fuel").innerHTML = `<div class="banner error">Couldn't load fuelling: ${esc(e.message)}</div>`;
+  }
+}
+
+function fuelField(label, name, value, attrs = "") {
+  return `<label class="fuel-field"><span>${label}</span><input class="field" name="${name}" value="${esc(value ?? "")}" ${attrs}></label>`;
+}
+
+function productForm(p, f) {
+  const id = p ? p.id : "new";
+  const kinds = ["bar", "drink", "gel", "other"].map((k) => `<option value="${k}" ${p && p.kind === k ? "selected" : ""}>${{ bar: "Bar / solid food", drink: "Drink", gel: "Gel", other: "Other (e.g. salt tablets)" }[k]}</option>`).join("");
+  const demo = _demoAttrs();
+  return `<div class="fuel-product" data-id="${id}">
+    <div class="fuel-grid">
+      ${fuelField("Name", "name", p ? p.name : "", 'maxlength="40" placeholder="e.g. Styrkr BAR50"')}
+      <label class="fuel-field"><span>Type</span><select name="kind">${kinds}</select></label>
+      ${fuelField("One unit is a…", "unit", p ? p.unit : "", 'maxlength="12" placeholder="bar, flask, gel"')}
+      ${fuelField("Carbs per unit (g)", "carbs_g", p ? p.carbs_g : "", 'inputmode="decimal"')}
+      ${fuelField("Sodium per unit (mg)", "sodium_mg", p ? p.sodium_mg || "" : "", 'inputmode="decimal" placeholder="optional"')}
+      ${fuelField("Caffeine per unit (mg)", "caffeine_mg", p ? p.caffeine_mg || "" : "", 'inputmode="decimal" placeholder="optional"')}
+    </div>
+    <label class="fuel-check"><input type="checkbox" name="use_in_plan" ${p ? (p.use_in_plan ? "checked" : "") : "checked"}> Use in suggested mixes
+      <span class="muted">(up to ${f.limits.max_in_plan}; untick for things you only want to log, like gels or salt tablets)</span></label>
+    <div class="row">
+      <button class="btn ${p ? "" : "primary"} small" type="button" data-act="fuelProductSave" ${demo}>${p ? "Save" : "Add product"}</button>
+      ${p ? `<button class="btn danger small" type="button" data-act="fuelProductDelete" ${demo}>Remove</button>` : ""}
+    </div></div>`;
+}
+
+function renderFuel() {
+  const f = state.fuel, g = f.goal, demo = _demoAttrs();
+  const ctx = { products: f.products, gut_options: f.gut_options };
+  const day = (iso) => new Date(utc(iso)).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  const have = new Set(f.products.map((p) => p.name.toLowerCase()));
+  const status = g ? `<p class="fuel-status">${esc(dot([
+    g.race_name || "Your race", day(g.race_date), f.race ? (f.race.days_to_go === 0 ? "race day!" : `${f.race.days_to_go} days to go`) : "",
+    f.next_target != null ? `next long run: ${Math.round(f.next_target)} g/h` : "", `race day: ${Math.round(g.target_g_per_hr)} g/h`]))}</p>` : "";
+
+  const goalCard = `<div class="card">
+    <div class="card-head"><h2>Race goal</h2></div>
+    <p class="muted" style="margin-top:0">Set the race and the carbs per hour you want to be able to take. Each long run in your plan then gets a
+      target that steps up towards it, and what you log decides how fast. It's a training aid built from your own numbers - not medical or dietitian advice.</p>
+    ${status}
+    <div class="fuel-grid">
+      ${fuelField("Race", "race_name", g ? g.race_name : "", 'id="fg-name" maxlength="80" placeholder="e.g. ARC 50 50k, Cornwall"')}
+      <label class="fuel-field"><span>Race date</span><input class="field" type="date" id="fg-date" value="${esc(g ? g.race_date : "")}"></label>
+      <label class="fuel-field"><span>Expected race time (hours, optional)</span><input class="field" id="fg-hours" inputmode="decimal" value="${esc(g && g.race_hours ? g.race_hours : "")}" placeholder="e.g. 6"></label>
+      <label class="fuel-field"><span>Carbs per hour on race day (g)</span><input class="field" id="fg-target" inputmode="decimal" value="${esc(g ? g.target_g_per_hr : "")}" placeholder="e.g. 90"></label>
+      <label class="fuel-field"><span>Carbs per hour you take comfortably now (g)</span><input class="field" id="fg-current" inputmode="decimal" value="${esc(g ? g.current_g_per_hr : "")}" placeholder="e.g. 60"></label>
+      <label class="fuel-field"><span>Step up per long run (g/h)</span><input class="field" id="fg-ramp" inputmode="decimal" value="${esc(g ? g.ramp_g_per_hr : 5)}"></label>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn primary" type="button" data-act="fuelGoalSave" ${demo}>${g ? "Update goal" : "Save goal"}</button>
+      ${g ? `<button class="btn danger" type="button" data-act="fuelGoalDelete" ${demo}>Remove goal</button>` : ""}
+    </div></div>`;
+
+  const presets = f.presets.map((p) => `<button type="button" class="chip" data-act="fuelPreset" data-key="${p.key}" title="${esc(p.note)}"
+      ${demo || have.has(p.name.toLowerCase()) || f.products.length >= f.limits.max_products ? "disabled" : ""}>+ ${esc(p.name)}</button>`).join("");
+  const productsCard = `<div class="card">
+    <div class="card-head"><h2>My fuel</h2><span class="sub">${f.products.length} of ${f.limits.max_products} products</span></div>
+    <p class="muted" style="margin-top:0">The carbs, sodium and caffeine in <b>one</b> bar, flask, gel and so on - copy them from the packet. Keep it short: what you actually use.</p>
+    <div class="chips"><span class="muted small">Quick add:</span> ${presets}</div>
+    ${f.products.map((p) => productForm(p, f)).join("")}
+    ${f.products.length < f.limits.max_products ? `<details class="fuel-add" ${f.products.length ? "" : "open"}><summary>Add a product of your own</summary>${productForm(null, f)}</details>` : ""}
+  </div>`;
+
+  let runsCard;
+  if (!g) {
+    runsCard = `<div class="card"><div class="card-head"><h2>Long-run fuelling plan</h2></div>
+      <div class="empty">Set your race goal above and your long runs will appear here with a carb target each.</div></div>`;
+  } else {
+    const rows = f.runs.map((r) => `<div class="fuel-run ${r.is_next ? "next" : ""}">
+      <div class="fuel-run-head"><b>${esc(day(r.date))}</b>${r.is_next ? ' <span class="badge">next</span>' : ""} <span class="muted">· long run${r.planned_minutes ? ` · ${fmtMins(r.planned_minutes)} planned` : ""}</span></div>
+      ${fuelBlock({ ...r }, ctx)}</div>`).join("");
+    const race = f.race;
+    const raceRow = race ? `<div class="fuel-run race"><div class="fuel-run-head"><b>${esc(day(race.date))}</b> <span class="muted">· ${esc(race.name || "race day")}</span></div>
+      <div class="fuel"><div class="fuel-plan">Fuel plan: <b>${Math.round(race.target_g_per_hr)} g/h</b>${race.hours ? ` for ${fmtMins(race.hours * 60)}` : ""}${race.total_g ? ` = <b>${race.total_g} g</b>${race.mix ? ` → ${esc(race.mix.text)} = ${race.mix.total_g} g` : ""}` : ""}</div>
+      ${race.hours ? "" : `<div class="muted small">Add an expected race time above to see the total to carry.</div>`}</div></div>` : "";
+    runsCard = `<div class="card"><div class="card-head"><h2>Long-run fuelling plan</h2><span class="sub">Long runs in your plan, up to race day</span></div>
+      ${f.runs.length ? rows : `<div class="empty">No long runs found in your plan before the race. Long runs are sessions whose type includes the word "long" - for example "Long run". <a href="#/plan">Check your plan</a>.</div>`}
+      ${raceRow}
+      <div class="caption">How targets move: the first long run is one step above what you take comfortably now. After a run you log as <b>no problems</b> the next target steps up;
+        after <b>some discomfort</b> it stays the same; after a <b>bad gut</b> it steps back one step. A past run you haven't reported on also holds - so log how it went.
+        Runs still to come assume each goes well, so you can see the road to race day.</div></div>`;
+  }
+  $("#view-fuel").innerHTML = `<div class="stack">${goalCard}${runsCard}${productsCard}</div>`;
+}
+
+const fuelNum = (el) => { const v = (el.value || "").trim(); return v === "" ? "" : Number(v); };
+
+function fuelProductBody(form) {
+  const q = (n) => form.querySelector(`[name="${n}"]`);
+  return {
+    name: q("name").value, kind: q("kind").value, unit: q("unit").value, carbs_g: fuelNum(q("carbs_g")),
+    sodium_mg: fuelNum(q("sodium_mg")), caffeine_mg: fuelNum(q("caffeine_mg")), use_in_plan: q("use_in_plan").checked,
+  };
+}
+
+// after a log changes, refresh whichever surface it was made on
+async function fuelRefresh() {
+  if (location.hash.startsWith("#/fuel")) await loadFuel();
+  else await loadWeek(state.weekStart);
+}
+
 // ---------- account: your data, disconnecting Strava, deleting the account ---------------------------
 
 async function loadAccount() {
@@ -927,7 +1120,7 @@ function renderAccount() {
     </div>
     ${s.username ? `<div class="card">
       <div class="card-head"><h2>Delete my account</h2></div>
-      <p>This permanently deletes your account, your plan, and everything synced from Strava (and revokes Strava access first). It can't be undone.</p>
+      <p>This permanently deletes your account, your plan, your fuelling goal, products and logs, and everything synced from Strava (and revokes Strava access first). It can't be undone.</p>
       <div class="row">
         <input id="acct-delete-pw" type="password" autocomplete="current-password" placeholder="Your password" aria-label="Your password">
         <button class="btn danger" type="button" data-act="acctDelete" ${s.is_demo ? `disabled title="${demoTip}"` : ""}>Delete my account and all my data</button>
@@ -1085,6 +1278,56 @@ const actions = {
       e.target.textContent = "Copied";
     });
   },
+  async fuelGoalSave() {
+    const v = (id) => $(id).value;
+    const num = (id) => { const t = v(id).trim(); return t === "" ? "" : Number(t); };
+    state.fuel = await api("/api/fuel/goal", { method: "PUT", body: JSON.stringify({
+      race_name: v("#fg-name"), race_date: v("#fg-date"), race_hours: num("#fg-hours"),
+      target_g_per_hr: num("#fg-target"), current_g_per_hr: num("#fg-current"), ramp_g_per_hr: num("#fg-ramp") }) });
+    renderFuel();
+    setFlash("ok", "<b>Race goal saved.</b> Your long runs now have carb targets.");
+  },
+  async fuelGoalDelete() {
+    if (!confirm("Remove your race goal? Your products and anything you've logged stay.")) return;
+    state.fuel = await api("/api/fuel/goal", { method: "DELETE" });
+    renderFuel();
+    setFlash("ok", "Race goal removed.");
+  },
+  async fuelPreset(d) {
+    const p = state.fuel.presets.find((x) => x.key === d.key);
+    state.fuel = await api("/api/fuel/products", { method: "POST", body: JSON.stringify(p) });
+    renderFuel();
+    setFlash("ok", `<b>${esc(p.name)} added.</b> ${esc(p.note)}`);
+  },
+  async fuelProductSave(d, el) {
+    const form = el.closest(".fuel-product"), id = form.dataset.id;
+    const body = JSON.stringify(fuelProductBody(form));
+    state.fuel = id === "new" ? await api("/api/fuel/products", { method: "POST", body })
+      : await api(`/api/fuel/products/${id}`, { method: "PUT", body });
+    renderFuel();
+    setFlash("ok", id === "new" ? "Product added." : "Product saved.");
+  },
+  async fuelProductDelete(d, el) {
+    const form = el.closest(".fuel-product");
+    if (!confirm("Remove this product? Runs you've already logged keep what you recorded.")) return;
+    state.fuel = await api(`/api/fuel/products/${form.dataset.id}`, { method: "DELETE" });
+    renderFuel();
+    setFlash("ok", "Product removed.");
+  },
+  async fuelSave(d, el) {
+    const box = el.closest(".fuel");
+    const items = [...box.querySelectorAll("[data-fuel-product]")].map((s) => ({ product_id: Number(s.dataset.fuelProduct), qty: Number(s.value) })).filter((i) => i.qty > 0);
+    const gut = box.querySelector("[data-fuel-gut]").value || null;
+    await api(`/api/fuel/log/${d.date}`, { method: "PUT", body: JSON.stringify({ items, gut }) });
+    await fuelRefresh();
+    setFlash("ok", "Saved.");
+  },
+  async fuelClear(d) {
+    if (!confirm("Clear what you logged for this run?")) return;
+    await api(`/api/fuel/log/${d.date}`, { method: "DELETE" });
+    await fuelRefresh();
+    setFlash("ok", "Cleared.");
+  },
   async acctDisconnect() {
     if (!confirm("Disconnect Strava? This revokes this app's access at Strava and deletes every activity we've synced from it. Your plan and account stay, and you can reconnect later.")) return;
     const r = await api("/api/account/disconnect-strava", { method: "POST" });
@@ -1122,7 +1365,10 @@ document.addEventListener("click", (ev) => {
   const el = ev.target.closest("[data-act]");
   if (!el || el.disabled) return;
   const fn = actions[el.dataset.act];
-  if (fn) Promise.resolve(fn(el.dataset)).catch((e) => setFlash("error", esc(e.message)));
+  if (fn) Promise.resolve(fn(el.dataset, el)).catch((e) => {
+    setFlash("error", esc(e.message));
+    if (el.dataset.act.startsWith("fuel")) window.scrollTo({ top: 0, behavior: "smooth" });   // the message sits at the top
+  });
 });
 
 document.addEventListener("change", (e) => {

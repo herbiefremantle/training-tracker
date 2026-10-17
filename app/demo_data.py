@@ -8,7 +8,7 @@ anything (see the assertion below) - a bug elsewhere in the caller can't turn th
 import random
 from datetime import timedelta
 
-from . import plan_templates, strava, users
+from . import nutrition, plan_templates, strava, users
 from .db import get_meta, set_meta
 
 PLAN_ID = "marathon_beg"        # 16 weeks - "week 6 of a 16-week marathon plan" is the brief
@@ -88,10 +88,14 @@ def regenerate(conn, user_id, today):
         "ON CONFLICT(user_id) DO UPDATE SET athlete_name = excluded.athlete_name", (user_id,))
     set_meta(conn, user_id, "last_sync", today_iso + "T07:00:00")
     set_meta(conn, user_id, "demo_regenerated_on", today_iso)
+    nutrition.seed_demo(conn, user_id, today)
 
 
 def is_stale(conn, user_id, today):
-    return get_meta(conn, user_id, "demo_regenerated_on") != today.isoformat()
+    """Rebuilt daily - and also when something added since the last rebuild is missing (the fuelling example), so
+    deploying a new feature shows it on the demo straight away rather than at the next midnight."""
+    return (get_meta(conn, user_id, "demo_regenerated_on") != today.isoformat()
+            or conn.execute("SELECT 1 FROM fuel_goal WHERE user_id = ?", (user_id,)).fetchone() is None)
 
 
 def _activity(aid, iso_date, sport_type, km, mins, rng):

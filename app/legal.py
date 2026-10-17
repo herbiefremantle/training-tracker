@@ -13,7 +13,7 @@ import os
 
 from . import auth, webhook
 
-UPDATED = "25 September 2026"
+UPDATED = "17 October 2026"
 
 
 def contact_email():
@@ -66,6 +66,10 @@ elevation gain, average and maximum heart rate and speed, Strava's effort score 
 the access tokens Strava gives us, so the app can fetch your activities on your behalf.</li>
 <li><b>Your training plan:</b> the sessions you type, paste, upload or choose from the ready-made plans (dates,
 sport, distance, duration, notes).</li>
+<li><b>Your fuelling log</b>, only if you use the Fuelling page: the race you set and the carbohydrate rate you
+are aiming for, the products you list (their carbohydrate, sodium and caffeine content), and for each long run what you
+record having - how many of each product - and how your stomach coped. This is information about your diet and how
+your body copes, which can count as health data, so it is only ever created by you entering it.</li>
 <li><b>In your browser:</b> one essential session cookie that keeps you logged in (30 days), and two
 preferences (km or miles, and the colour theme) stored in your browser's local storage. Neither is used for
 tracking.</li>
@@ -76,7 +80,9 @@ addresses. We add no analytics, advertising or tracking of our own.</li>
 <h2>Why, and on what basis</h2>
 <p>To show you your own dashboard, week-by-week comparison and trends - the service you signed up for. We use
 your <b>consent</b> to connect to Strava (you can withdraw it at any time by disconnecting), and it is
-necessary to provide the account you asked for. We do not use your data for anything else.</p>
+necessary to provide the account you asked for. The optional fuelling log is held on the basis of your
+<b>explicit consent</b>, given by choosing to enter it; you can withdraw that at any time by removing entries on the
+Fuelling page or deleting your account. We do not use your data for anything else.</p>
 
 <h2>Who can see it</h2>
 <ul>
@@ -99,11 +105,11 @@ address and browser details when you open the dashboard, but none of your accoun
 </ul>
 
 <h2>How long we keep it</h2>
-<p>Your account and plan are kept until you delete your account. Strava activities we have synced are kept for
+<p>Your account, plan and fuelling log are kept until you delete them or your account. Strava activities we have synced are kept for
 as long as you stay connected, so your history and trends keep working. You can end that at any time:</p>
 <ul>
 <li><b>Disconnect Strava</b> (Account page) - revokes the app's access at Strava and immediately deletes your
-synced activities, tokens and Strava link. Your plan and account stay.</li>
+synced activities, tokens and Strava link. Your plan, fuelling log and account stay (none of those come from Strava).</li>
 <li><b>Delete my account</b> (Account page) - does the above and removes everything else we hold about you.</li>
 </ul>
 <p>%s Deletion from the live database is immediate; if our hosting provider keeps backups, they age out on its

@@ -118,6 +118,53 @@ CREATE TABLE IF NOT EXISTS plan (
 );
 
 CREATE TABLE IF NOT EXISTS meta (user_id INTEGER NOT NULL, key TEXT NOT NULL, value TEXT, PRIMARY KEY (user_id, key));
+
+-- Fuelling (app/nutrition.py): one race goal per account, a short list of the person's own products, and a log per
+-- day. Logged items copy the product's numbers at the time, so editing or deleting a product later never rewrites
+-- what someone actually had. None of this comes from Strava, so disconnecting Strava leaves it alone.
+CREATE TABLE IF NOT EXISTS fuel_goal (
+    user_id          INTEGER PRIMARY KEY REFERENCES users(id),
+    race_name        TEXT,
+    race_date        TEXT NOT NULL,
+    race_hours       REAL,               -- expected race time, optional: only used for the race-day total
+    target_g_per_hr  REAL NOT NULL,      -- carbs per hour to be able to take on race day
+    current_g_per_hr REAL NOT NULL,      -- what they take comfortably now: where the ramp starts
+    ramp_g_per_hr    REAL NOT NULL DEFAULT 5,
+    start_date       TEXT NOT NULL       -- first long run that gets a target
+);
+
+CREATE TABLE IF NOT EXISTS fuel_products (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL REFERENCES users(id),
+    name        TEXT NOT NULL,
+    kind        TEXT NOT NULL,           -- bar | drink | gel | other
+    unit        TEXT NOT NULL,           -- what one unit is called: bar, flask, gel...
+    carbs_g     REAL NOT NULL,
+    sodium_mg   REAL NOT NULL DEFAULT 0,
+    caffeine_mg REAL NOT NULL DEFAULT 0,
+    use_in_plan INTEGER NOT NULL DEFAULT 1,   -- may the planner put it in a suggested mix (else tracking only)
+    position    INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS fuel_logs (
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    date    TEXT NOT NULL,
+    gut     TEXT,                        -- fine | some | bad (how the stomach coped), or NULL
+    PRIMARY KEY (user_id, date)
+);
+
+CREATE TABLE IF NOT EXISTS fuel_log_items (
+    user_id      INTEGER NOT NULL REFERENCES users(id),
+    date         TEXT NOT NULL,
+    product_name TEXT NOT NULL,
+    kind         TEXT NOT NULL,
+    unit         TEXT NOT NULL,
+    carbs_g      REAL NOT NULL,          -- per unit, as it was when logged
+    sodium_mg    REAL NOT NULL,
+    caffeine_mg  REAL NOT NULL,
+    qty          REAL NOT NULL,          -- in halves
+    PRIMARY KEY (user_id, date, product_name)
+);
 """
 
 # Indexed on user_id, which a legacy (pre-multi-user) activities/plan table won't have until migration adds it -
@@ -125,6 +172,7 @@ CREATE TABLE IF NOT EXISTS meta (user_id INTEGER NOT NULL, key TEXT NOT NULL, va
 INDEXES = """
 CREATE INDEX IF NOT EXISTS idx_activities_date ON activities(user_id, date);
 CREATE INDEX IF NOT EXISTS idx_plan_date ON plan(user_id, date);
+CREATE INDEX IF NOT EXISTS idx_fuel_products_user ON fuel_products(user_id);
 """
 
 
