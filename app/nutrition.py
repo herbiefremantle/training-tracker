@@ -191,8 +191,13 @@ def _unit_word(unit, qty):
 
 
 def describe(items):
-    """[{unit, qty}, ...] -> "2 bars + 2½ flasks"."""
-    return " + ".join("%s %s" % (fmt_qty(i["qty"]), _unit_word(i["unit"], i["qty"])) for i in items if i["qty"] > 0)
+    """[{unit, qty, name}, ...] -> "2 bars + 2½ flasks". When two items share a unit ("2 bars + 1½ bars" would be
+    a riddle) those items are named instead: "2 × Styrkr BAR50 + 1½ × Rice cake"."""
+    items = [i for i in items if i["qty"] > 0]
+    clash = {u for u in (i["unit"] for i in items) if sum(1 for i in items if i["unit"] == u) > 1}
+    return " + ".join(
+        "%s × %s" % (fmt_qty(i["qty"]), i.get("name") or i["unit"]) if i["unit"] in clash
+        else "%s %s" % (fmt_qty(i["qty"]), _unit_word(i["unit"], i["qty"])) for i in items)
 
 
 # ---- the targets -----------------------------------------------------------------------------
@@ -251,26 +256,67 @@ def suggest_mix(products, grams):
 
 # ---- logging what was had --------------------------------------------------------------------
 
-def validate_log(data, today):
-    """(date iso, [(product_id, qty)], gut) from a request body, or ValueError."""
+def validate_log(data, today=None):
+    """([item, ...], gut) from a request body, or ValueError. Each item says what was had in exactly one way -
+    `product_id` (one of their products), `preset` (a quick-add product they haven't listed yet) or `new_product`
+    (typed in on the spot) - plus `qty` in halves. See resolve_log_items for what happens next."""
     gut = data.get("gut") or None
     if gut is not None and gut not in GUT:
         raise ValueError("Say how your stomach coped: %s." % ", ".join(GUT_LABELS[g].lower() for g in GUT))
-    items, seen = [], set()
+    items = []
     for raw in data.get("items") or []:
+        if not isinstance(raw, dict):
+            raise ValueError("Each item needs a product and a quantity.")
         try:
-            pid, qty = int(raw["product_id"]), float(raw["qty"])
+            qty = float(raw["qty"])
         except (KeyError, TypeError, ValueError):
             raise ValueError("Each item needs a product and a quantity.")
-        if pid in seen:
-            raise ValueError("Each product can only appear once.")
-        seen.add(pid)
-        if qty == 0:
-            continue
         if not math.isfinite(qty) or qty < 0 or qty > MAX_QTY or (qty * 2) != int(qty * 2):
             raise ValueError("Quantities go up in halves, from ½ to %d." % MAX_QTY)
-        items.append((pid, qty))
+        if qty == 0:
+            continue
+        refs = [k for k in ("product_id", "preset", "new_product") if raw.get(k) not in (None, "")]
+        if len(refs) != 1:
+            raise ValueError("Each item needs a product and a quantity.")
+        items.append({"ref": refs[0], "value": raw[refs[0]], "qty": qty})
     return items, gut
+
+
+def resolve_log_items(conn, user_id, items):
+    """Turn what the person picked into [(product_id, qty)], adding any product they picked from the quick-add
+    list or typed in on the spot - so logging a bar or gel never needs a trip to the product list first. The same
+    product picked twice is added up. Raises ValueError (and the caller's transaction rolls back, so nothing is
+    half-added) if a product can't be added."""
+    totals = {}
+    for it in items:
+        products = list_products(conn, user_id)
+        by_id = {p["id"]: p for p in products}
+        by_name = {p["name"].lower(): p for p in products}
+        if it["ref"] == "product_id":
+            try:
+                pid = int(it["value"])
+            except (TypeError, ValueError):
+                raise ValueError("Each item needs a product and a quantity.")
+            if pid not in by_id:
+                raise ValueError("One of those products isn't in your list any more - refresh and try again.")
+        elif it["ref"] == "preset":
+            preset = next((p for p in PRESETS if p["key"] == it["value"]), None)
+            if preset is None:
+                raise ValueError("That quick-add product isn't available.")
+            existing = by_name.get(preset["name"].lower())
+            pid = existing["id"] if existing else add_product(conn, user_id, validate_product(preset))
+        else:
+            if not isinstance(it["value"], dict):
+                raise ValueError("Each item needs a product and a quantity.")
+            raw = dict(it["value"])
+            if "use_in_plan" not in raw:   # bars and drinks go into suggested mixes while there's room; the rest don't
+                room = sum(1 for p in products if p["use_in_plan"]) < MAX_IN_PLAN
+                raw["use_in_plan"] = room and raw.get("kind") in ("bar", "drink")
+            pid = add_product(conn, user_id, validate_product(raw))
+        totals[pid] = totals.get(pid, 0) + it["qty"]
+    if any(q > MAX_QTY for q in totals.values()):
+        raise ValueError("Quantities go up in halves, from ½ to %d." % MAX_QTY)
+    return list(totals.items())
 
 
 def save_log(conn, user_id, day_iso, items, gut):
@@ -388,12 +434,12 @@ def overview(conn, user_id, today):
 
 def annotate_week(conn, user_id, week, today):
     """Add a `fuel` entry to each planned long run in a week_view() result, and the product list the log
-    dropdowns need. Runs without a goal still get the log box if the person has products."""
+    dropdowns need. Runs without a goal still get the log box - products can be added from the log itself."""
     today_iso = today.isoformat()
     goal, products = get_goal(conn, user_id), list_products(conn, user_id)
     items = [i for d in week["days"] for i in d["items"]
              if i["kind"] == "planned" and is_long_run(i["session_type"], i["sport_group"])]
-    week["fuel"] = {"has_goal": goal is not None, "products": products,
+    week["fuel"] = {"has_goal": goal is not None, "products": products, "presets": PRESETS,
                     "gut_options": [{"value": g, "label": GUT_LABELS[g]} for g in GUT]}
     if not items:
         return
@@ -407,7 +453,6 @@ def annotate_week(conn, user_id, week, today):
     for item in items:
         target = targets.get(item["date"]) if goal and goal["start_date"] <= item["date"] <= goal["race_date"] else None
         entry = _entry(item["date"], item["planned_duration_min"], target, products, logs, minutes, today_iso)
-        entry["available"] = bool(goal or products)
         item["fuel"] = entry
 
 

@@ -904,10 +904,10 @@ const fuelCtx = () => (state.weekData && state.weekData.fuel) || { products: [],
 const qtyLabel = (q) => (q === 0 ? "0" : q < 1 ? "½" : Number.isInteger(q) ? String(q) : `${Math.floor(q)}½`);
 const pluralUnit = (unit, q) => (q <= 1 ? unit : /(ch|sh|s|x)$/.test(unit) ? unit + "es" : unit + "s");
 
-function qtyOptions(selected) {
+function qtyOptions(selected, from = 0) {
   const top = Math.max(10, selected || 0);
   let html = "";
-  for (let q = 0; q <= top; q += 0.5) html += `<option value="${q}" ${q === selected ? "selected" : ""}>${qtyLabel(q)}</option>`;
+  for (let q = from; q <= top; q += 0.5) html += `<option value="${q}" ${q === selected ? "selected" : ""}>${qtyLabel(q)}</option>`;
   return html;
 }
 
@@ -943,15 +943,52 @@ const GUT_WORDS = {
   bad: "Bad gut - cramps, nausea or had to back off",
 };
 
+// One row per thing had: a "what did you have" dropdown (your products, the quick-add list, or "something else"
+// to type a new one in right there) and how many, in halves.
+function fuelProductSelect(ctx, selected) {
+  const mine = ctx.products.map((p) => `<option value="p:${p.id}" ${selected === `p:${p.id}` ? "selected" : ""}>${esc(p.name)}</option>`).join("");
+  const have = new Set(ctx.products.map((p) => p.name.toLowerCase()));
+  const quick = (ctx.presets || []).filter((p) => !have.has(p.name.toLowerCase()))
+    .map((p) => `<option value="s:${p.key}">${esc(p.name)} (${p.carbs_g} g per ${esc(p.unit)})</option>`).join("");
+  return `<select data-fuel-prod aria-label="What you had"><option value="">Choose what you had…</option>
+    ${mine ? `<optgroup label="My fuel">${mine}</optgroup>` : ""}
+    ${quick ? `<optgroup label="Quick add">${quick}</optgroup>` : ""}
+    <option value="new">＋ Something else (bar, gel, drink…)</option></select>`;
+}
+
+function fuelRow(ctx, item) {
+  const sel = item && item.product_id ? `p:${item.product_id}` : "";
+  const kinds = ["bar", "drink", "gel", "other"].map((k) => `<option value="${k}">${{ bar: "Bar / solid food", drink: "Drink", gel: "Gel", other: "Other" }[k]}</option>`).join("");
+  return `<div class="fuel-row">
+    <div class="fuel-row-main">${fuelProductSelect(ctx, sel)}
+      <select data-fuel-qty aria-label="How many">${qtyOptions(item ? item.qty : 1, 0.5)}</select>
+      <button class="btn small" type="button" data-act="fuelRemoveRow" aria-label="Remove this item" title="Remove this item">✕</button></div>
+    <div class="fuel-new" hidden>
+      <div class="fuel-grid">
+        <label class="fuel-field"><span>Name *</span><input class="field" data-new="name" maxlength="40" placeholder="e.g. Rice cake"></label>
+        <label class="fuel-field"><span>Type</span><select data-new="kind">${kinds}</select></label>
+        <label class="fuel-field"><span>Carbs in one (g) *</span><input class="field" data-new="carbs_g" inputmode="decimal" placeholder="e.g. 30"></label>
+        <label class="fuel-field"><span>Sodium in one (mg)</span><input class="field" data-new="sodium_mg" inputmode="decimal" placeholder="optional"></label>
+        <label class="fuel-field"><span>Caffeine in one (mg)</span><input class="field" data-new="caffeine_mg" inputmode="decimal" placeholder="optional"></label>
+      </div>
+      <p class="muted small" style="margin:4px 0 0">Saved to <b>My fuel</b> too, so you can pick it next time.</p>
+    </div></div>`;
+}
+
 function fuelLogForm(f, ctx) {
-  const have = {};
-  if (f.log) f.log.items.forEach((i) => { have[i.name] = i.qty; });
-  const fields = ctx.products.map((p) => `<label class="fuel-field"><span>${esc(p.name)} <span class="muted">(${esc(pluralUnit(p.unit, 2))})</span></span>
-    <select data-fuel-product="${p.id}" aria-label="${esc(p.name)}, number of ${esc(pluralUnit(p.unit, 2))}">${qtyOptions(have[p.name] || 0)}</select></label>`).join("");
+  // rows for what's already logged (matched back to the product by name), else one empty row to start from
+  const byName = new Map(ctx.products.map((p) => [p.name, p.id]));
+  const rows = f.log && f.log.items.length ? f.log.items.map((i) => fuelRow(ctx, { product_id: byName.get(i.name), qty: i.qty })) : [fuelRow(ctx, null)];
   const gutOpts = `<option value="">Not recorded</option>` + ctx.gut_options.map((g) =>
     `<option value="${g.value}" ${f.log && f.log.gut === g.value ? "selected" : ""}>${esc(GUT_WORDS[g.value] || g.label)}</option>`).join("");
+  const mix = f.mix ? esc(JSON.stringify(f.mix.items.map((i) => ({ product_id: i.product_id, qty: i.qty })))) : "";
   return `<details class="fuel-log"><summary>${f.log ? "Edit what I had" : "Log what I had"}</summary>
-    <div class="fuel-form">${fields}
+    <div class="fuel-form" ${mix ? `data-mix="${mix}"` : ""}>
+      <div class="fuel-rows">${rows.join("")}</div>
+      <div class="row">
+        <button class="btn small" type="button" data-act="fuelAddRow">＋ Add item</button>
+        ${f.mix ? `<button class="btn small" type="button" data-act="fuelUsePlan" title="Fill in the planned mix, then change anything that differed">Use planned mix</button>` : ""}
+      </div>
       <label class="fuel-field wide"><span>How did your stomach cope?</span><select data-fuel-gut>${gutOpts}</select></label>
       <div class="row">
         <button class="btn primary small" type="button" data-act="fuelSave" data-date="${f.date}" ${_demoAttrs()}>Save</button>
@@ -961,17 +998,32 @@ function fuelLogForm(f, ctx) {
     </div></details>`;
 }
 
-function fuelBlock(f, ctx) {
-  if (f.available === false) {
-    return `<div class="fuel muted small">Fuelling: <a href="#/fuel">set a race goal and your products</a> to get a carb target for long runs.</div>`;
+// the product list and quick-add options the log dropdowns use, on whichever page they're on
+const currentFuelCtx = () => (location.hash.startsWith("#/fuel") && state.fuel
+  ? { products: state.fuel.products, presets: state.fuel.presets, gut_options: state.fuel.gut_options } : fuelCtx());
+
+function fuelItemsFromForm(box) {
+  const items = [];
+  for (const row of box.querySelectorAll(".fuel-row")) {
+    const pick = row.querySelector("[data-fuel-prod]").value, qty = Number(row.querySelector("[data-fuel-qty]").value);
+    if (!pick) continue;                                   // a row left on "Choose what you had…" is just ignored
+    if (pick === "new") {
+      const v = (n) => row.querySelector(`[data-new="${n}"]`).value;
+      items.push({ qty, new_product: { name: v("name"), kind: v("kind"), carbs_g: fuelText(v("carbs_g")),
+        sodium_mg: fuelText(v("sodium_mg")), caffeine_mg: fuelText(v("caffeine_mg")) } });
+    } else if (pick.startsWith("s:")) items.push({ qty, preset: pick.slice(2) });
+    else items.push({ qty, product_id: Number(pick.slice(2)) });
   }
+  return items;
+}
+
+function fuelBlock(f, ctx) {
   const plan = fuelPlanLine(f);
-  let logUi;
-  if (!f.can_log) logUi = `<div class="muted small">You can log what you had once the run has happened.</div>`;
-  else if (!ctx.products.length) logUi = `<div class="muted small"><a href="#/fuel">Add your fuel products</a> to log what you had.</div>`;
-  else logUi = fuelLogForm(f, ctx);
+  const logUi = f.can_log ? fuelLogForm(f, ctx) : `<div class="muted small">You can log what you had once the run has happened.</div>`;
+  const setup = !plan && ctx.has_goal === false
+    ? `<div class="muted small">Want a carb target for this run? <a href="#/fuel">Set a race goal</a>.</div>` : "";
   return `<div class="fuel" data-date="${f.date}">
-    ${plan ? `<div class="fuel-plan">Fuel plan: ${plan}</div>` : ""}
+    ${plan ? `<div class="fuel-plan">Fuel plan: ${plan}</div>` : setup}
     ${fuelActualLine(f.log)}
     ${logUi}</div>`;
 }
@@ -1013,7 +1065,7 @@ function productForm(p, f) {
 
 function renderFuel() {
   const f = state.fuel, g = f.goal, demo = _demoAttrs();
-  const ctx = { products: f.products, gut_options: f.gut_options };
+  const ctx = { products: f.products, presets: f.presets, gut_options: f.gut_options };
   const day = (iso) => new Date(utc(iso)).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
   const have = new Set(f.products.map((p) => p.name.toLowerCase()));
   const status = g ? `<p class="fuel-status">${esc(dot([
@@ -1334,11 +1386,25 @@ const actions = {
   },
   async fuelSave(d, el) {
     const box = el.closest(".fuel");
-    const items = [...box.querySelectorAll("[data-fuel-product]")].map((s) => ({ product_id: Number(s.dataset.fuelProduct), qty: Number(s.value) })).filter((i) => i.qty > 0);
+    const items = fuelItemsFromForm(box);
     const gut = box.querySelector("[data-fuel-gut]").value || null;
     await api(`/api/fuel/log/${d.date}`, { method: "PUT", body: JSON.stringify({ items, gut }) });
     await fuelRefresh();
     setFlash("ok", "Saved.");
+  },
+  fuelAddRow(d, el) {
+    const form = el.closest(".fuel-form");
+    form.querySelector(".fuel-rows").insertAdjacentHTML("beforeend", fuelRow(currentFuelCtx(), null));
+  },
+  fuelRemoveRow(d, el) {
+    const rows = el.closest(".fuel-rows");
+    el.closest(".fuel-row").remove();
+    if (!rows.children.length) rows.insertAdjacentHTML("beforeend", fuelRow(currentFuelCtx(), null));   // never leave it empty
+  },
+  fuelUsePlan(d, el) {
+    const form = el.closest(".fuel-form");
+    const mix = JSON.parse(form.dataset.mix || "[]");
+    form.querySelector(".fuel-rows").innerHTML = mix.map((i) => fuelRow(currentFuelCtx(), i)).join("");
   },
   async fuelClear(d) {
     if (!confirm("Clear what you logged for this run?")) return;
@@ -1389,6 +1455,12 @@ document.addEventListener("click", (ev) => {
 });
 
 document.addEventListener("change", (e) => {
+  if (e.target.matches("[data-fuel-prod]")) {                       // "Something else…" opens fields for a new product
+    const fields = e.target.closest(".fuel-row").querySelector(".fuel-new");
+    fields.hidden = e.target.value !== "new";
+    if (!fields.hidden) fields.querySelector('[data-new="name"]').focus();
+    return;
+  }
   if (e.target.id === "sport-select") {
     state.explore.sport = e.target.value;
     state.paceMode = null;

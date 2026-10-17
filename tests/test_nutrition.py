@@ -130,6 +130,12 @@ def test_quantities_read_naturally(qty, text):
     assert nutrition.fmt_qty(qty) == text
 
 
+def test_items_that_share_a_unit_are_named_so_the_text_is_not_a_riddle():
+    items = [{"unit": "bar", "qty": 2, "name": "Styrkr BAR50"}, {"unit": "bar", "qty": 1.5, "name": "Rice cake"},
+             {"unit": "flask", "qty": 1, "name": "MIX60"}]
+    assert nutrition.describe(items) == "2 × Styrkr BAR50 + 1½ × Rice cake + 1 flask"
+
+
 def test_units_are_singular_up_to_one_and_plural_after():
     assert nutrition.describe([{"unit": "bar", "qty": 1}, {"unit": "flask", "qty": 1.5}]) == "1 bar + 1½ flasks"
     assert nutrition.describe([{"unit": "gel", "qty": 0.5}]) == "½ gel"
@@ -297,7 +303,11 @@ def test_log_history_survives_the_product_being_edited_or_removed(client):
     ({"items": [{"product_id": 1, "qty": 0.3}]}, "halves"),
     ({"items": [{"product_id": 1, "qty": 99}]}, "halves"),
     ({"items": [{"product_id": 1, "qty": -1}]}, "halves"),
-    ({"items": [{"product_id": 1, "qty": 1}, {"product_id": 1, "qty": 1}]}, "only appear once"),
+    ({"items": [{"preset": "styrkr_bar50", "product_id": 1, "qty": 1}]}, "product and a quantity"),
+    ({"items": [{"preset": "no_such_thing", "qty": 1}]}, "isn't available"),
+    ({"items": [{"new_product": "a bar", "qty": 1}]}, "product and a quantity"),
+    ({"items": [{"product_id": "abc", "qty": 1}]}, "product and a quantity"),
+    ({"items": ["bar"]}, "product and a quantity"),
     ({"items": [{"qty": 1}]}, "product and a quantity"),
     ({"items": [], "gut": "terrible"}, "stomach"),
 ])
@@ -328,7 +338,7 @@ def test_only_long_runs_carry_fuel_info_and_future_runs_cannot_be_logged(client)
     setup(client)
     week, items = week_item(client)
     assert [i["date"] for i in items] == ["2026-10-17"]                                   # not the Tuesday easy run
-    assert items[0]["fuel"]["can_log"] is True and items[0]["fuel"]["available"] is True
+    assert items[0]["fuel"]["can_log"] is True
     nxt = week_item(client, "2026-10-19")[1][0]
     assert nxt["fuel"]["can_log"] is False and nxt["fuel"]["target_g_per_hr"] == 70
 
@@ -340,10 +350,11 @@ def test_the_dashboard_week_carries_the_same_fuel_info(client):
     assert long_run and long_run[0]["fuel"]["target_g_per_hr"] == 65
 
 
-def test_with_no_goal_and_no_products_a_long_run_only_offers_to_set_one_up(client):
+def test_with_no_goal_and_no_products_a_long_run_can_still_be_logged_against(client):
     client.post("/api/plan/import", json={"text": PLAN})
-    _, items = week_item(client)
-    assert items[0]["fuel"]["available"] is False and items[0]["fuel"]["target_g_per_hr"] is None
+    week, items = week_item(client)
+    assert items[0]["fuel"]["can_log"] is True and items[0]["fuel"]["target_g_per_hr"] is None
+    assert week["fuel"]["has_goal"] is False and week["fuel"]["products"] == []
 
 
 def test_a_week_with_no_long_run_still_returns_the_product_list(client):
@@ -498,3 +509,77 @@ def test_app_files_are_revalidated_so_a_deploy_is_picked_up_straight_away(client
     for path in ("/static/app.js", "/static/style.css", "/static/index.html"):
         assert client.get(path).headers["cache-control"] == "no-cache", path
     assert "cache-control" not in client.get("/static/icons/favicon-32.png").headers   # images can be kept as-is
+
+
+# ---- logging a bar, gel or anything else straight from the log, without visiting the product list ----------
+
+def item_names(client):
+    return {p["name"]: p for p in client.get("/api/fuel").json()["products"]}
+
+
+def test_picking_a_quick_add_product_in_the_log_adds_it_to_your_list_and_logs_it(client):
+    setup(client, products=())
+    r = client.put("/api/fuel/log/2026-10-17", json={"items": [
+        {"preset": "styrkr_bar50", "qty": 2}, {"preset": "gel", "qty": 1.5}], "gut": "fine"})
+    assert r.status_code == 200, r.text
+    mine = item_names(client)
+    assert set(mine) == {"Styrkr BAR50", "Energy gel"} and mine["Energy gel"]["use_in_plan"] is False
+    lg = week_item(client)[1][0]["fuel"]["log"]
+    assert lg["text"] == "2 bars + 1½ gels" and lg["carbs_g"] == 138     # 137.5 g, shown to the nearest gram
+
+
+def test_picking_the_same_quick_add_product_again_reuses_it(client):
+    setup(client, products=())
+    for _ in range(2):
+        assert client.put("/api/fuel/log/2026-10-17", json={"items": [{"preset": "styrkr_bar50", "qty": 1}]}).status_code == 200
+    assert len(client.get("/api/fuel").json()["products"]) == 1
+
+
+def test_a_new_product_typed_into_the_log_is_saved_and_logged(client):
+    setup(client, products=(BAR,))
+    body = {"items": [{"new_product": {"name": "Maurten gel", "kind": "gel", "carbs_g": "25", "caffeine_mg": 100}, "qty": 1}]}
+    assert client.put("/api/fuel/log/2026-10-17", json=body).status_code == 200
+    p = item_names(client)["Maurten gel"]
+    assert p["carbs_g"] == 25 and p["caffeine_mg"] == 100 and p["use_in_plan"] is False      # gels stay tracking-only
+    lg = week_item(client)[1][0]["fuel"]["log"]
+    assert lg["caffeine_mg"] == 100 and lg["text"] == "1 gel"
+
+
+def test_a_new_bar_or_drink_joins_suggested_mixes_while_there_is_room(client):
+    setup(client, products=(BAR,))
+    client.put("/api/fuel/log/2026-10-17", json={"items": [
+        {"new_product": {"name": "Rice cake", "kind": "bar", "carbs_g": 30}, "qty": 1}]})
+    assert item_names(client)["Rice cake"]["use_in_plan"] is True
+
+
+def test_a_bad_new_product_fails_the_whole_save_and_leaves_nothing_behind(client):
+    setup(client, products=(BAR,))
+    r = client.put("/api/fuel/log/2026-10-17", json={"gut": "fine", "items": [
+        {"preset": "gel", "qty": 1}, {"new_product": {"name": "", "kind": "bar", "carbs_g": 30}, "qty": 1}]})
+    assert r.status_code == 400 and "name" in r.json()["detail"]
+    assert set(item_names(client)) == {"Styrkr BAR50"}                                    # the gel wasn't half-added
+    assert week_item(client)[1][0]["fuel"]["log"] is None
+
+
+def test_a_full_product_list_stops_logging_a_new_one_with_a_clear_message(client):
+    for n in range(nutrition.MAX_PRODUCTS):
+        client.post("/api/fuel/products", json={"name": "P%d" % n, "kind": "gel", "carbs_g": 20})
+    r = client.put("/api/fuel/log/2026-10-17", json={"items": [{"preset": "styrkr_bar50", "qty": 1}]})
+    assert r.status_code == 400 and "most products" in r.json()["detail"]
+
+
+def test_the_same_product_in_two_rows_is_added_up(client):
+    setup(client)
+    pid = products_by_name(client)["Styrkr BAR50"]
+    r = client.put("/api/fuel/log/2026-10-17", json={"items": [
+        {"product_id": pid, "qty": 1}, {"product_id": pid, "qty": 1.5}]})
+    assert r.status_code == 200
+    assert week_item(client)[1][0]["fuel"]["log"]["text"] == "2½ bars"
+    too_many = client.put("/api/fuel/log/2026-10-17", json={"items": [{"product_id": pid, "qty": 8}, {"product_id": pid, "qty": 8}]})
+    assert too_many.status_code == 400 and "halves" in too_many.json()["detail"]
+
+
+def test_the_week_view_offers_the_quick_add_list_to_the_log_dropdown(client):
+    setup(client, products=())
+    week = client.get("/api/week", params={"start": "2026-10-12"}).json()
+    assert [p["key"] for p in week["fuel"]["presets"]] == ["styrkr_bar50", "styrkr_mix60", "gel"]

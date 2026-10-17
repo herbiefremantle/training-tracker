@@ -671,12 +671,12 @@ def fuel_log_save(day: str, body: dict, request: Request):
     uid = current_user_id(request)
     iso = _log_date(day)
     try:
-        items, gut = nutrition.validate_log(body, clock.today())
+        items, gut = nutrition.validate_log(body)
+        with connect() as conn:
+            pairs = nutrition.resolve_log_items(conn, uid, items)
+            nutrition.save_log(conn, uid, iso, pairs, gut)
     except ValueError as e:
         raise _fuel_bad_request(e)
-    with connect() as conn:
-        if not nutrition.save_log(conn, uid, iso, items, gut):
-            raise HTTPException(400, "One of those products isn't in your list any more - refresh and try again.")
     return {"saved": True}
 
 
