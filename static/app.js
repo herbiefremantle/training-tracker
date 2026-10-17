@@ -1018,11 +1018,17 @@ const GUT_WORDS = {
 
 // One row per thing had: a "what did you have" dropdown (your products, the quick-add list, or "something else"
 // to type a new one in right there) and how many, in halves.
+// what one unit of a product holds, in words: "60 g carbs · 500 ml · 56 mg sodium"
+function productSummary(p) {
+  return dot([p.carbs_g ? `${+p.carbs_g} g carbs` : "", p.fluid_ml ? fmtMl(p.fluid_ml) : "", p.sodium_mg ? `${+p.sodium_mg} mg sodium` : "",
+    p.caffeine_mg ? `${+p.caffeine_mg} mg caffeine` : ""]) || "no carbs, fluid or sodium set";
+}
+
 function fuelProductSelect(ctx, selected) {
-  const mine = ctx.products.map((p) => `<option value="p:${p.id}" ${selected === `p:${p.id}` ? "selected" : ""}>${esc(p.name)}</option>`).join("");
+  const mine = ctx.products.map((p) => `<option value="p:${p.id}" ${selected === `p:${p.id}` ? "selected" : ""}>${esc(p.name)} - ${esc(productSummary(p))}</option>`).join("");
   const have = new Set(ctx.products.map((p) => p.name.toLowerCase()));
   const quick = (ctx.presets || []).filter((p) => !have.has(p.name.toLowerCase()))
-    .map((p) => `<option value="s:${p.key}">${esc(p.name)} (${p.carbs_g} g per ${esc(p.unit)})</option>`).join("");
+    .map((p) => `<option value="s:${p.key}">${esc(p.name)} - ${esc(productSummary(p))}</option>`).join("");
   return `<select data-fuel-prod aria-label="What you had"><option value="">Choose what you had…</option>
     ${mine ? `<optgroup label="My fuel">${mine}</optgroup>` : ""}
     ${quick ? `<optgroup label="Quick add">${quick}</optgroup>` : ""}
@@ -1122,6 +1128,7 @@ function productForm(p, f) {
   const kinds = ["bar", "drink", "gel", "water", "other"].map((k) => `<option value="${k}" ${p && p.kind === k ? "selected" : ""}>${{ bar: "Bar / solid food", drink: "Drink with carbs", gel: "Gel", water: "Water", other: "Other (salt tablet, caffeine…)" }[k]}</option>`).join("");
   const demo = _demoAttrs();
   return `<div class="fuel-product" data-id="${id}">
+    ${p ? `<div class="muted small"><b>Per ${esc(p.unit)}:</b> ${esc(productSummary(p))}</div>` : ""}
     <div class="fuel-grid">
       ${fuelField("Name *", "name", p ? p.name : "", 'maxlength="40" placeholder="e.g. Styrkr BAR50"')}
       <label class="fuel-field"><span>Type</span><select name="kind">${kinds}</select></label>
