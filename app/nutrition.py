@@ -147,8 +147,9 @@ def validate_product(data):
     unit = str(data.get("unit") or "").strip().lower() or {"drink": "flask", "water": "flask"}.get(kind, kind if kind != "other" else "serving")
     if len(unit) > 12:
         raise ValueError("Unit must be a short word, like bar, flask or gel.")
-    fluid = _number(data.get("fluid_ml") or 0, "Fluid per unit", 0, 3000)
-    if kind == "water" and not fluid:
+    # absent (not just blank) means an older copy of the page that doesn't know about fluid: leave what's stored alone
+    fluid = _number(data.get("fluid_ml") or 0, "Fluid per unit", 0, 3000) if "fluid_ml" in data else None
+    if kind == "water" and "fluid_ml" in data and not fluid:
         raise ValueError("Water needs a size in ml - 500 for a 500 ml flask.")
     return {
         "name": name, "kind": kind, "unit": unit,
@@ -173,6 +174,8 @@ def _check_product_rules(conn, user_id, clean, product_id):
 
 
 def add_product(conn, user_id, clean):
+    if clean["kind"] == "water" and not clean["fluid_ml"]:
+        raise ValueError("Water needs a size in ml - 500 for a 500 ml flask.")
     others = _check_product_rules(conn, user_id, clean, None)
     if len(others) >= MAX_PRODUCTS:
         raise ValueError("That's the most products you can keep (%d) - remove one first." % MAX_PRODUCTS)
@@ -181,7 +184,7 @@ def add_product(conn, user_id, clean):
         "INSERT INTO fuel_products (user_id, name, kind, unit, carbs_g, sodium_mg, caffeine_mg, fluid_ml, use_in_plan, "
         "position) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (user_id, clean["name"], clean["kind"], clean["unit"], clean["carbs_g"], clean["sodium_mg"],
-         clean["caffeine_mg"], clean["fluid_ml"], int(clean["use_in_plan"]), position))
+         clean["caffeine_mg"], clean["fluid_ml"] or 0, int(clean["use_in_plan"]), position))
     return cur.lastrowid
 
 
@@ -191,7 +194,7 @@ def update_product(conn, user_id, product_id, clean):
     _check_product_rules(conn, user_id, clean, product_id)
     conn.execute(
         "UPDATE fuel_products SET name = ?, kind = ?, unit = ?, carbs_g = ?, sodium_mg = ?, caffeine_mg = ?, "
-        "fluid_ml = ?, use_in_plan = ? WHERE id = ? AND user_id = ?",
+        "fluid_ml = COALESCE(?, fluid_ml), use_in_plan = ? WHERE id = ? AND user_id = ?",
         (clean["name"], clean["kind"], clean["unit"], clean["carbs_g"], clean["sodium_mg"], clean["caffeine_mg"],
          clean["fluid_ml"], int(clean["use_in_plan"]), product_id, user_id))
     return True

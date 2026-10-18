@@ -1,5 +1,9 @@
 "use strict";
 
+// the version this copy of the script was loaded as (index.html puts it on the script's URL); compared with what the
+// server reports so an app left open - e.g. added to a phone's home screen - notices it's out of date
+const BUILD = (() => { try { return new URL(document.currentScript.src).searchParams.get("v"); } catch (_) { return null; } })();
+
 const $ = (sel, el = document) => el.querySelector(sel);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -25,6 +29,7 @@ const state = {
   colourful: document.documentElement.dataset.theme === "colourful",   // set before paint by index.html's inline script
   paceMode: null,                           // "pace" | "speed"; null = default for the selected sport
   charts: {}, flash: null,
+  fuelOpen: new Set(),                      // dates of fuel cards left open, so a refresh doesn't snap them shut
 };
 
 // ---------- formatting -------------------------------------------------------------------------
@@ -102,9 +107,23 @@ function pill(st, diff) {
 
 // ---------- status bar / banner ----------------------------------------------------------------
 
+// A newer version is live: reload to pick it up (once per version, so a stale page can never loop), else say so.
+function checkVersion(current) {
+  if (!BUILD || !current || current === BUILD) return;
+  let tried = null;
+  try { tried = sessionStorage.getItem("reloadedFor"); } catch (_) { /* private mode: fall through to the banner */ }
+  if (tried !== current) {
+    try { sessionStorage.setItem("reloadedFor", current); } catch (_) { return; }
+    location.reload();
+  } else {
+    state.flash = { kind: "warn", html: '<b>A newer version of the app is available.</b> <a href="/" onclick="location.reload();return false">Reload</a>' };
+  }
+}
+
 async function refreshStatus() {
   state.status = await api("/api/status");
   const s = state.status;
+  checkVersion(s.version);
   $("#sync-meta").textContent = s.connected
     ? (s.last_sync ? "Last sync " + new Date(s.last_sync).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "Never synced")
     : "";
@@ -1062,8 +1081,8 @@ function fuelLogForm(f, ctx) {
   const gutOpts = `<option value="">Not recorded</option>` + ctx.gut_options.map((g) =>
     `<option value="${g.value}" ${f.log && f.log.gut === g.value ? "selected" : ""}>${esc(GUT_WORDS[g.value] || g.label)}</option>`).join("");
   const mix = f.mix ? esc(JSON.stringify(f.mix.items.map((i) => ({ product_id: i.product_id, qty: i.qty })))) : "";
-  return `<details class="fuel-log"><summary>${f.log ? "Edit what I had" : "Log what I had"}</summary>
-    <div class="fuel-form" ${mix ? `data-mix="${mix}"` : ""}>
+  return `<div class="fuel-form" ${mix ? `data-mix="${mix}"` : ""}>
+      <div class="fuel-form-title">${f.log ? "Edit what I had" : "Log what I had"}</div>
       <div class="fuel-rows">${rows.join("")}</div>
       <div class="row">
         <button class="btn small" type="button" data-act="fuelAddRow">＋ Add item</button>
@@ -1075,7 +1094,7 @@ function fuelLogForm(f, ctx) {
         ${f.log ? `<button class="btn small" type="button" data-act="fuelClear" data-date="${f.date}" ${_demoAttrs()}>Clear this log</button>` : ""}
       </div>
       <p class="muted small" style="margin:0">Halves are fine - if you came back with some left over, log what you actually had.</p>
-    </div></details>`;
+    </div>`;
 }
 
 // the product list and quick-add options the log dropdowns use, on whichever page they're on
@@ -1097,16 +1116,47 @@ function fuelItemsFromForm(box) {
   return items;
 }
 
+// The one line that shows on the dashboard card: how the fuelling went (or is planned to go). Tap it for the detail.
+function fuelSummary(f) {
+  const l = f.log, a = f.advice;
+  if (l) {
+    const bad = [], ok = [];
+    const d = l.vs_target_g_per_hr;
+    if (l.carb_status === "off") bad.push(`carbs ${d > 0 ? "▲ +" : "▼ −"}${Math.abs(d)} g/h`);
+    else if (l.carb_status === "ok") ok.push("carbs");
+    if (l.fluid_status === "off") bad.push(`fluid ${a && l.fluid_ml_per_hr > a.fluid_ml_per_hr ? "▲" : "▼"}`);
+    else if (l.fluid_status === "ok") ok.push("fluid");
+    if (l.sodium_status === "off") bad.push(`salt ${a && l.sodium_mg_per_hr > a.sodium_mg_per_hr ? "▲" : "▼"}`);
+    else if (l.sodium_status === "ok") ok.push("salt");
+    const warned = (l.alerts || []).some((x) => x.level === "warn");
+    if (l.gut === "bad" || l.gut === "some") bad.push(`stomach: ${l.gut_label.toLowerCase()}`);
+    if (bad.length) return { cls: "missed", icon: "✕", text: `Fuel off target: ${bad.join(", ")}` };
+    if (warned) return { cls: "under", icon: "▲", text: "Fuel logged - see the warning" };
+    if (ok.length) return { cls: "done", icon: "✓", text: "Fuel on target" };
+    return { cls: "done", icon: "✓", text: "Fuel logged" + (l.items.length && l.carbs_g_per_hr == null ? " (rate shows once the run syncs)" : "") };
+  }
+  const plan = dot([
+    f.target_g_per_hr ? `${Math.round(f.target_g_per_hr)} g/h` : "", f.planned_g ? `${f.planned_g} g carbs` : "",
+    a && a.drink && a.drink.total_ml ? `drink ${fmtMl(a.drink.total_ml)}` : "", a && a.salt && a.salt.verdict === "yes" ? "salt" : "",
+  ]);
+  if (f.can_log) return { cls: "under", icon: "○", text: "Fuel not logged yet - tap to log" };
+  return { cls: "upcoming", icon: "○", text: plan ? `Fuel plan: ${plan}` : "Fuel plan" };
+}
+
 function fuelBlock(f, ctx) {
   const plan = fuelPlanLine(f);
+  const sum = fuelSummary(f);
   const logUi = f.can_log ? fuelLogForm(f, ctx) : `<div class="muted small">You can log what you had once the run has happened.</div>`;
   const setup = !plan && ctx.has_goal === false
     ? `<div class="muted small">Want a carb target for this run? <a href="#/fuel">Set a race goal</a>.</div>` : "";
-  return `<div class="fuel" data-date="${f.date}">
-    ${plan ? `<div class="fuel-plan">Fuel plan: ${plan}</div>` : setup}
-    ${fuelConditionsLines(f)}
-    ${fuelActualLine(f.log, f.advice)}
-    ${logUi}</div>`;
+  return `<details class="fuel fuel-card" data-date="${f.date}" ${state.fuelOpen.has(f.date) ? "open" : ""}>
+    <summary class="fuel-summary"><span class="pill ${sum.cls}"><i aria-hidden="true">${sum.icon}</i>${esc(sum.text)}</span></summary>
+    <div class="fuel-body">
+      ${plan ? `<div class="fuel-plan">Fuel plan: ${plan}</div>` : setup}
+      ${fuelConditionsLines(f)}
+      ${fuelActualLine(f.log, f.advice)}
+      ${logUi}
+    </div></details>`;
 }
 
 async function loadFuel() {
@@ -1649,6 +1699,14 @@ document.addEventListener("change", (e) => {
 });
 
 $("#sync-btn").addEventListener("click", doSync);
+// coming back to the app (a phone's home-screen app stays loaded for days) is when to check it's still current
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") refreshStatus().catch(() => {}); });
+window.addEventListener("pageshow", (e) => { if (e.persisted) refreshStatus().catch(() => {}); });
+// remember which fuel cards are open
+document.addEventListener("toggle", (e) => {
+  const d = e.target;
+  if (d && d.matches && d.matches("details.fuel-card")) { if (d.open) state.fuelOpen.add(d.dataset.date); else state.fuelOpen.delete(d.dataset.date); }
+}, true);
 window.addEventListener("hashchange", () => { state.flash = null; renderBanner(); route(); });
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
   if (state.dashboard && state.exploreData && !$("#view-dashboard").hidden) renderAll();

@@ -382,3 +382,24 @@ input[type=password]:focus-visible { outline: 2px solid var(--series-1); outline
 .fuel-quickplace summary { cursor: pointer; color: var(--series-1); font-weight: 600; }
 .fuel-quickplace .row { margin: 6px 0; gap: 6px; }
 .fuel-weather { margin-top: 2px; }
+
+/* the fuel card: one summary line, tap to open the detail */
+details.fuel-card { display: block; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); }
+.fuel-summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+.fuel-summary::-webkit-details-marker { display: none; }
+.fuel-summary::after { content: "▸"; margin-left: auto; color: var(--ink-2); }
+details.fuel-card[open] > .fuel-summary::after { content: "▾"; }
+.fuel-summary .pill { white-space: normal; text-align: left; }
+.fuel-body { display: grid; gap: 4px; margin-top: 8px; }
+.fuel-form { display: grid; gap: 8px; margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--border); }
+.fuel-form-title { font-weight: 600; color: var(--series-1); }
+.fuel-run details.fuel-card { border-top: 0; margin-top: 2px; padding-top: 0; }
+
+/* Everything inside a fuel card must fit the card: grid columns default to the widest line of text, which pushed the
+   quantity dropdown, the buttons and long sentences off the right edge of a phone-width card. */
+details.fuel-card, .fuel-body, .fuel-form, .fuel-rows, .fuel-row, .fuel-row-main, .fuel-new { min-width: 0; max-width: 100%; }
+.fuel-body, .fuel-form, .fuel-rows { grid-template-columns: minmax(0, 1fr); }
+.fuel-body, .fuel-form { overflow-wrap: anywhere; }
+.fuel-body select, .fuel-form select, .fuel-body input, .fuel-form input { max-width: 100%; min-width: 0; }
+.fuel-row-main [data-fuel-prod] { min-width: 0; text-overflow: ellipsis; }
+.item { min-width: 0; }

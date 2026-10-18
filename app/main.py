@@ -1,3 +1,4 @@
+import hashlib
 import ipaddress
 import logging
 import os
@@ -197,9 +198,31 @@ def health():
 
 # ---- pages / auth ---------------------------------------------------------------------------
 
+_static_version_cache = {"stamp": None, "version": ""}
+_VERSIONED = ("app.js", "style.css", "install.js")
+
+
+def static_version():
+    """A short fingerprint of the page's script and styles. It goes on their URLs (so a new deploy is always fetched,
+    never a stale copy) and into /api/status (so an app that's been left open - a home-screen app on a phone can stay
+    loaded for days - can notice it's running old code and reload). Recomputed only when a file changes."""
+    paths = [ROOT / "static" / name for name in _VERSIONED]
+    stamp = tuple((p.stat().st_mtime_ns, p.stat().st_size) for p in paths)
+    if _static_version_cache["stamp"] != stamp:
+        digest = hashlib.sha1()
+        for p in paths:
+            digest.update(p.read_bytes())
+        _static_version_cache.update(stamp=stamp, version=digest.hexdigest()[:10])
+    return _static_version_cache["version"]
+
+
 @app.get("/", include_in_schema=False)
 def index():
-    return FileResponse(ROOT / "static" / "index.html")
+    html = (ROOT / "static" / "index.html").read_text()
+    v = static_version()
+    for name in _VERSIONED:
+        html = html.replace('/static/%s"' % name, '/static/%s?v=%s"' % (name, v))
+    return HTMLResponse(html, headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/auth/login", include_in_schema=False)
@@ -265,6 +288,7 @@ def status(request: Request):
             "is_admin": bool(me["is_admin"]) if me else False,
             "is_demo": bool(me["is_demo"]) if me else False,
             "email": me["email"] if me else None,
+            "version": static_version(),
         }
 
 

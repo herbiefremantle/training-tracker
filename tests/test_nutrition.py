@@ -1038,3 +1038,39 @@ def test_not_logging_water_or_salt_is_not_scolded(client):
     lg = run_with_log(client, [("Styrkr BAR50", 4)], "fine")["log"]
     assert lg["fluid_status"] is None and lg["sodium_status"] is None and lg["fluid_ml_per_hr"] is None
     assert not any("odium" in a["text"] or "drank" in a["text"] for a in lg["alerts"])
+
+
+# ---- a home-screen app left open must notice a new deploy, and an old copy must not damage data ------------
+
+def test_the_page_and_status_carry_the_same_version_so_an_old_page_can_tell(client):
+    html = client.get("/")
+    ver = client.get("/api/status").json()["version"]
+    assert ver and html.headers["cache-control"] == "no-cache"
+    for name in ("app.js", "style.css", "install.js"):
+        assert '/static/%s?v=%s"' % (name, ver) in html.text
+
+
+def test_the_version_changes_when_the_script_does(tmp_path, monkeypatch):
+    static = tmp_path / "static"
+    static.mkdir()
+    for name in ("app.js", "style.css", "install.js"):
+        (static / name).write_text("// %s v1" % name)
+    monkeypatch.setattr(main, "ROOT", tmp_path)
+    main._static_version_cache.update(stamp=None, version="")
+    first = main.static_version()
+    assert main.static_version() == first
+    (static / "app.js").write_text("// app.js v2 - a different length")
+    assert main.static_version() != first
+    main._static_version_cache.update(stamp=None, version="")
+
+
+def test_an_older_page_updating_a_product_cannot_wipe_its_fluid_or_break_water(client):
+    client.post("/api/fuel/products", json=MIX)
+    client.post("/api/fuel/products", json=WATER)
+    ids = products_by_name(client)
+    old_page = {"name": "Styrkr MIX60", "kind": "drink", "unit": "flask", "carbs_g": 60, "sodium_mg": 56, "use_in_plan": True}   # no fluid_ml key
+    out = client.put("/api/fuel/products/%d" % ids["Styrkr MIX60"], json=old_page).json()
+    assert [p["fluid_ml"] for p in out["products"] if p["name"] == "Styrkr MIX60"] == [500]
+    water = client.put("/api/fuel/products/%d" % ids["Water"], json={"name": "Water", "kind": "water", "unit": "flask"})
+    assert water.status_code == 200 and [p["fluid_ml"] for p in water.json()["products"] if p["name"] == "Water"] == [500]
+    assert client.post("/api/fuel/products", json={"name": "Spring", "kind": "water"}).status_code == 400   # a *new* water still needs a size
